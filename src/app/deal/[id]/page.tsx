@@ -21,8 +21,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 function buildGoogleFlightsUrl(deal: Deal): string {
   const dept = deal.validity_start
-  const ret = deal.validity_end
-  // Deep link format with origin, destination and dates pre-filled
+  // If return date is missing or same as departure, default to +7 days
+  let ret = deal.validity_end
+  if (!ret || ret === dept) {
+    const d = new Date(dept)
+    d.setDate(d.getDate() + 7)
+    ret = d.toISOString().split('T')[0]
+  }
   return `https://www.google.com/travel/flights?hl=en&gl=in#flt=${deal.origin_iata}.${deal.dest_iata}.${dept}*${deal.dest_iata}.${deal.origin_iata}.${ret};c:INR;e:1;sd:1`
 }
 
