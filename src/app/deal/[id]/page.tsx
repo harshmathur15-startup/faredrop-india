@@ -28,9 +28,10 @@ function buildSearchUrls(deal: Deal): { skyscanner: string; google: string } {
     ret = d.toISOString().split('T')[0]
   }
 
-  // Skyscanner India — stable deep link format (YYMMDD)
-  const fmt = (iso: string) => iso.replace(/-/g, '').slice(2) // 2026-07-31 → 260731
-  const skyscanner = `https://www.skyscanner.co.in/transport/flights/${deal.origin_iata.toLowerCase()}/${deal.dest_iata.toLowerCase()}/${fmt(dept)}/${fmt(ret)}/?adults=1&currency=INR`
+  // Skyscanner India — uses oym (YYMM) + selectedoday format
+  const toYYMM = (iso: string) => iso.slice(2, 4) + iso.slice(5, 7)   // 2026-07-31 → 2607
+  const toDay  = (iso: string) => String(parseInt(iso.slice(8, 10)))   // 2026-07-31 → 31
+  const skyscanner = `https://www.skyscanner.co.in/transport/flights/${deal.origin_iata.toLowerCase()}/${deal.dest_iata.toLowerCase()}/?adults=1&currency=INR&oym=${toYYMM(dept)}&selectedoday=${toDay(dept)}&iym=${toYYMM(ret)}&selectediday=${toDay(ret)}`
 
   // Google Flights — generic search fallback
   const google = `https://www.google.com/travel/flights?q=Flights+from+${deal.origin_city}+to+${deal.dest_city}`
