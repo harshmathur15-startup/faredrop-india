@@ -19,6 +19,95 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
+// Google Knowledge Graph city IDs used by Google Flights tfs deep links.
+// Confirmed from live Google Flights URLs — city-level IDs, not airport-level.
+const KGID: Record<string, string> = {
+  // Indian metros
+  DEL: '/m/01d88c', BOM: '/m/0c8tk',  BLR: '/m/06cy0',
+  MAA: '/m/0c_m3',  HYD: '/m/0c6yfh', CCU: '/m/0754d',
+  // Southeast Asia
+  BKK: '/m/05fjf',  SIN: '/m/06wjf',  KUL: '/m/0d9jr',
+  DPS: '/m/0h3y',   HKT: '/m/01b8w0', SGN: '/m/01crd5',
+  HAN: '/m/0frth',  MNL: '/m/06_kh',
+  // Middle East
+  DXB: '/m/09bhj',  DOH: '/m/01bf4v', AUH: '/m/0f2w0', MCT: '/m/01hqk',
+  // East Asia
+  NRT: '/m/07dfk',  KIX: '/m/01yk13', ICN: '/m/0hsqf',
+  HKG: '/m/03h64',  TPE: '/m/06cp5',
+  // Europe
+  LHR: '/m/04jpl',  CDG: '/m/05qtj',  AMS: '/m/0k3p',
+  FRA: '/m/02jxk',  FCO: '/m/06mkj',  BCN: '/m/01jnc3',
+  IST: '/m/06nrt',
+  // Americas
+  JFK: '/m/02_286', LAX: '/m/030qb3', YYZ: '/m/0h7h6', SFO: '/m/01cf93',
+  // Indian Ocean / South Asia
+  MLE: '/m/01m8n',  CMB: '/m/0s2bt',  KTM: '/m/01b1h1',
+  // Africa / Australia
+  NBO: '/m/01fvhh', JNB: '/m/0173yg', SYD: '/m/06y57', MEL: '/m/0chgzm',
+}
+
+function encodeVarint(v: number): Uint8Array {
+  const out: number[] = []
+  while (true) {
+    const b = v & 0x7f; v >>>= 7
+    if (v) out.push(b | 0x80)
+    else { out.push(b); break }
+  }
+  return new Uint8Array(out)
+}
+
+function encodeFieldVarint(fn: number, v: number) {
+  return concat(encodeVarint((fn << 3) | 0), encodeVarint(v))
+}
+
+function encodeFieldBytes(fn: number, d: Uint8Array) {
+  return concat(encodeVarint((fn << 3) | 2), encodeVarint(d.length), d)
+}
+
+function encodeFieldString(fn: number, s: string) {
+  return encodeFieldBytes(fn, new TextEncoder().encode(s))
+}
+
+function concat(...arrays: Uint8Array[]): Uint8Array {
+  const total = arrays.reduce((n, a) => n + a.length, 0)
+  const out = new Uint8Array(total)
+  let i = 0
+  for (const a of arrays) { out.set(a, i); i += a.length }
+  return out
+}
+
+function buildTfs(originKgid: string, destKgid: string, outboundDate: string, returnDate: string): string {
+  const encodeAirport = (type: number, kgid: string) =>
+    concat(encodeFieldVarint(1, type), encodeFieldString(2, kgid))
+
+  const encodeLeg = (date: string, airports: [number, string][]) => {
+    let leg = concat(encodeFieldString(2, date), encodeFieldVarint(5, 1))
+    const fields = [13, 14]
+    for (let i = 0; i < airports.length; i++) {
+      leg = concat(leg, encodeFieldBytes(fields[i], encodeAirport(airports[i][0], airports[i][1])))
+    }
+    return leg
+  }
+
+  const leg1 = encodeLeg(outboundDate, [[3, originKgid], [2, destKgid]])
+  const leg2 = encodeLeg(returnDate,   [[2, destKgid],   [3, originKgid]])
+  const maxInt = new Uint8Array([0x08, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01])
+
+  const proto = concat(
+    encodeFieldVarint(1, 28),
+    encodeFieldVarint(2, 2),
+    encodeFieldBytes(3, leg1),
+    encodeFieldBytes(3, leg2),
+    encodeFieldVarint(8, 1),
+    encodeFieldVarint(9, 3),
+    encodeFieldVarint(14, 1),
+    encodeFieldBytes(16, maxInt),
+    encodeFieldVarint(19, 1),
+  )
+
+  return Buffer.from(proto).toString('base64url')
+}
+
 function buildSearchUrls(deal: Deal): { skyscanner: string; google: string } {
   const dept = deal.validity_start
   let ret = deal.validity_end
@@ -28,13 +117,21 @@ function buildSearchUrls(deal: Deal): { skyscanner: string; google: string } {
     ret = d.toISOString().split('T')[0]
   }
 
-  // Skyscanner India — uses oym (YYMM) + selectedoday format
-  const toYYMM = (iso: string) => iso.slice(2, 4) + iso.slice(5, 7)   // 2026-07-31 → 2607
-  const toDay  = (iso: string) => String(parseInt(iso.slice(8, 10)))   // 2026-07-31 → 31
+  // Skyscanner India — uses oym/selectedoday query params
+  const toYYMM = (iso: string) => iso.slice(2, 4) + iso.slice(5, 7)
+  const toDay  = (iso: string) => String(parseInt(iso.slice(8, 10)))
   const skyscanner = `https://www.skyscanner.co.in/transport/flights/${deal.origin_iata.toLowerCase()}/${deal.dest_iata.toLowerCase()}/?adults=1&currency=INR&oym=${toYYMM(dept)}&selectedoday=${toDay(dept)}&iym=${toYYMM(ret)}&selectediday=${toDay(ret)}`
 
-  // Google Flights — generic search fallback
-  const google = `https://www.google.com/travel/flights?q=Flights+from+${deal.origin_city}+to+${deal.dest_city}`
+  // Google Flights — tfs deep link if KGIDs available, otherwise text search
+  const originKgid = KGID[deal.origin_iata]
+  const destKgid   = KGID[deal.dest_iata]
+  let google: string
+  if (originKgid && destKgid) {
+    const tfs = buildTfs(originKgid, destKgid, dept, ret)
+    google = `https://www.google.com/travel/flights/search?tfs=${tfs}&tfu=EgIgAg`
+  } else {
+    google = `https://www.google.com/travel/flights?q=Flights+from+${deal.origin_city}+to+${deal.dest_city}`
+  }
 
   return { skyscanner, google }
 }
