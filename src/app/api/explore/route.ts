@@ -125,7 +125,7 @@ async function fetchFlight(
   })
   if (tripType !== 'one-way') params.set('return_date', fmt(returnDate))
 
-  const res = await fetch(`https://serpapi.com/search?${params}`)
+  const res = await fetch(`https://api.valueserp.com/search?${params}`)
   const data = await res.json()
   if (data.error) return null
 
@@ -227,7 +227,7 @@ export async function POST(req: NextRequest) {
   const cached = await getCachedResult(cacheKey)
   if (cached) return NextResponse.json({ results: cached, from_cache: true })
 
-  const apiKey = process.env.SERPAPI_KEY
+  const apiKey = process.env.VALUESERP_KEY
   const results = []
   let serpApiExhausted = false
 

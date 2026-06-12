@@ -207,7 +207,7 @@ async function fetchPriceForWindow(
     params.set('return_date', fmt(returnDate))
   }
 
-  const res = await fetch(`https://serpapi.com/search?${params}`)
+  const res = await fetch(`https://api.valueserp.com/search?${params}`)
   const data = await res.json()
   if (data.error) throw new Error(data.error)
 
@@ -276,14 +276,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized — wrong password' }, { status: 401 })
   }
 
-  if (!process.env.SERPAPI_KEY) {
-    return NextResponse.json({ error: 'SERPAPI_KEY not configured' }, { status: 500 })
+  if (!process.env.VALUESERP_KEY) {
+    return NextResponse.json({ error: 'VALUESERP_KEY not configured' }, { status: 500 })
   }
 
   const origin = req.nextUrl.searchParams.get('origin') ?? 'DEL'
   const tripType = (req.nextUrl.searchParams.get('trip_type') ?? '1') as '1' | '2'
   const maxStops = (req.nextUrl.searchParams.get('max_stops') ?? '2') as '1' | '2'
-  const apiKey = process.env.SERPAPI_KEY
+  const apiKey = process.env.VALUESERP_KEY
 
   // Scan 4 departure windows per route, pick the cheapest
   const DATE_WINDOWS = [4, 8, 12, 16] // weeks out
