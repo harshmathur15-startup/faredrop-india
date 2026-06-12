@@ -19,16 +19,23 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
-function buildGoogleFlightsUrl(deal: Deal): string {
+function buildSearchUrls(deal: Deal): { skyscanner: string; google: string } {
   const dept = deal.validity_start
-  // If return date is missing or same as departure, default to +7 days
   let ret = deal.validity_end
   if (!ret || ret === dept) {
     const d = new Date(dept)
     d.setDate(d.getDate() + 7)
     ret = d.toISOString().split('T')[0]
   }
-  return `https://www.google.com/travel/flights?hl=en&gl=in#flt=${deal.origin_iata}.${deal.dest_iata}.${dept}*${deal.dest_iata}.${deal.origin_iata}.${ret};c:INR;e:1;sd:1`
+
+  // Skyscanner India — stable deep link format (YYMMDD)
+  const fmt = (iso: string) => iso.replace(/-/g, '').slice(2) // 2026-07-31 → 260731
+  const skyscanner = `https://www.skyscanner.co.in/transport/flights/${deal.origin_iata.toLowerCase()}/${deal.dest_iata.toLowerCase()}/${fmt(dept)}/${fmt(ret)}/?adults=1&currency=INR`
+
+  // Google Flights — generic search fallback
+  const google = `https://www.google.com/travel/flights?q=Flights+from+${deal.origin_city}+to+${deal.dest_city}`
+
+  return { skyscanner, google }
 }
 
 function sourceLabel(url: string): string | null {
@@ -62,7 +69,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   if (!deal || deal.status !== 'published') notFound()
 
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
-  const googleFlightsUrl = buildGoogleFlightsUrl(deal)
+  const { skyscanner: skyscannerUrl, google: googleUrl } = buildSearchUrls(deal)
   const bookingLabel = sourceLabel(deal.source_url)
   const sourceIsGoogle = isGoogleUrl(deal.source_url)
 
@@ -110,37 +117,25 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
             {/* CTAs */}
             <div className="mt-6 space-y-3">
-              {sourceIsGoogle ? (
-                // Source is Google Flights — one primary button with dates
-                <a
-                  href={googleFlightsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-colors text-lg"
-                >
-                  🔍 Search on Google Flights ({formatDateRange(deal.validity_start, deal.validity_end)}) →
+              {/* Primary: direct airline/OTA link if available */}
+              {!sourceIsGoogle && bookingLabel && (
+                <a href={deal.source_url} target="_blank" rel="noopener noreferrer"
+                  className="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl transition-colors text-lg">
+                  {bookingLabel} →
                 </a>
-              ) : (
-                // Source is airline / OTA — direct booking link as primary
-                <>
-                  <a
-                    href={deal.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl transition-colors text-lg"
-                  >
-                    {bookingLabel} →
-                  </a>
-                  <a
-                    href={googleFlightsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full text-center border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-xl transition-colors"
-                  >
-                    🔍 Compare on Google Flights ({formatDateRange(deal.validity_start, deal.validity_end)})
-                  </a>
-                </>
               )}
+
+              {/* Skyscanner — always shown, fully pre-filled */}
+              <a href={skyscannerUrl} target="_blank" rel="noopener noreferrer"
+                className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-colors text-lg">
+                🔍 Search on Skyscanner ({formatDateRange(deal.validity_start, deal.validity_end)}) →
+              </a>
+
+              {/* Google Flights — generic search fallback */}
+              <a href={googleUrl} target="_blank" rel="noopener noreferrer"
+                className="block w-full text-center border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-xl transition-colors">
+                Search on Google Flights
+              </a>
             </div>
 
             {sourceIsGoogle && (
