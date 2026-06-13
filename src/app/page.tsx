@@ -4,7 +4,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import SignupForm from '@/components/SignupForm'
 import DealCarousel from '@/components/DealCarousel'
-import BabyFalcon from '@/components/BabyFalcon'
 
 export const dynamic = 'force-dynamic'
 
@@ -106,10 +105,10 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* Falcon + floating badges */}
+            {/* Travel Baby logo + floating badges */}
             <div className="flex justify-center md:justify-end">
               <div className="relative">
-                <BabyFalcon size={220} showBubble={true} />
+                <Image src="/travel-baby-logo.png" alt="Travel Baby" width={240} height={240} className="drop-shadow-lg" />
                 <div className="absolute -top-2 -left-10 bg-green-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg animate-bounce">68% OFF ✈</div>
                 <div className="absolute top-14 -right-8 bg-amber-400 text-blue-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg">₹15,850 🔥</div>
                 <div className="absolute bottom-20 -left-8 bg-purple-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg">Tokyo 51% off</div>
@@ -237,7 +236,7 @@ export default async function Home() {
       <section className="bg-blue-900 text-white py-10 px-5">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <BabyFalcon size={80} showBubble={false} />
+            <Image src="/travel-baby-logo.png" alt="Travel Baby" width={100} height={100} className="h-24 w-auto" />
             <div>
               <h3 className="text-xl font-black">Want to search prices yourself?</h3>
               <p className="text-blue-300 text-sm mt-1">Filter by city, region, month and budget. Live prices updated daily.</p>
@@ -299,7 +298,7 @@ export default async function Home() {
       {/* ── Final CTA ── */}
       <section className="bg-gradient-to-br from-blue-900 to-indigo-900 text-white py-16 px-5">
         <div className="max-w-lg mx-auto text-center">
-          <BabyFalcon size={110} showBubble={false} />
+          <Image src="/travel-baby-logo.png" alt="Travel Baby" width={130} height={130} className="mx-auto h-32 w-auto" />
           <h2 className="text-3xl font-black mt-4 mb-2">Never miss a deal again</h2>
           <p className="text-blue-200 mb-6 text-lg">Free alerts. No spam. Just flights worth booking.</p>
           <div className="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/20">
