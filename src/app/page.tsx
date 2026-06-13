@@ -119,6 +119,26 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ── How it works ── (moved to top) */}
+      <section id="how-it-works" className="max-w-4xl mx-auto px-5 py-16">
+        <h2 className="text-3xl font-black text-gray-900 text-center mb-2">How FareDrop works</h2>
+        <p className="text-center text-gray-500 mb-10">Three simple steps between you and an incredible trip</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[
+            { emoji: '🔍', step: '01', title: 'We scan', desc: 'Our baby falcon scans hundreds of routes from Indian metros every single day — 24/7.' },
+            { emoji: '✅', step: '02', title: 'We verify', desc: 'A human checks every deal. Only 40%+ discounts with real seat availability make the cut.' },
+            { emoji: '📩', step: '03', title: 'You book', desc: 'Get the deal in your inbox. One click. Book directly with the airline. No middlemen.' },
+          ].map(({ emoji, step, title, desc }) => (
+            <div key={step} className="bg-white rounded-3xl p-7 shadow-sm border border-gray-100 text-center hover:shadow-lg transition-shadow relative overflow-hidden">
+              <div className="absolute top-3 right-4 text-6xl font-black text-blue-50 select-none">{step}</div>
+              <div className="text-5xl mb-4">{emoji}</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── Stats bar ── */}
       <div className="bg-amber-500 text-blue-900 py-4 px-5">
         <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -225,26 +245,6 @@ export default async function Home() {
           <Link href="/explore" className="bg-amber-400 hover:bg-amber-300 text-blue-900 font-black px-6 py-3 rounded-xl transition-colors text-sm shrink-0">
             Explore live prices →
           </Link>
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section id="how-it-works" className="max-w-4xl mx-auto px-5 py-16">
-        <h2 className="text-3xl font-black text-gray-900 text-center mb-2">How FareDrop works</h2>
-        <p className="text-center text-gray-500 mb-10">Three simple steps between you and an incredible trip</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {[
-            { emoji: '🔍', step: '01', title: 'We scan', desc: 'Our baby falcon scans hundreds of routes from Indian metros every single day — 24/7.' },
-            { emoji: '✅', step: '02', title: 'We verify', desc: 'A human checks every deal. Only 40%+ discounts with real seat availability make the cut.' },
-            { emoji: '📩', step: '03', title: 'You book', desc: 'Get the deal in your inbox. One click. Book directly with the airline. No middlemen.' },
-          ].map(({ emoji, step, title, desc }) => (
-            <div key={step} className="bg-white rounded-3xl p-7 shadow-sm border border-gray-100 text-center hover:shadow-lg transition-shadow relative overflow-hidden">
-              <div className="absolute top-3 right-4 text-6xl font-black text-blue-50 select-none">{step}</div>
-              <div className="text-5xl mb-4">{emoji}</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
-            </div>
-          ))}
         </div>
       </section>
 
