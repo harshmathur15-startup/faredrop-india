@@ -78,8 +78,8 @@ export default function DealCarousel({ deals }: { deals: Deal[] }) {
 
   if (deals.length === 0) {
     return (
-      <div className="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-gray-200">
-        <p className="text-5xl mb-3">🦅</p>
+      <div className="text-center py-12 bg-white rounded-3xl border-2 border-dashed border-gray-200">
+        <Image src="/travel-baby-logo.png" alt="FareDrop" width={80} height={80} className="h-20 w-auto drop-shadow mx-auto mb-3" />
         <p className="text-gray-700 font-semibold text-lg">Our falcon is hunting for deals!</p>
         <p className="text-gray-400 text-sm mt-1">New deals drop every week. Sign up above to be first.</p>
       </div>
