@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Deal } from '@/types'
 import Link from 'next/link'
+import Image from 'next/image'
 import SignupForm from '@/components/SignupForm'
 import DealCarousel from '@/components/DealCarousel'
 import BabyFalcon from '@/components/BabyFalcon'
@@ -67,8 +68,8 @@ export default async function Home() {
 
       {/* ── Nav ── */}
       <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 px-5 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🦅</span>
+        <div className="flex items-center gap-3">
+          <Image src="/travel-baby-logo.png" alt="Travel Baby" width={50} height={50} className="h-12 w-auto" />
           <span className="font-black text-xl text-blue-900 tracking-tight">FareDrop <span className="text-amber-500">India</span></span>
         </div>
         <div className="flex items-center gap-5">
@@ -314,7 +315,7 @@ export default async function Home() {
           <div className="flex flex-col sm:flex-row items-start justify-between gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🦅</span>
+                <Image src="/travel-baby-logo.png" alt="Travel Baby" width={40} height={40} className="h-10 w-auto" />
                 <span className="font-black text-white text-lg">FareDrop India</span>
               </div>
               <p className="text-sm text-blue-400 max-w-xs">Curated international flight deals for Indian travellers. Only the best. Only the verified.</p>
