@@ -145,7 +145,7 @@ export default async function Home() {
               {
                 icon: '📬',
                 title: 'We alert you instantly',
-                desc: 'As soon as a deal goes live, you get an email alert. Click through to book directly with airlines or OTAs. We're not a booking platform—we find deals for you.'
+                desc: 'As soon as a deal goes live, you get an email alert. Click through to book directly with airlines or OTAs. We are not a booking platform - we find deals for you.'
               },
             ].map(({ icon, title, desc }) => (
               <div key={title} className="bg-white rounded-2xl p-8 border border-gray-100">
