@@ -124,37 +124,255 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── How it works ── Clean & simple */}
+      {/* ── What we do ── */}
+      <section className="bg-gradient-to-b from-slate-50 to-white px-5 py-16">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-black text-gray-900 text-center mb-3">What FareDrop does</h2>
+          <p className="text-center text-gray-500 mb-12 max-w-2xl mx-auto">We constantly monitor fares from Indian airports for significant price drops, mistake fares, and rare discounts</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: '🔍',
+                title: 'We monitor constantly',
+                desc: 'Our systems track 100+ international routes from Delhi, Mumbai, Bangalore, Chennai, and Hyderabad 24/7, looking for fares that drop 40%+ from baseline.'
+              },
+              {
+                icon: '✋',
+                title: 'We hand-pick the best',
+                desc: 'Our team filters out complex itineraries, long layovers, self-transfers, and routes requiring visas. Only easy-to-book, high-quality deals make the cut.'
+              },
+              {
+                icon: '📬',
+                title: 'We alert you instantly',
+                desc: 'As soon as a deal goes live, you get an email alert. Click through to book directly with airlines or OTAs. We're not a booking platform—we find deals for you.'
+              },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} className="bg-white rounded-2xl p-8 border border-gray-100">
+                <p className="text-5xl mb-4">{icon}</p>
+                <h3 className="text-xl font-black text-gray-900 mb-3">{title}</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── How it works ── */}
       <section id="how-it-works" className="bg-white px-5 py-16">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-black text-gray-900 text-center mb-3">How FareDrop works</h2>
-          <p className="text-center text-gray-500 mb-16">Three simple things our falcon does for you</p>
+          <h2 className="text-3xl font-black text-gray-900 text-center mb-3">Your 3-step process</h2>
+          <p className="text-center text-gray-500 mb-16">Get deal alerts and book in minutes</p>
 
-          {/* Step 1 */}
-          <div className="mb-16">
-            <div className="flex items-center gap-4 mb-3">
-              <span className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-lg flex-shrink-0">①</span>
-              <h3 className="text-2xl font-black text-gray-900">We scan daily</h3>
+          <div className="space-y-12">
+            {/* Step 1 */}
+            <div className="flex gap-6 items-start">
+              <span className="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-xl flex-shrink-0">①</span>
+              <div>
+                <h3 className="text-2xl font-black text-gray-900 mb-2">Sign up (free)</h3>
+                <p className="text-gray-600 text-lg leading-relaxed">Create your account and set your home airport. No credit card required.</p>
+              </div>
             </div>
-            <p className="text-gray-700 leading-relaxed text-lg ml-16">Our systems check 100+ routes from {METROS.join(', ')} every single day. Looking for fares that dropped 40%+ from the baseline.</p>
+
+            {/* Step 2 */}
+            <div className="flex gap-6 items-start">
+              <span className="w-14 h-14 bg-green-600 text-white rounded-full flex items-center justify-center font-black text-xl flex-shrink-0">②</span>
+              <div>
+                <h3 className="text-2xl font-black text-gray-900 mb-2">Receive deal alerts</h3>
+                <p className="text-gray-600 text-lg leading-relaxed">We monitor fares 24/7 and send you email alerts as soon as a high-quality deal matching your interests drops.</p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex gap-6 items-start">
+              <span className="w-14 h-14 bg-amber-600 text-white rounded-full flex items-center justify-center font-black text-xl flex-shrink-0">③</span>
+              <div>
+                <h3 className="text-2xl font-black text-gray-900 mb-2">Book directly</h3>
+                <p className="text-gray-600 text-lg leading-relaxed">Click the link in your alert and book directly through Google Flights, airlines, or OTAs. We don't charge any booking fees.</p>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* Step 2 */}
-          <div className="mb-16">
-            <div className="flex items-center gap-4 mb-3">
-              <span className="w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center font-black text-lg flex-shrink-0">②</span>
-              <h3 className="text-2xl font-black text-gray-900">We verify by hand</h3>
-            </div>
-            <p className="text-gray-700 leading-relaxed text-lg ml-16">No spam. A real human checks every deal to confirm seats exist, fares are live, and the discount is genuine. Only real deals get through.</p>
+      {/* ── Why FareDrop ── */}
+      <section className="bg-blue-50 px-5 py-16">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-black text-gray-900 text-center mb-12">Why FareDrop?</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                emoji: '⏰',
+                title: 'Save time',
+                desc: 'We do all the searching. You get curated deals without spending hours on flight comparison sites.'
+              },
+              {
+                emoji: '💰',
+                title: 'Save money',
+                desc: 'Average savings of 40–90% on international flights. Every deal is verified before you see it.'
+              },
+              {
+                emoji: '✈️',
+                title: 'Travel better',
+                desc: 'Tailored for Indian travelers. We focus on easy-to-book routes without visa complications or transit hassles.'
+              },
+            ].map(({ emoji, title, desc }) => (
+              <div key={title} className="bg-white rounded-2xl p-6 border border-blue-100">
+                <p className="text-4xl mb-3">{emoji}</p>
+                <h3 className="text-lg font-black text-gray-900 mb-2">{title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          {/* Step 3 */}
-          <div>
-            <div className="flex items-center gap-4 mb-3">
-              <span className="w-12 h-12 bg-amber-600 text-white rounded-full flex items-center justify-center font-black text-lg flex-shrink-0">③</span>
-              <h3 className="text-2xl font-black text-gray-900">You book in one click</h3>
+      {/* ── Pricing Plans ── */}
+      <section className="bg-white px-5 py-16">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-black text-gray-900 text-center mb-3">Choose your membership</h2>
+          <p className="text-center text-gray-500 mb-12">Start free. Upgrade anytime.</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Free Plan */}
+            <div className="bg-gray-50 rounded-3xl p-8 border border-gray-200 flex flex-col">
+              <h3 className="text-2xl font-black text-gray-900 mb-2">Free</h3>
+              <p className="text-gray-600 text-sm mb-6">Limited deals, economy only</p>
+              <p className="text-3xl font-black text-gray-900 mb-8">₹0</p>
+
+              <ul className="space-y-3 mb-10 flex-grow">
+                <li className="flex gap-3 text-gray-700 text-sm">
+                  <span className="text-green-600 font-black text-lg">✓</span>
+                  <span>Deal alerts via email</span>
+                </li>
+                <li className="flex gap-3 text-gray-700 text-sm">
+                  <span className="text-green-600 font-black text-lg">✓</span>
+                  <span>Economy-class only</span>
+                </li>
+                <li className="flex gap-3 text-gray-700 text-sm">
+                  <span className="text-green-600 font-black text-lg">✓</span>
+                  <span>Limited deal selection</span>
+                </li>
+                <li className="flex gap-3 text-gray-400 text-sm">
+                  <span className="text-gray-400 font-black text-lg">✗</span>
+                  <span>Business/First class</span>
+                </li>
+                <li className="flex gap-3 text-gray-400 text-sm">
+                  <span className="text-gray-400 font-black text-lg">✗</span>
+                  <span>Real-time alerts</span>
+                </li>
+                <li className="flex gap-3 text-gray-400 text-sm">
+                  <span className="text-gray-400 font-black text-lg">✗</span>
+                  <span>Concierge support</span>
+                </li>
+              </ul>
+
+              <button className="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 rounded-xl transition-colors">
+                Get started free
+              </button>
             </div>
-            <p className="text-gray-700 leading-relaxed text-lg ml-16">Deal alert lands in your inbox. Click the link → pick your exact dates → book directly with the airline. No middlemen, no signup fees.</p>
+
+            {/* Silver Plan */}
+            <div className="bg-gradient-to-br from-slate-600 to-slate-700 rounded-3xl p-8 border-2 border-slate-500 flex flex-col">
+              <h3 className="text-2xl font-black text-white mb-2">Silver</h3>
+              <p className="text-slate-200 text-sm mb-6">Real-time deals, all classes</p>
+
+              <div className="mb-8">
+                <div className="flex items-baseline gap-2 mb-2">
+                  <p className="text-3xl font-black text-white">₹399</p>
+                  <p className="text-lg text-slate-300 line-through">₹499</p>
+                </div>
+                <p className="text-slate-300 text-xs">per month</p>
+                <p className="text-slate-200 text-xs mt-3">or</p>
+                <div className="flex items-baseline gap-2 mt-2">
+                  <p className="text-2xl font-black text-white">₹1,299</p>
+                  <p className="text-sm text-slate-300 line-through">₹2,499</p>
+                </div>
+                <p className="text-slate-300 text-xs">per year (save 48%)</p>
+              </div>
+
+              <ul className="space-y-3 mb-10 flex-grow">
+                <li className="flex gap-3 text-white text-sm">
+                  <span className="text-amber-400 font-black text-lg">✓</span>
+                  <span>Everything in Free, plus:</span>
+                </li>
+                <li className="flex gap-3 text-white text-sm">
+                  <span className="text-amber-400 font-black text-lg">✓</span>
+                  <span>Real-time deal alerts</span>
+                </li>
+                <li className="flex gap-3 text-white text-sm">
+                  <span className="text-amber-400 font-black text-lg">✓</span>
+                  <span>Business & First class deals</span>
+                </li>
+                <li className="flex gap-3 text-white text-sm">
+                  <span className="text-amber-400 font-black text-lg">✓</span>
+                  <span>All international routes</span>
+                </li>
+                <li className="flex gap-3 text-white text-sm">
+                  <span className="text-amber-400 font-black text-lg">✓</span>
+                  <span>Mistake fares & rare finds</span>
+                </li>
+                <li className="flex gap-3 text-slate-300 text-sm">
+                  <span className="text-slate-400 font-black text-lg">✗</span>
+                  <span>Concierge support</span>
+                </li>
+              </ul>
+
+              <button className="w-full bg-white hover:bg-gray-100 text-slate-700 font-bold py-3 rounded-xl transition-colors">
+                Start 7-day free trial
+              </button>
+            </div>
+
+            {/* Gold Plan - Premium */}
+            <div className="bg-gradient-to-br from-amber-400 to-amber-500 rounded-3xl p-8 border-2 border-amber-300 relative shadow-xl flex flex-col">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-1 rounded-full text-xs font-black">
+                MOST POPULAR
+              </div>
+              <h3 className="text-2xl font-black text-amber-900 mb-2">Gold</h3>
+              <p className="text-amber-800 text-sm mb-6">Premium access + concierge</p>
+
+              <div className="mb-8">
+                <p className="text-amber-800 text-xs font-bold mb-3">ANNUAL ONLY</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-3xl font-black text-amber-900">₹9,999</p>
+                  <p className="text-lg text-amber-700 line-through">₹14,999</p>
+                </div>
+                <p className="text-amber-800 text-xs mt-1">(Save 33%)</p>
+              </div>
+
+              <ul className="space-y-3 mb-10 flex-grow">
+                <li className="flex gap-3 text-amber-900 text-sm">
+                  <span className="font-black text-lg">✓</span>
+                  <span>Everything in Silver, plus:</span>
+                </li>
+                <li className="flex gap-3 text-amber-900 font-semibold text-sm">
+                  <span className="font-black text-lg">✓</span>
+                  <span>2 Concierge calls/month</span>
+                </li>
+                <li className="flex gap-3 text-amber-900 font-semibold text-sm">
+                  <span className="font-black text-lg">✓</span>
+                  <span>Personal booking assistance</span>
+                </li>
+                <li className="flex gap-3 text-amber-900 text-sm">
+                  <span className="font-black text-lg">✓</span>
+                  <span>Priority deal notifications</span>
+                </li>
+                <li className="flex gap-3 text-amber-900 text-sm">
+                  <span className="font-black text-lg">✓</span>
+                  <span>Exclusive error/hack fares</span>
+                </li>
+                <li className="flex gap-3 text-amber-900 text-sm">
+                  <span className="font-black text-lg">✓</span>
+                  <span>VIP email support</span>
+                </li>
+              </ul>
+
+              <button className="w-full bg-amber-900 hover:bg-amber-950 text-white font-bold py-3 rounded-xl transition-colors">
+                Upgrade to Gold
+              </button>
+              <p className="text-center text-amber-800 text-xs mt-3">Best value for frequent travelers</p>
+            </div>
           </div>
         </div>
       </section>
