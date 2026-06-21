@@ -51,9 +51,16 @@ const DESTINATIONS = [
   { city: 'Male', country: 'Maldives', emoji: '🇲🇻', from: '₹16,000', gradient: 'from-cyan-400 to-blue-500', iata: 'MLE' },
 ]
 
+const DEAL_PREVIEWS = [
+  { from: 'DEL', to: 'Bangkok', flag: '🇹🇭', normal: '₹38,000', deal: '₹14,999', off: '61%', airline: 'Thai Airways', bg: 'from-orange-500 to-rose-500' },
+  { from: 'BOM', to: 'Dubai', flag: '🇦🇪', normal: '₹28,000', deal: '₹10,499', off: '63%', airline: 'Emirates', bg: 'from-amber-500 to-orange-600' },
+  { from: 'BLR', to: 'Singapore', flag: '🇸🇬', normal: '₹35,000', deal: '₹13,200', off: '62%', airline: 'Singapore Airlines', bg: 'from-red-500 to-pink-600' },
+  { from: 'DEL', to: 'Tokyo', flag: '🇯🇵', normal: '₹72,000', deal: '₹31,500', off: '56%', airline: 'Air India', bg: 'from-indigo-500 to-purple-600' },
+]
+
 const TESTIMONIALS = [
   { name: 'Priya S.', city: 'Delhi', dest: 'Bangkok', saving: '₹18,000', quote: 'I almost missed it thinking it was a mistake fare. Booked immediately — best trip ever!', avatar: '👩', discount: '58%' },
-  { name: 'Rahul M.', city: 'Mumbai', dest: 'Tokyo', saving: '₹32,000', quote: 'FareDrop sent me an alert at 7am. By 9am I had tickets. Japan trip sorted!', avatar: '👨', discount: '51%' },
+  { name: 'Rahul M.', city: 'Mumbai', dest: 'Tokyo', saving: '₹32,000', quote: 'Travelbaby sent me an alert at 7am. By 9am I had tickets. Japan trip sorted!', avatar: '👨', discount: '51%' },
   { name: 'Anjali K.', city: 'Bangalore', dest: 'London', saving: '₹41,000', quote: "I'd been eyeing London for 2 years. Got 55% off. This service is unreal.", avatar: '👩‍💼', discount: '55%' },
 ]
 
@@ -68,8 +75,8 @@ export default async function Home() {
       {/* ── Nav ── */}
       <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 px-5 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-2">
-          <Image src="/travel-baby-logo.png" alt="FareDrop" width={45} height={45} className="h-12 w-auto drop-shadow" />
-          <span className="font-black text-lg text-blue-900 tracking-tight">FareDrop</span>
+          <Image src="/travel-baby-logo.png" alt="Travelbaby" width={45} height={45} className="h-12 w-auto drop-shadow" />
+          <span className="font-black text-lg text-blue-900 tracking-tight">Travelbaby</span>
         </div>
         <div className="flex items-center gap-5">
           <Link href="/explore" className="text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors hidden sm:block">Explore prices</Link>
@@ -79,55 +86,95 @@ export default async function Home() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="bg-white px-5 pt-12 pb-8 border-b border-gray-100">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-            {/* Left: Copy */}
-            <div>
-              <div className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full mb-5 border border-green-200">
-                <span className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
-                1,200+ people already saving
-              </div>
-              <h1 className="text-5xl sm:text-6xl font-black leading-tight mb-5 text-gray-900">
-                Stop overpaying<br />
-                for flights.
-              </h1>
-              <p className="text-gray-600 text-lg mb-8 max-w-md leading-relaxed font-medium">
-                We find <span className="text-green-600 font-bold">40–90% cheaper flights</span> and send them directly to your inbox. No hidden fees. No middlemen. Just real deals.
-              </p>
-            </div>
+      <section
+        className="relative px-5 pt-16 pb-0 border-b border-gray-100 overflow-hidden"
+        style={{
+          backgroundImage: "url('/hero-banner.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundColor: '#1e3a8a',
+        }}
+      >
+        {/* Sky blue overlay so illustration stays visible */}
+        <div className="absolute inset-0 bg-sky-400/20" />
 
-            {/* Right: Mascot - clean, no background */}
-            <div className="flex justify-center md:justify-end">
-              <Image
-                src="/travel-baby-logo.png"
-                alt="FareDrop"
-                width={280}
-                height={280}
-                className="drop-shadow-xl"
+        <div className="relative max-w-3xl mx-auto text-center">
+
+          {/* Social proof pill */}
+          <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm text-green-700 text-sm font-semibold px-4 py-2 rounded-full mb-8 border border-green-200">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            1,200+ Indian travellers already saving big
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-[1.05] tracking-tight text-gray-900 mb-6 drop-shadow-sm">
+            Save up to{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700">
+              90% on flights
+            </span>{' '}
+            from India
+          </h1>
+
+          {/* Subheadline */}
+          <p className="text-gray-800 text-xl leading-relaxed mb-10 max-w-2xl mx-auto font-medium">
+            Get instant email alerts for insane flight deals leaving Delhi, Mumbai, Bangalore, Chennai &amp; Hyderabad — before they disappear.
+          </p>
+
+          {/* Signup form — big and front and center */}
+          <div id="signup" className="max-w-xl mx-auto mb-5">
+            <div className="flex flex-col sm:flex-row gap-3 shadow-xl rounded-2xl overflow-hidden border border-gray-200 bg-white p-2">
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                className="flex-1 px-5 py-4 text-gray-900 text-base outline-none bg-transparent placeholder-gray-400"
               />
+              <a
+                href="#signup-full"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-7 py-4 rounded-xl transition-colors text-base whitespace-nowrap text-center"
+              >
+                Join for free →
+              </a>
             </div>
           </div>
 
-          {/* Signup box - moved below and made more user-friendly */}
-          <div id="signup" className="mt-12 max-w-2xl mx-auto">
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-200 shadow-lg">
-              <div className="text-center mb-6">
-                <p className="text-sm font-bold text-blue-900 uppercase tracking-wider mb-2">⏰ Limited-time offer</p>
-                <h3 className="text-2xl font-black text-gray-900">Get free deal alerts</h3>
-                <p className="text-gray-600 text-sm mt-2">First deal could save you ₹20,000+</p>
+          {/* Microcopy */}
+          <p className="text-gray-600 text-sm mb-14">
+            No credit card · No spam · Unsubscribe anytime
+          </p>
+
+          {/* Deal preview cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-0">
+            {DEAL_PREVIEWS.map(d => (
+              <div key={d.to} className={`bg-gradient-to-br ${d.bg} rounded-2xl p-4 text-left text-white relative overflow-hidden`}>
+                <div className="absolute top-3 right-3 bg-white/25 backdrop-blur-sm text-white text-xs font-black px-2 py-0.5 rounded-full">
+                  {d.off} off
+                </div>
+                <p className="text-2xl mb-2">{d.flag}</p>
+                <p className="font-black text-lg leading-tight">{d.to}</p>
+                <p className="text-white/70 text-xs mb-3">{d.from} · {d.airline}</p>
+                <p className="text-white/60 text-xs line-through">{d.normal}</p>
+                <p className="font-black text-xl">{d.deal}</p>
               </div>
-              <SignupForm />
-              <p className="text-gray-500 text-xs text-center mt-4">No credit card needed · Unsubscribe anytime · Only quality deals</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
+
+      {/* ── Full signup form (anchor target) ── */}
+      <div id="signup-full" className="bg-gray-50 border-b border-gray-200 px-5 py-12">
+        <div className="max-w-lg mx-auto text-center">
+          <h3 className="text-2xl font-black text-gray-900 mb-2">Get free flight deal alerts</h3>
+          <p className="text-gray-500 text-sm mb-6">Your first deal could save you ₹20,000+</p>
+          <SignupForm />
+          <p className="text-gray-400 text-xs mt-4">No credit card needed · Human-verified deals · Only real discounts</p>
+        </div>
+      </div>
+
       {/* ── What we do ── */}
       <section className="bg-gradient-to-b from-slate-50 to-white px-5 py-16">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-black text-gray-900 text-center mb-3">What FareDrop does</h2>
+          <h2 className="text-3xl font-black text-gray-900 text-center mb-3">What Travelbaby does</h2>
           <p className="text-center text-gray-500 mb-12 max-w-2xl mx-auto">We constantly monitor fares from Indian airports for significant price drops, mistake fares, and rare discounts</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -195,10 +242,10 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Why FareDrop ── */}
+      {/* ── Why Travelbaby ── */}
       <section className="bg-blue-50 px-5 py-16">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-black text-gray-900 text-center mb-12">Why FareDrop?</h2>
+          <h2 className="text-3xl font-black text-gray-900 text-center mb-12">Why Travelbaby?</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -470,7 +517,7 @@ export default async function Home() {
       <section className="bg-blue-900 text-white py-10 px-5">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <Image src="/travel-baby-logo.png" alt="FareDrop" width={100} height={100} className="h-24 w-auto drop-shadow" />
+            <Image src="/travel-baby-logo.png" alt="Travelbaby" width={100} height={100} className="h-24 w-auto drop-shadow" />
             <div className="flex-1">
               <h3 className="text-xl font-black">Want to search prices yourself?</h3>
               <p className="text-blue-300 text-sm mt-1">Filter by city, region, month and budget. Live prices updated daily.</p>
@@ -516,7 +563,7 @@ export default async function Home() {
         <h2 className="text-2xl font-black text-gray-900 text-center mb-8">Common questions</h2>
         <div className="space-y-4">
           {[
-            { q: 'Is FareDrop India free?', a: 'Yes, completely free. We curate deals and earn a small affiliate commission when you book — you pay nothing extra.' },
+            { q: 'Is Travelbaby India free?', a: 'Yes, completely free. We curate deals and earn a small affiliate commission when you book — you pay nothing extra.' },
             { q: 'Which cities do you cover?', a: 'Currently Delhi, Mumbai, Bangalore, Chennai and Hyderabad. More metros coming soon.' },
             { q: 'How are deals verified?', a: 'Every deal is manually checked by a human before it reaches you. We verify the fare is live, seats are available, and the discount is real.' },
             { q: 'Do deals include checked luggage?', a: 'Most of our deals include at least 1 checked bag. We mention luggage details in each deal alert.' },
@@ -532,7 +579,7 @@ export default async function Home() {
       {/* ── Final CTA ── */}
       <section className="bg-gradient-to-br from-blue-900 to-indigo-900 text-white py-16 px-5">
         <div className="max-w-lg mx-auto text-center">
-          <Image src="/travel-baby-logo.png" alt="FareDrop" width={130} height={130} className="h-32 w-auto drop-shadow-lg mx-auto" />
+          <Image src="/travel-baby-logo.png" alt="Travelbaby" width={130} height={130} className="h-32 w-auto drop-shadow-lg mx-auto" />
           <h2 className="text-3xl font-black mt-4 mb-2">Never miss a deal again</h2>
           <p className="text-blue-200 mb-6 text-lg">Free alerts. No spam. Just flights worth booking.</p>
           <div className="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/20">
@@ -548,8 +595,8 @@ export default async function Home() {
           <div className="flex flex-col sm:flex-row items-start justify-between gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Image src="/travel-baby-logo.png" alt="FareDrop" width={35} height={35} className="h-9 w-auto drop-shadow" />
-                <span className="font-black text-white text-lg">FareDrop</span>
+                <Image src="/travel-baby-logo.png" alt="Travelbaby" width={35} height={35} className="h-9 w-auto drop-shadow" />
+                <span className="font-black text-white text-lg">Travelbaby</span>
               </div>
               <p className="text-sm text-blue-400 max-w-xs">Curated international flight deals for Indian travellers. Only the best. Only the verified.</p>
             </div>
@@ -567,7 +614,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="border-t border-blue-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-blue-500">© {new Date().getFullYear()} FareDrop India · Curated for Indian travellers</p>
+            <p className="text-xs text-blue-500">© {new Date().getFullYear()} Travelbaby India · Curated for Indian travellers</p>
             <p className="text-xs text-blue-600">Prices shown are indicative. Always verify before booking.</p>
           </div>
         </div>

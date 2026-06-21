@@ -157,7 +157,7 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="faredrop-data-${timestamp}.csv"`,
+        'Content-Disposition': `attachment; filename="travelbaby-data-${timestamp}.csv"`,
       },
     })
   } catch (error) {

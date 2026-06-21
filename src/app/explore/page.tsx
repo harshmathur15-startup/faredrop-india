@@ -111,7 +111,7 @@ export default function ExplorePage() {
     <main className="min-h-screen bg-gray-50">
       {/* Nav */}
       <nav className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="font-black text-xl text-blue-600 tracking-tight">✈ FareDrop India</Link>
+        <Link href="/" className="font-black text-xl text-blue-600 tracking-tight">✈ Travelbaby</Link>
         <Link href="/" className="text-sm font-semibold text-gray-600 hover:text-blue-600">View curated deals</Link>
       </nav>
 

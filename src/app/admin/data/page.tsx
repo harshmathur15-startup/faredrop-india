@@ -38,7 +38,7 @@ export default function DataAnalyticsPage() {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `faredrop-data-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `travelbaby-data-${new Date().toISOString().split('T')[0]}.csv`
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)
@@ -87,6 +87,87 @@ export default function DataAnalyticsPage() {
           </p>
         </div>
       </div>
+
+      {/* Price Freshness — Dashboard 1 (Data Health) */}
+      {data.freshness && (
+        <div className="bg-white rounded-lg p-6 shadow mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-black">🕐 Price Freshness (Data Health)</h2>
+            <p className="text-xs text-gray-400">
+              Fresh &lt; {data.freshness.thresholds.freshHours}h · Aging &lt; {data.freshness.thresholds.agingHours}h · Stale older
+            </p>
+          </div>
+
+          {/* Freshness summary cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="rounded-lg p-4 bg-green-50 border border-green-200">
+              <p className="text-green-700 text-sm font-semibold">🟢 Fresh</p>
+              <p className="text-3xl font-black text-green-700">{data.freshness.summary.fresh}</p>
+              <p className="text-xs text-green-600 mt-1">routes &lt; {data.freshness.thresholds.freshHours}h old</p>
+            </div>
+            <div className="rounded-lg p-4 bg-yellow-50 border border-yellow-200">
+              <p className="text-yellow-700 text-sm font-semibold">🟡 Aging</p>
+              <p className="text-3xl font-black text-yellow-700">{data.freshness.summary.aging}</p>
+              <p className="text-xs text-yellow-600 mt-1">show with "last checked"</p>
+            </div>
+            <div className="rounded-lg p-4 bg-red-50 border border-red-200">
+              <p className="text-red-700 text-sm font-semibold">🔴 Stale</p>
+              <p className="text-3xl font-black text-red-700">{data.freshness.summary.stale}</p>
+              <p className="text-xs text-red-600 mt-1">hide / re-verify</p>
+            </div>
+            <div className="rounded-lg p-4 bg-gray-50 border border-gray-200">
+              <p className="text-gray-600 text-sm font-semibold">Total Routes</p>
+              <p className="text-3xl font-black text-gray-900">{data.freshness.summary.totalRoutes}</p>
+              <p className="text-xs text-gray-500 mt-1">tracked in price history</p>
+            </div>
+          </div>
+
+          {/* Per-route freshness table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="text-left p-3 font-bold">Route</th>
+                  <th className="text-left p-3 font-bold">Status</th>
+                  <th className="text-right p-3 font-bold">Last Price</th>
+                  <th className="text-left p-3 font-bold">Airline</th>
+                  <th className="text-right p-3 font-bold">Age</th>
+                  <th className="text-left p-3 font-bold">Last Checked</th>
+                  <th className="text-right p-3 font-bold">Obs.</th>
+                  <th className="text-left p-3 font-bold">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.freshness.routes.map((r: any) => (
+                  <tr key={r.route} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="p-3 font-semibold">{r.route}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${
+                        r.freshness === 'fresh' ? 'bg-green-100 text-green-700' :
+                        r.freshness === 'aging' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {r.freshness === 'fresh' ? '🟢 Fresh' : r.freshness === 'aging' ? '🟡 Aging' : '🔴 Stale'}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right font-semibold">₹{r.price?.toLocaleString()}</td>
+                    <td className="p-3 text-gray-600">{r.airline}</td>
+                    <td className="p-3 text-right text-gray-500">
+                      {r.ageHours == null ? '—' :
+                        r.ageHours < 24 ? `${r.ageHours}h` : `${Math.round(r.ageHours / 24)}d`}
+                    </td>
+                    <td className="p-3 text-gray-500 text-xs">
+                      {r.lastChecked ? new Date(r.lastChecked).toLocaleString() : '—'}
+                    </td>
+                    <td className="p-3 text-right text-gray-500">{r.observations}</td>
+                    <td className="p-3 text-gray-400 text-xs">{r.source}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Data Completeness */}
       <div className="bg-white rounded-lg p-6 shadow mb-8">

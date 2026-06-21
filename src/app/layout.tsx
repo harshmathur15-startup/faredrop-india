@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FareDrop India — Curated flight deals for Indian travellers",
+  title: "Travelbaby — Curated flight deals for Indian travellers",
   description: "Get alerted when international flights from Delhi, Mumbai, Bangalore & more drop 40%+. Free curated flight deal alerts.",
   openGraph: {
-    title: "FareDrop India",
+    title: "Travelbaby",
     description: "Curated flight deals for Indian outbound travellers.",
     type: "website",
   },

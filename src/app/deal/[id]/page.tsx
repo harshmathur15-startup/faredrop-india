@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { data: deal } = await supabase.from('deals').select('*').eq('id', id).single()
   if (!deal) return {}
   return {
-    title: `${deal.origin_city} → ${deal.dest_city} for ${formatPrice(deal.deal_price, deal.currency)} | FareDrop India`,
+    title: `${deal.origin_city} → ${deal.dest_city} for ${formatPrice(deal.deal_price, deal.currency)} | Travelbaby`,
     description: deal.curator_note,
     openGraph: { images: [deal.image_url] },
   }

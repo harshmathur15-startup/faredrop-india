@@ -35,12 +35,12 @@ export async function POST(req: NextRequest) {
 
   const resend = getResend()
   await resend.emails.send({
-    from: `FareDrop India <${process.env.FROM_EMAIL}>`,
+    from: `Travelbaby <${process.env.FROM_EMAIL}>`,
     to: email,
-    subject: 'Confirm your FareDrop India subscription',
+    subject: 'Confirm your Travelbaby subscription',
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-        <h2 style="color:#1d4ed8">✈️ FareDrop India</h2>
+        <h2 style="color:#1d4ed8">✈️ Travelbaby</h2>
         <p>Thanks for signing up! Click below to confirm your email and start receiving curated flight deals.</p>
         <a href="${confirmUrl}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">
           Confirm my subscription →
