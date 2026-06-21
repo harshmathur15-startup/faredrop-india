@@ -95,13 +95,13 @@ export default async function Home() {
           backgroundColor: '#1e3a8a',
         }}
       >
-        {/* Sky blue overlay so illustration stays visible */}
-        <div className="absolute inset-0 bg-sky-400/20" />
+        {/* Watermark effect — heavy white wash so image is faint in background */}
+        <div className="absolute inset-0 bg-white/85" />
 
         <div className="relative max-w-3xl mx-auto text-center">
 
           {/* Social proof pill */}
-          <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm text-green-700 text-sm font-semibold px-4 py-2 rounded-full mb-8 border border-green-200">
+          <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-semibold px-4 py-2 rounded-full mb-8 border border-green-200">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             1,200+ Indian travellers already saving big
           </div>
