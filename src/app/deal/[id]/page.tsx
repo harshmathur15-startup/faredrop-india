@@ -26,7 +26,8 @@ const CITY_IMAGES: Record<string, string> = {
 }
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=600&fit=crop'
 function getDealImage(deal: Deal) {
-  if (deal.image_url?.startsWith('http')) return deal.image_url
+  const url = deal.image_url
+  if (url && url.startsWith('http') && !url.includes('placehold.co') && !url.includes('placeholder')) return url
   return CITY_IMAGES[deal.dest_iata] ?? FALLBACK_IMAGE
 }
 

@@ -10,6 +10,8 @@ import { formatPrice, calcDiscount } from '@/lib/utils'
 const CITY_IMAGES: Record<string, string> = {
   // SE Asia
   BKK: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&h=600&fit=crop',
+  DMK: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&h=600&fit=crop',
+  CMB: 'https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=800&h=600&fit=crop',
   DPS: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=600&fit=crop',
   SIN: 'https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800&h=600&fit=crop',
   KUL: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&h=600&fit=crop',
@@ -50,7 +52,8 @@ const CITY_IMAGES: Record<string, string> = {
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=600&fit=crop'
 
 function getDealImage(deal: Deal): string {
-  if (deal.image_url && deal.image_url.startsWith('http')) return deal.image_url
+  const url = deal.image_url
+  if (url && url.startsWith('http') && !url.includes('placehold.co') && !url.includes('placeholder')) return url
   return CITY_IMAGES[deal.dest_iata] ?? FALLBACK_IMAGE
 }
 
