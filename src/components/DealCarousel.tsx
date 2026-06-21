@@ -6,6 +6,54 @@ import Link from 'next/link'
 import { Deal } from '@/types'
 import { formatPrice, calcDiscount } from '@/lib/utils'
 
+// Curated Unsplash photos per destination (no API key needed)
+const CITY_IMAGES: Record<string, string> = {
+  // SE Asia
+  BKK: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&h=600&fit=crop',
+  DPS: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=600&fit=crop',
+  SIN: 'https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800&h=600&fit=crop',
+  KUL: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&h=600&fit=crop',
+  HKT: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800&h=600&fit=crop',
+  HAN: 'https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?w=800&h=600&fit=crop',
+  SGN: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&h=600&fit=crop',
+  RGN: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800&h=600&fit=crop',
+  // East Asia
+  NRT: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop',
+  HND: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop',
+  ICN: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&h=600&fit=crop',
+  HKG: 'https://images.unsplash.com/photo-1536431311719-398b6704d4cc?w=800&h=600&fit=crop',
+  PEK: 'https://images.unsplash.com/photo-1508804052814-cd3ba865a116?w=800&h=600&fit=crop',
+  // Middle East
+  DXB: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop',
+  AUH: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800&h=600&fit=crop',
+  DOH: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&h=600&fit=crop',
+  // Indian Ocean
+  MLE: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800&h=600&fit=crop',
+  SEZ: 'https://images.unsplash.com/photo-1505881402582-c5bc11054f91?w=800&h=600&fit=crop',
+  // Europe
+  LHR: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&h=600&fit=crop',
+  CDG: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=600&fit=crop',
+  AMS: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800&h=600&fit=crop',
+  FCO: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=600&fit=crop',
+  BCN: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=800&h=600&fit=crop',
+  ZRH: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&h=600&fit=crop',
+  // Americas
+  JFK: 'https://images.unsplash.com/photo-1490644658840-3f2e3f8c5625?w=800&h=600&fit=crop',
+  LAX: 'https://images.unsplash.com/photo-1580655653885-65763b2597d1?w=800&h=600&fit=crop',
+  // Africa
+  NBO: 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=800&h=600&fit=crop',
+  // Australia
+  SYD: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&h=600&fit=crop',
+  MEL: 'https://images.unsplash.com/photo-1514395462725-fb4566210144?w=800&h=600&fit=crop',
+}
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=600&fit=crop'
+
+function getDealImage(deal: Deal): string {
+  if (deal.image_url && deal.image_url.startsWith('http')) return deal.image_url
+  return CITY_IMAGES[deal.dest_iata] ?? FALLBACK_IMAGE
+}
+
 function DealCard({ deal }: { deal: Deal }) {
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
   const tierColor = discount >= 70 ? 'bg-purple-500' : discount >= 50 ? 'bg-green-500' : 'bg-blue-500'
@@ -18,7 +66,7 @@ function DealCard({ deal }: { deal: Deal }) {
     >
       {/* Image */}
       <div className="relative h-44 w-full overflow-hidden">
-        <Image src={deal.image_url} alt={deal.dest_city} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+        <Image src={getDealImage(deal)} alt={deal.dest_city} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
         {/* Discount badge */}
