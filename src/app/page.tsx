@@ -95,8 +95,8 @@ export default async function Home() {
           backgroundColor: '#1e3a8a',
         }}
       >
-        {/* Watermark effect — heavy white wash so image is faint in background */}
-        <div className="absolute inset-0 bg-white/85" />
+        {/* Overlay — image visible but text stays readable */}
+        <div className="absolute inset-0 bg-white/50" />
 
         <div className="relative max-w-3xl mx-auto text-center">
 
