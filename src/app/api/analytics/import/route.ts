@@ -13,14 +13,22 @@ export async function POST(req: NextRequest) {
     }
 
     // Transform and insert flight data into price_history
-    const priceHistoryRecords = flights.map((flight: any) => ({
-      origin_iata: flight.origin_iata || flight.departure_airport || flight.from,
-      dest_iata: flight.dest_iata || flight.arrival_airport || flight.to,
-      airline: flight.airline || flight.airlines?.[0]?.name || 'Unknown',
-      observed_price_inr: flight.price || flight.deal_price || flight.cost,
-      observed_at: flight.observed_at || flight.date || new Date().toISOString(),
-      data_source: source,
-    }))
+    const priceHistoryRecords = flights.map((flight: any) => {
+      const record: any = {
+        origin_iata: flight.origin_iata || flight.departure_airport || flight.from,
+        dest_iata: flight.dest_iata || flight.arrival_airport || flight.to,
+        airline: flight.airline || flight.airlines?.[0]?.name || 'Unknown',
+        observed_price_inr: flight.price || flight.deal_price || flight.cost,
+        observed_at: flight.observed_at || flight.date || new Date().toISOString(),
+        travel_date: flight.travel_date || flight.observed_at || flight.date || null,
+        currency: 'INR',
+        source: source,
+      }
+      // Only include stops/is_direct when provided (columns may not exist yet)
+      if (flight.stops !== undefined) record.stops = flight.stops
+      if (flight.is_direct !== undefined) record.is_direct = flight.is_direct
+      return record
+    })
 
     // Insert in batches of 1000 to avoid timeouts
     const batchSize = 1000
@@ -31,10 +39,9 @@ export async function POST(req: NextRequest) {
       const batch = priceHistoryRecords.slice(i, i + batchSize)
 
       try {
-        const { error, count } = await supabaseAdmin
+        const { error } = await supabaseAdmin
           .from('price_history')
           .insert(batch)
-          .select('count(*)', { count: 'exact' })
 
         if (error) {
           errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`)

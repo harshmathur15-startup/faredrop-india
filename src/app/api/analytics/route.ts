@@ -69,6 +69,58 @@ export async function GET() {
     const lowestDeal = deals?.reduce((min: any, d: any) => (!min || d.deal_price < min.deal_price) ? d : min, null)
     const highestDeal = deals?.reduce((max: any, d: any) => (!max || d.deal_price > max.deal_price) ? d : max, null)
 
+    // 5. FRESHNESS ANALYSIS — group price_history by route, find latest observation per route
+    const FRESH_HOURS = 6
+    const AGING_HOURS = 24
+    const now = Date.now()
+    const HOUR = 60 * 60 * 1000
+
+    const routeMap = new Map<string, { latest: number; price: number; airline: string; count: number; source: string }>()
+    for (const p of priceHistory ?? []) {
+      const key = `${p.origin_iata}-${p.dest_iata}`
+      const ts = p.observed_at ? new Date(p.observed_at).getTime() : 0
+      const existing = routeMap.get(key)
+      if (!existing || ts > existing.latest) {
+        routeMap.set(key, {
+          latest: ts,
+          price: p.observed_price_inr,
+          airline: p.airline ?? 'Unknown',
+          count: (existing?.count ?? 0) + 1,
+          source: p.source ?? 'unknown',
+        })
+      } else {
+        existing.count += 1
+      }
+    }
+
+    const classify = (ageHours: number) =>
+      ageHours < FRESH_HOURS ? 'fresh' : ageHours < AGING_HOURS ? 'aging' : 'stale'
+
+    const routeFreshness = Array.from(routeMap.entries()).map(([route, info]) => {
+      const ageHours = info.latest ? (now - info.latest) / HOUR : Infinity
+      return {
+        route,
+        lastChecked: info.latest ? new Date(info.latest).toISOString() : null,
+        ageHours: isFinite(ageHours) ? Math.round(ageHours * 10) / 10 : null,
+        freshness: classify(ageHours),
+        price: info.price,
+        airline: info.airline,
+        observations: info.count,
+        source: info.source,
+      }
+    }).sort((a, b) => (b.ageHours ?? Infinity) - (a.ageHours ?? Infinity))
+
+    const freshness = {
+      thresholds: { freshHours: FRESH_HOURS, agingHours: AGING_HOURS },
+      summary: {
+        fresh: routeFreshness.filter(r => r.freshness === 'fresh').length,
+        aging: routeFreshness.filter(r => r.freshness === 'aging').length,
+        stale: routeFreshness.filter(r => r.freshness === 'stale').length,
+        totalRoutes: routeFreshness.length,
+      },
+      routes: routeFreshness,
+    }
+
     return NextResponse.json({
       recordCounts: {
         totalDeals: dealsCount || deals?.length || 0,
@@ -76,6 +128,7 @@ export async function GET() {
         totalRecords: (dealsCount || deals?.length || 0) + (priceCount || priceHistory?.length || 0),
       },
       stats,
+      freshness,
       lowestDeal: lowestDeal ? {
         route: `${lowestDeal.origin_city} → ${lowestDeal.dest_city}`,
         airline: lowestDeal.airline,

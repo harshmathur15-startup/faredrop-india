@@ -111,53 +111,78 @@ async function fetchFlight(
   const returnDate = new Date(departDate)
   returnDate.setDate(returnDate.getDate() + 7)
 
-  const params = new URLSearchParams({
-    engine: 'google_flights',
-    departure_id: origin,
-    arrival_id: destIata,
-    outbound_date: fmt(departDate),
-    currency: 'INR',
-    hl: 'en',
-    gl: 'in',
-    type: tripType === 'one-way' ? '2' : '1',
-    stops: maxStops === 'direct' ? '1' : '2',
-    api_key: apiKey,
-  })
-  if (tripType !== 'one-way') params.set('return_date', fmt(returnDate))
+  try {
+    // FlightAPI.io uses PATH-BASED URLs, not query params:
+    // oneway:    /onewaytrip/{key}/{dep}/{arr}/{date}/{adults}/{children}/{infants}/{cabin}/{currency}
+    // roundtrip: /roundtrip/{key}/{dep}/{arr}/{dep_date}/{ret_date}/{adults}/{children}/{infants}/{cabin}/{currency}
+    const url = tripType === 'one-way'
+      ? `https://api.flightapi.io/onewaytrip/${apiKey}/${origin}/${destIata}/${fmt(departDate)}/1/0/0/Economy/INR`
+      : `https://api.flightapi.io/roundtrip/${apiKey}/${origin}/${destIata}/${fmt(departDate)}/${fmt(returnDate)}/1/0/0/Economy/INR`
 
-  const res = await fetch(`https://api.valueserp.com/search?${params}`)
-  const data = await res.json()
-  if (data.error) return null
+    const res = await fetch(url)
+    const data = await res.json()
 
-  const flights = [...(data.best_flights ?? []), ...(data.other_flights ?? [])]
-  if (!flights.length) return null
+    // Quota exhausted or error response
+    if (data.message?.includes('quota') || data.message?.includes('limit')) {
+      throw new Error('quota')
+    }
 
-  const best = flights[0]
-  const price: number = best.price
-  if (!price) return null
+    const itineraries = data.itineraries
+    if (!Array.isArray(itineraries) || itineraries.length === 0) return null
 
-  const legs = best.flights ?? []
-  const airline: string = legs[0]?.airline ?? 'Unknown'
-  const stops = Math.max(0, legs.length - 1)
-  const routeKey = `${origin}-${destIata}`
-  const baseline = BASELINE_PRICES[routeKey] ?? price * 1.6
-  const discountPct = Math.round(((baseline - price) / baseline) * 100)
+    // Each itinerary has pricing_options[].price.amount — find cheapest across all
+    let cheapest = Infinity
+    for (const itin of itineraries) {
+      for (const po of itin.pricing_options ?? []) {
+        const amt = po.price?.amount
+        if (typeof amt === 'number' && amt < cheapest) cheapest = amt
+      }
+    }
+    if (!isFinite(cheapest)) return null
 
-  return {
-    origin_iata: origin,
-    dest_iata: destIata,
-    dest_city: destCity,
-    price,
-    baseline,
-    airline,
-    stops,
-    is_direct: stops === 0,
-    trip_type: tripType,
-    departure_date: fmt(departDate),
-    return_date: tripType !== 'one-way' ? fmt(returnDate) : null,
-    google_flights_url: `https://www.google.com/travel/flights?hl=en&gl=in#flt=${origin}.${destIata}.${fmt(departDate)}${tripType !== 'one-way' ? `*${destIata}.${origin}.${fmt(returnDate)}` : ''};c:INR;e:1;sd:1`,
-    discount_pct: discountPct,
-    tier: discountPct >= 50 ? 'great' : discountPct >= 30 ? 'good' : 'normal',
+    const price = Math.round(cheapest)
+    const airline = 'Various'
+
+    const routeKey = `${origin}-${destIata}`
+    const baseline = BASELINE_PRICES[routeKey] ?? price * 1.6
+    const discountPct = Math.round(((baseline - price) / baseline) * 100)
+
+    return {
+      origin_iata: origin,
+      dest_iata: destIata,
+      dest_city: destCity,
+      price,
+      baseline,
+      airline,
+      stops: 1,
+      is_direct: false,
+      trip_type: tripType,
+      departure_date: fmt(departDate),
+      return_date: tripType !== 'one-way' ? fmt(returnDate) : null,
+      google_flights_url: `https://www.google.com/travel/flights?hl=en&gl=in#flt=${origin}.${destIata}.${fmt(departDate)}${tripType !== 'one-way' ? `*${destIata}.${origin}.${fmt(returnDate)}` : ''};c:INR;e:1;sd:1`,
+      discount_pct: discountPct,
+      tier: discountPct >= 50 ? 'great' : discountPct >= 30 ? 'good' : 'normal',
+    }
+  } catch (e) {
+    throw e
+  }
+}
+
+async function savePriceHistory(origin: string, destIata: string, price: number, airline: string, stops: number = 1) {
+  try {
+    await supabaseAdmin.from('price_history').insert({
+      origin_iata: origin,
+      dest_iata: destIata,
+      airline,
+      observed_price_inr: price,
+      observed_at: new Date().toISOString(),
+      currency: 'INR',
+      source: 'flightapi-io',
+      stops,
+      is_direct: stops === 0,
+    })
+  } catch {
+    // Non-critical — log but don't fail
   }
 }
 
@@ -227,9 +252,9 @@ export async function POST(req: NextRequest) {
   const cached = await getCachedResult(cacheKey)
   if (cached) return NextResponse.json({ results: cached, from_cache: true })
 
-  const apiKey = process.env.VALUESERP_KEY
+  const apiKey = process.env.FLIGHTAPI_KEY
   const results = []
-  let serpApiExhausted = false
+  let apiExhausted = false
 
   for (const dest of destinations) {
     // 1. Try price_history (pipeline scraped data) first — free, no API call
@@ -241,18 +266,20 @@ export async function POST(req: NextRequest) {
       continue
     }
 
-    // 2. Try SerpAPI if not exhausted
-    if (apiKey && !serpApiExhausted) {
+    // 2. Try FlightAPI.io if credits available
+    if (apiKey && !apiExhausted) {
       try {
         const live = await fetchFlight(origin, dest.iata, dest.city, departDate, trip_type ?? 'return', max_stops ?? 'one-stop', apiKey)
         if (live) {
-          results.push({ ...live, data_source: 'serpapi' })
+          // IMPORTANT: Save to price_history for persistence
+          await savePriceHistory(origin, live.dest_iata, live.price, live.airline, live.stops)
+          results.push({ ...live, data_source: 'flightapi-io' })
           continue
         }
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : ''
-        if (msg.includes('limit') || msg.includes('quota') || msg.includes('credits')) {
-          serpApiExhausted = true
+        if (msg.includes('limit') || msg.includes('quota') || msg.includes('credits') || msg.includes('401') || msg.includes('403')) {
+          apiExhausted = true
         }
       }
     }
@@ -274,10 +301,10 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     results: filtered,
     from_cache: false,
-    serpapi_exhausted: serpApiExhausted,
+    api_exhausted: apiExhausted,
     sources: {
       supabase: results.filter(r => r.data_source === 'supabase').length,
-      serpapi: results.filter(r => r.data_source === 'serpapi').length,
+      'flightapi-io': results.filter(r => r.data_source === 'flightapi-io').length,
       baseline: results.filter(r => r.data_source === 'baseline').length,
     }
   })
