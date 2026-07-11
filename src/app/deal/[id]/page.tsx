@@ -49,11 +49,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 // tfsCabin: Google Flights cabin code (economy=1, PE=2, business=3, first=4)
-function detectCabin(note: string | null): { label: string; skyscanner: string; tfsCabin: number } | null {
+function detectCabin(note: string | null): { label: string; tfsCabin: number } | null {
   const n = (note ?? '').toLowerCase()
-  if (n.includes('first class')) return { label: 'First Class', skyscanner: 'first', tfsCabin: 4 }
-  if (n.includes('business')) return { label: 'Business', skyscanner: 'business', tfsCabin: 3 }
-  if (n.includes('premium economy') || n.includes('premium_economy')) return { label: 'Premium Economy', skyscanner: 'premiumeconomy', tfsCabin: 2 }
+  if (n.includes('first class')) return { label: 'First Class', tfsCabin: 4 }
+  if (n.includes('business')) return { label: 'Business', tfsCabin: 3 }
+  if (n.includes('premium economy') || n.includes('premium_economy')) return { label: 'Premium Economy', tfsCabin: 2 }
   return null
 }
 
@@ -82,7 +82,7 @@ function googleFlightsCabinUrl(orig: string, dest: string, dept: string, ret: st
   return `https://www.google.com/travel/flights/search?tfs=${tfs}&tfu=${tfu}&curr=INR`
 }
 
-function buildSearchUrls(deal: Deal): { skyscanner: string; google: string } {
+function buildSearchUrls(deal: Deal): { google: string } {
   const dept = deal.validity_start
   let ret = deal.validity_end
   if (!ret || ret === dept) {
@@ -93,16 +93,11 @@ function buildSearchUrls(deal: Deal): { skyscanner: string; google: string } {
 
   const cabin = detectCabin(deal.curator_note)
 
-  // Skyscanner India — pre-filled with dates + cabin class
-  const toYYMM = (iso: string) => iso.slice(2, 4) + iso.slice(5, 7)
-  const toDay  = (iso: string) => String(parseInt(iso.slice(8, 10)))
-  const skyscanner = `https://www.skyscanner.co.in/transport/flights/${deal.origin_iata.toLowerCase()}/${deal.dest_iata.toLowerCase()}/?adults=1&currency=INR&oym=${toYYMM(dept)}&selectedoday=${toDay(dept)}&iym=${toYYMM(ret)}&selectediday=${toDay(ret)}${cabin ? `&cabinclass=${cabin.skyscanner}` : ''}`
-
   // Google Flights — protobuf deep link with dates + cheapest sort for every deal.
   // Cabin defaults to economy (1) when no premium cabin is detected.
   const google = googleFlightsCabinUrl(deal.origin_iata, deal.dest_iata, dept, ret, cabin?.tfsCabin ?? 1)
 
-  return { skyscanner, google }
+  return { google }
 }
 
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
@@ -113,7 +108,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   if (!deal || deal.status !== 'published') notFound()
 
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
-  const { skyscanner: skyscannerUrl, google: googleUrl } = buildSearchUrls(deal)
+  const { google: googleUrl } = buildSearchUrls(deal)
   const cabin = detectCabin(deal.curator_note)
 
   return (
@@ -167,23 +162,16 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               <div className="mt-5 flex items-start gap-3 bg-violet-50 border border-violet-200 rounded-xl px-4 py-3">
                 <span className="text-violet-500 text-lg mt-0.5">✦</span>
                 <p className="text-sm text-violet-800 font-medium">
-                  This is a <strong>{cabin.label}</strong> deal. Both links open with <strong>{cabin.label}</strong>, your dates, and the cheapest fares already selected.
+                  This is a <strong>{cabin.label}</strong> deal. The link opens Google Flights with <strong>{cabin.label}</strong>, your dates, and the cheapest fares already selected.
                 </p>
               </div>
             )}
 
-            {/* CTAs */}
+            {/* CTA — Google Flights only (protobuf deep link, cabin + dates pre-filled) */}
             <div className="mt-5 space-y-3">
-              {/* Skyscanner — pre-filled dates + cabin class */}
-              <a href={skyscannerUrl} target="_blank" rel="noopener noreferrer"
-                className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-colors text-lg">
-                🔍 Search on Skyscanner ({formatDateRange(deal.validity_start, deal.validity_end)}) →
-              </a>
-
-              {/* Google Flights — protobuf deep link (cabin + dates pre-filled) */}
               <a href={googleUrl} target="_blank" rel="noopener noreferrer"
-                className="block w-full text-center border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-xl transition-colors">
-                Search on Google Flights{cabin ? ` (${cabin.label})` : ''}
+                className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-colors text-lg">
+                🔍 Search on Google Flights{cabin ? ` (${cabin.label})` : ''} ({formatDateRange(deal.validity_start, deal.validity_end)}) →
               </a>
             </div>
 
