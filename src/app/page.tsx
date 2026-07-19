@@ -16,7 +16,7 @@ async function getDeals(): Promise<Deal[]> {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return []
     const { data } = await supabase
       .from('deals')
-      .select('*')
+      .select('id, origin_iata, dest_iata, origin_city, dest_city, airline, normal_price, deal_price, currency, validity_start, validity_end, source_url, image_url, status, published_at, curator_note, created_at, is_premium')
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(50)

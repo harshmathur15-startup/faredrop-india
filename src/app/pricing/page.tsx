@@ -49,22 +49,25 @@ export default function PricingPage() {
           </div>
 
           {/* Silver Plan */}
-          <div className="bg-gradient-to-br from-slate-600 to-slate-700 rounded-3xl p-8 border-2 border-slate-500 flex flex-col">
+          <div className="bg-gradient-to-br from-slate-600 to-slate-700 rounded-3xl p-8 border-2 border-slate-500 flex flex-col relative shadow-xl">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-1 rounded-full text-xs font-black whitespace-nowrap">
+              MOST POPULAR
+            </div>
             <h3 className="text-2xl font-black text-white mb-2">Silver</h3>
             <p className="text-slate-200 text-sm mb-6">Real-time deals, all classes</p>
 
             <div className="mb-8">
-              <div className="flex items-baseline gap-2 mb-2">
-                <p className="text-3xl font-black text-white">₹399</p>
-                <p className="text-lg text-slate-300 line-through">₹499</p>
+              <div className="flex items-baseline gap-2 mb-1">
+                <p className="text-3xl font-black text-white">₹1</p>
+                <p className="text-lg text-slate-300 line-through">₹199</p>
               </div>
-              <p className="text-slate-300 text-xs">per month</p>
+              <p className="text-slate-300 text-xs">first month, then ₹199/month</p>
               <p className="text-slate-200 text-xs mt-3">or</p>
               <div className="flex items-baseline gap-2 mt-2">
-                <p className="text-2xl font-black text-white">₹1,299</p>
-                <p className="text-sm text-slate-300 line-through">₹2,499</p>
+                <p className="text-2xl font-black text-white">₹1,199</p>
+                <p className="text-sm text-slate-300 line-through">₹2,399</p>
               </div>
-              <p className="text-slate-300 text-xs">per year (save 48%)</p>
+              <p className="text-slate-300 text-xs">per year (save 50%)</p>
             </div>
 
             <ul className="space-y-3 mb-10 flex-grow">
@@ -87,16 +90,13 @@ export default function PricingPage() {
             </ul>
 
             <Link href="/signup" className="block w-full text-center bg-white hover:bg-gray-100 text-slate-700 font-bold py-3 rounded-xl transition-colors">
-              Start 7-day free trial
+              Get Silver for ₹1
             </Link>
           </div>
 
           {/* Gold Plan */}
           <div className="bg-gradient-to-br from-amber-400 to-amber-500 rounded-3xl p-8 border-2 border-amber-300 relative shadow-xl flex flex-col">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-1 rounded-full text-xs font-black whitespace-nowrap">
-              MOST POPULAR
-            </div>
-            <h3 className="text-2xl font-black text-amber-900 mb-2">Gold</h3>
+            <h3 className="text-2xl font-black text-amber-900 mt-2 mb-2">Gold</h3>
             <p className="text-amber-800 text-sm mb-6">Premium access + concierge</p>
 
             <div className="mb-8">

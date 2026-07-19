@@ -131,6 +131,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'candidates' | 'suggestions' | 'publish'>('candidates')
   const [candidates, setCandidates] = useState<DealCandidate[]>([])
   const [candidatesLoading, setCandidatesLoading] = useState(false)
+  const [isPremiumDeal, setIsPremiumDeal] = useState(true)
 
   async function fetchCandidates() {
     if (!form.admin_secret) { alert('Enter admin password first'); return }
@@ -266,14 +267,16 @@ export default function AdminPage() {
         source_url: form.source_url,
         image_url: form.image_url,
         curator_note: form.curator_note,
+        is_premium: isPremiumDeal,
       }),
     })
 
     const data = await res.json()
     if (res.ok) {
       setStatus('success')
-      setMessage(`Deal published! ID: ${data.deal.id}`)
+      setMessage(`Deal published! ID: ${data.deal.id} · ${isPremiumDeal ? '🔒 Premium' : '🆓 Free'}`)
       setForm(prev => ({ ...prev, dest_city: '', dest_iata: '', airline: '', normal_price: '', deal_price: '', validity_start: '', validity_end: '', source_url: '', image_url: '', curator_note: '' }))
+      setIsPremiumDeal(true)
       setPhotoResults([])
     } else {
       setStatus('error')
@@ -628,6 +631,26 @@ export default function AdminPage() {
             <textarea value={form.curator_note} onChange={e => set('curator_note', e.target.value)}
               rows={3} placeholder="Why this deal is worth booking, how to book, any conditions..."
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+
+          {/* Free vs Premium toggle */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Deal visibility</label>
+            <div className="flex rounded-xl border border-gray-300 overflow-hidden text-sm">
+              <button type="button" onClick={() => setIsPremiumDeal(false)}
+                className={`flex-1 px-4 py-2.5 font-semibold transition-colors flex items-center justify-center gap-1.5 ${!isPremiumDeal ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                🆓 Free <span className="font-normal opacity-70">(visible to all logged-in users)</span>
+              </button>
+              <button type="button" onClick={() => setIsPremiumDeal(true)}
+                className={`flex-1 px-4 py-2.5 font-semibold transition-colors flex items-center justify-center gap-1.5 ${isPremiumDeal ? 'bg-amber-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                👑 Premium <span className="font-normal opacity-70">(paid members only)</span>
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              {isPremiumDeal
+                ? 'Dates & booking link hidden for free users. ~70% of deals should be Premium.'
+                : 'Full deal visible to everyone. ~30% of deals should be Free.'}
+            </p>
           </div>
 
           <button type="submit" disabled={status === 'loading'}

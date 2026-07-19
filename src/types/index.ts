@@ -18,6 +18,7 @@ export interface Deal {
   published_at: string | null
   curator_note: string
   created_at: string
+  is_premium: boolean
 }
 
 export interface Subscriber {

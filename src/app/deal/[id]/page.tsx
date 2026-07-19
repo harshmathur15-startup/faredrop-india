@@ -113,7 +113,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DealGate />
+      <DealGate isPremium={deal.is_premium ?? true} />
       <div className="max-w-2xl mx-auto px-4 py-10">
         <Link href="/" className="text-blue-600 text-sm hover:underline">← Back to deals</Link>
 
