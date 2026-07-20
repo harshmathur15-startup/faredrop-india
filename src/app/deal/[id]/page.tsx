@@ -63,19 +63,19 @@ function vfield(f: number, v: number): number[] { return [...varint(f << 3), ...
 function lfield(f: number, b: number[]): number[] { return [...varint((f << 3) | 2), ...varint(b.length), ...b] }
 function bytesOf(s: string): number[] { return Array.from(Buffer.from(s, 'utf8')) }
 function b64url(b: number[]): string { return Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '') }
-const ALL_STOPS = [0x82, 0x01, 0x0b, 0x08, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01]
 
 // Builds a Google Flights deep link with cabin class + dates pre-selected, sorted by cheapest.
-// Verified working: airport codes, leg f5=0, tfs f9=cabin, and the cheapest-sort tfu below.
+// IMPORTANT: do NOT set leg field 5 (max-stops) — Google reads leg f5=0 as "Nonstop only",
+// which returns no results on routes without a nonstop (e.g. DEL-GVA). Omitting it = "any stops".
 function googleFlightsCabinUrl(orig: string, dest: string, dept: string, ret: string, tfsCabin: number): string {
   const airport = (iata: string) => [...vfield(1, 1), ...lfield(2, bytesOf(iata))]
-  const leg = (date: string, from: string, to: string) => [...lfield(2, bytesOf(date)), ...vfield(5, 0), ...lfield(13, airport(from)), ...lfield(14, airport(to))]
+  const leg = (date: string, from: string, to: string) => [...lfield(2, bytesOf(date)), ...lfield(13, airport(from)), ...lfield(14, airport(to))]
   const tfs = b64url([
     ...vfield(1, 28), ...vfield(2, 2),
     ...lfield(3, leg(dept, orig, dest)),
     ...lfield(3, leg(ret, dest, orig)),
     ...vfield(8, 1), ...vfield(9, tfsCabin), ...vfield(14, 1),
-    ...ALL_STOPS, ...vfield(19, 1),
+    ...vfield(19, 1),
   ])
   // tfu = {f2:{f4:2, f5:5}} — f5:5 is Google's "Cheapest" sort. Cabin comes from tfs f9.
   const tfu = b64url(lfield(2, [...vfield(4, 2), ...vfield(5, 5)]))  // EgQgAigF
