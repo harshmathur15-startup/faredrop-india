@@ -115,11 +115,15 @@ export default function SignupPage() {
     })
     if (error) { setStatus('idle'); setError(error.message); return }
 
-    // Persist preferences to user_preferences table (non-fatal)
+    // Persist preferences to user_preferences table (non-fatal).
+    // Send the access token — sessions live in localStorage, so the API can't read a cookie.
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`
       await fetch('/api/preferences', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           home_airport:      homeAirport || null,
           home_airport_city: homeAirportObj?.city ?? null,

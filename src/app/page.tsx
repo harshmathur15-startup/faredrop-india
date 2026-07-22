@@ -87,7 +87,7 @@ export default async function Home() {
 
           {/* Headline */}
           <h1 className="font-display text-4xl sm:text-5xl font-extrabold leading-[1.1] text-slate-900 mb-3">
-            One marketplace.{' '}
+            One marketplace.<br />
             <span className="text-blue-700">Three ways to win.</span>
           </h1>
 
