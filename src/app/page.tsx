@@ -2,7 +2,6 @@ import { supabase } from '@/lib/supabase'
 import { Deal } from '@/types'
 import Link from 'next/link'
 import Image from 'next/image'
-import SignupForm from '@/components/SignupForm'
 import MobileMenu from '@/components/MobileMenu'
 import NavAuth from '@/components/NavAuth'
 import NavLinks from '@/components/NavLinks'
@@ -331,10 +330,11 @@ export default async function Home() {
           <Image src="/travel-baby-logo.png" alt="Travelbaby" width={130} height={130} className="h-32 w-auto drop-shadow-lg mx-auto" />
           <h2 className="text-3xl font-black mt-4 mb-2">Never miss a deal again</h2>
           <p className="text-blue-200 mb-6 text-lg">Free alerts. No spam. Just flights worth booking.</p>
-          <div className="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/20">
-            <SignupForm />
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link href="/signup" className="bg-white text-blue-800 font-bold px-7 py-3.5 rounded-xl hover:bg-blue-50 transition-colors">Sign up free</Link>
+            <Link href="/login" className="bg-white/10 border border-white/40 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-white/20 transition-colors">Log in</Link>
           </div>
-          <p className="text-blue-400 text-xs mt-3">Join 200+ travellers already saving big</p>
+          <p className="text-blue-400 text-xs mt-4">Join 200+ travellers already saving big</p>
         </div>
       </section>
 
