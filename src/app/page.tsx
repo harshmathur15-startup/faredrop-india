@@ -93,7 +93,7 @@ export default async function Home() {
 
           {/* Subheadline */}
           <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-6 max-w-xl mx-auto">
-            Real flight deals we hunt for <span className="font-bold text-blue-700">travellers</span>, travel packages listed by <span className="font-bold text-indigo-600">agents</span>, all promoted by <span className="font-bold text-purple-600">creators</span>.
+<span className="font-bold text-blue-700">Travellers</span> get deals. <span className="font-bold text-indigo-600">Agents</span> get bookings. <span className="font-bold text-purple-600">Creators</span> get paid.
           </p>
 
           {/* Marketplace audience tabs (Option E) */}
