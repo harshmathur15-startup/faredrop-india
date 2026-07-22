@@ -8,6 +8,7 @@ import NavAuth from '@/components/NavAuth'
 import NavLinks from '@/components/NavLinks'
 import HeroDeals from '@/components/HeroDeals'
 import DealsSection from '@/components/DealsSection'
+import MarketplaceHeroTabs from '@/components/MarketplaceHeroTabs'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,29 +32,6 @@ const STATS = [
   { value: '200+', label: 'subscribers' },
   { value: '40–90%', label: 'average discount' },
   { value: '5 Indian metros', label: 'covered' },
-]
-
-const AIRLINES = [
-  { name: 'IndiGo', emoji: '✈️' },
-  { name: 'Air India', emoji: '🇮🇳' },
-  { name: 'Emirates', emoji: '🇦🇪' },
-  { name: 'Qatar Airways', emoji: '🇶🇦' },
-  { name: 'Singapore Airlines', emoji: '🇸🇬' },
-  { name: 'Thai Airways', emoji: '🇹🇭' },
-  { name: 'Etihad', emoji: '🕌' },
-  { name: 'SpiceJet', emoji: '🌶️' },
-]
-
-
-const DESTINATIONS = [
-  { city: 'Singapore', country: 'Singapore', emoji: '🇸🇬', normal: '₹42,000', from: '₹24,999', discount: '40%', gradient: 'from-red-500 to-rose-600', iata: 'SIN' },
-  { city: 'Dubai', country: 'UAE', emoji: '🇦🇪', normal: '₹28,000', from: '₹15,999', discount: '43%', gradient: 'from-amber-400 to-orange-500', iata: 'DXB' },
-  { city: 'Bali', country: 'Indonesia', emoji: '🇮🇩', normal: '₹45,000', from: '₹24,999', discount: '44%', gradient: 'from-green-400 to-teal-500', iata: 'DPS' },
-  { city: 'Tokyo', country: 'Japan', emoji: '🇯🇵', normal: '₹85,000', from: '₹42,000', discount: '51%', gradient: 'from-pink-400 to-purple-500', iata: 'NRT' },
-  { city: 'London', country: 'UK', emoji: '🇬🇧', normal: '₹95,000', from: '₹48,000', discount: '49%', gradient: 'from-blue-500 to-indigo-600', iata: 'LHR' },
-  { city: 'Paris', country: 'France', emoji: '🇫🇷', normal: '₹90,000', from: '₹46,000', discount: '49%', gradient: 'from-purple-400 to-pink-500', iata: 'CDG' },
-  { city: 'Male', country: 'Maldives', emoji: '🇲🇻', normal: '₹38,000', from: '₹19,999', discount: '47%', gradient: 'from-cyan-400 to-blue-500', iata: 'MLE' },
-  { city: 'Kuala Lumpur', country: 'Malaysia', emoji: '🇲🇾', normal: '₹22,000', from: '₹11,999', discount: '45%', gradient: 'from-blue-500 to-teal-600', iata: 'KUL' },
 ]
 
 
@@ -85,7 +63,7 @@ export default async function Home() {
 
       {/* ── Hero ── */}
       <section
-        className="relative px-5 pt-20 pb-0 overflow-hidden"
+        className="relative px-5 pt-8 pb-0 overflow-hidden"
         style={{
           backgroundImage: "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&h=1080&fit=crop&q=85')",
           backgroundSize: 'cover',
@@ -95,7 +73,7 @@ export default async function Home() {
         {/* Sky-blue tinted overlay — keeps the airplane photo but gives it a clear sky-blue tone (still readable white text) */}
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(180deg, rgba(56,189,248,0.55) 0%, rgba(2,132,199,0.62) 45%, rgba(12,74,110,0.80) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(125,211,252,0.45) 0%, rgba(56,189,248,0.50) 45%, rgba(3,105,161,0.62) 100%)' }}
         />
         {/* Subtle dot grid */}
         <div className="absolute inset-0 opacity-[0.04]"
@@ -103,62 +81,75 @@ export default async function Home() {
 
         <div className="relative max-w-3xl mx-auto text-center">
 
-          {/* Social proof pill */}
-          <div className="inline-flex items-center gap-2 bg-white/85 text-slate-900 text-sm font-semibold px-4 py-1.5 rounded-full mb-7 border border-white/60 backdrop-blur-sm shadow-sm">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-            200+ Indian travellers already saving big
-          </div>
+          {/* Eyebrow */}
+          <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-blue-800 mb-2">
+            India&apos;s travel deals marketplace
+          </p>
 
           {/* Headline */}
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.08] text-slate-900 mb-5">
-            Save up to{' '}
-            <span className="text-blue-700">90% on flights</span>{' '}
-            from India
+          <h1 className="font-display text-4xl sm:text-5xl font-extrabold leading-[1.1] text-slate-900 mb-3">
+            One marketplace.{' '}
+            <span className="text-blue-700">Three ways to win.</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-9 max-w-xl mx-auto">
-            Get instant email alerts for real return flight deals from Delhi, Mumbai, Bangalore, Chennai &amp; Hyderabad — before they disappear.
+          <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-6 max-w-xl mx-auto">
+            Real flight deals we hunt for <span className="font-bold text-blue-700">travellers</span>, travel packages listed by <span className="font-bold text-indigo-600">agents</span>, all promoted by <span className="font-bold text-purple-600">creators</span>.
           </p>
 
-          {/* Signup form */}
-          <div id="signup" className="max-w-xl mx-auto mb-5">
-            <div className="flex flex-col sm:flex-row gap-3 rounded-2xl bg-white/8 border border-white/12 p-2 backdrop-blur-sm">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="flex-1 px-5 py-4 text-white text-base outline-none bg-transparent placeholder-slate-500"
-              />
-              <a
-                href="#signup-full"
-                className="bg-blue-500 hover:bg-blue-400 text-white font-bold px-7 py-4 rounded-xl transition-colors text-base whitespace-nowrap text-center"
-              >
-                Join for free →
-              </a>
-            </div>
+          {/* Marketplace audience tabs (Option E) */}
+          <div id="signup" className="mb-4">
+            <MarketplaceHeroTabs />
           </div>
 
-          {/* Microcopy */}
-          <p className="text-slate-500 text-sm mb-14">
-            No credit card · No spam · Unsubscribe anytime
+          {/* Trust line — social proof relocated from the pill */}
+          <p className="flex items-center justify-center gap-2 text-slate-700 text-sm font-medium mb-9">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+            200+ Indian travellers already saving big
           </p>
 
           <HeroDeals deals={deals} />
         </div>
       </section>
 
+      {/* ── One platform, three experiences (marketplace proof) ── */}
+      <section className="px-5 py-16 bg-slate-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-blue-600 font-bold text-sm uppercase tracking-widest mb-3">How it works</p>
+            <h2 className="font-display text-3xl font-black text-slate-900">One platform, three experiences</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Traveller */}
+            <div className="rounded-3xl border p-7 bg-blue-50 border-blue-100">
+              <span className="text-4xl block mb-4">✈️</span>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">For Travellers</p>
+              <h3 className="text-xl font-black mb-3 text-blue-700">Great deals, no hunting</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-5">We monitor hundreds of routes from Delhi, Mumbai, Bangalore, Chennai and Hyderabad 24/7. The moment a price drops 40%+, we alert you by email — before the fare disappears.</p>
+              <Link href="/#signup" className="text-sm font-bold text-blue-700 hover:underline">Get free alerts →</Link>
+            </div>
+            {/* Agent */}
+            <div className="rounded-3xl border p-7 bg-indigo-50 border-indigo-100">
+              <span className="text-4xl block mb-4">🏢</span>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">For Travel Agents</p>
+              <h3 className="text-xl font-black mb-3 text-indigo-700">Qualified leads, no ad spend</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-5">List your packages and tap into a network of motivated travel creators who promote your inventory to their engaged audiences. You only pay a commission when a booking confirms — not per click.</p>
+              <Link href="/for-agents" className="text-sm font-bold text-indigo-700 hover:underline">Join Agent waitlist →</Link>
+            </div>
+            {/* Creator */}
+            <div className="rounded-3xl border p-7 bg-purple-50 border-purple-100">
+              <span className="text-4xl block mb-4">🎬</span>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">For Travel Creators</p>
+              <h3 className="text-xl font-black mb-3 text-purple-700">Earn on bookings you inspire</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-5">Share real travel package deals (posted by travel agents) with your audience and earn a 3–5% commission every time someone actually books.</p>
+              <Link href="/for-creators" className="text-sm font-bold text-purple-700 hover:underline">Join Creator waitlist →</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Live Deals ── */}
       <DealsSection deals={deals} />
-
-      {/* ── Full signup form (anchor target) ── */}
-      <div id="signup-full" className="bg-gray-50 border-b border-gray-200 px-5 py-12">
-        <div className="max-w-lg mx-auto text-center">
-          <h3 className="font-display text-2xl font-bold text-slate-900 mb-2">Get free flight deal alerts</h3>
-          <p className="text-gray-500 text-sm mb-6">Your first deal could save you ₹20,000+</p>
-          <SignupForm />
-          <p className="text-gray-400 text-xs mt-4">No credit card needed · Human-verified deals · Only real discounts</p>
-        </div>
-      </div>
 
       {/* ── What we do ── */}
       <section className="bg-gradient-to-b from-slate-50 to-white px-5 py-16">
@@ -181,7 +172,7 @@ export default async function Home() {
               {
                 icon: '📬',
                 title: 'We alert you instantly',
-                desc: 'As soon as a deal goes live, you get an email alert. Click through to book directly with airlines or OTAs. We are not a booking platform - we find deals for you.'
+                desc: 'As soon as a deal goes live, you get an email alert. Click through to book directly with airlines or OTAs — no hunting, no guesswork.'
               },
             ].map(({ icon, title, desc }) => (
               <div key={title} className="bg-white rounded-2xl p-8 border border-gray-100">
@@ -286,56 +277,6 @@ export default async function Home() {
           </div>
         </div>
       </div>
-
-      {/* ── Airline logos strip ── */}
-      <div className="bg-white border-b border-gray-100 py-6 px-5">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">We track deals from these airlines</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {AIRLINES.map(a => (
-              <div key={a.name} className="flex items-center gap-2 bg-gray-50 border border-gray-200 px-4 py-2 rounded-full text-sm font-semibold text-gray-700">
-                <span>{a.emoji}</span>
-                <span>{a.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Popular Destinations ── */}
-      <section className="max-w-5xl mx-auto px-5 pb-14">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <h2 className="font-display text-2xl font-bold text-slate-900">Popular destinations from India</h2>
-            <p className="text-gray-500 text-sm mt-1">Baseline fares — deals go much lower</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {DESTINATIONS.map(d => (
-            <a key={d.iata} href="#deals"
-              className="group relative rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className={`bg-gradient-to-br ${d.gradient} p-5 h-40 flex flex-col justify-between`}>
-                <div className="flex items-start justify-between">
-                  <span className="text-3xl">{d.emoji}</span>
-                  <span className="bg-black/30 backdrop-blur-sm text-white text-xs font-black px-2 py-0.5 rounded-full">
-                    {d.discount} off
-                  </span>
-                </div>
-                <div>
-                  <p className="text-white font-black text-lg leading-tight">{d.city}</p>
-                  <p className="text-white/60 text-xs line-through mt-0.5">{d.normal}</p>
-                  <p className="text-white text-sm font-bold">from {d.from}</p>
-                </div>
-              </div>
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-2xl" />
-            </a>
-          ))}
-        </div>
-        <p className="text-center text-sm text-gray-400 mt-4">
-          Deals can be <span className="font-bold text-green-600">40–90% below</span> these baseline prices ·
-          <a href="#deals" className="text-blue-600 font-semibold hover:underline ml-1">See live deals →</a>
-        </p>
-      </section>
 
       {/* ── Testimonials ── */}
       <section className="bg-white py-14 px-5 border-t border-gray-100">

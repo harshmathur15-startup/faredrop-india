@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.unsplash.com' },
       { protocol: 'https', hostname: '**.googleapis.com' },
       { protocol: 'https', hostname: '**.gstatic.com' },
+      { protocol: 'https', hostname: 'placehold.co' },
     ],
   },
 };

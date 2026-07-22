@@ -22,7 +22,7 @@ const PILLARS = [
     tagline: 'Earn on bookings you inspire',
     color: 'bg-purple-50 border-purple-100',
     accent: 'text-purple-700',
-    desc: 'Stop chasing brand deals. Share real flight deals with your audience and earn a 3–5% commission every time someone actually books. Payouts are automatic — no invoicing, no negotiating.',
+    desc: 'Share real travel package deals (posted by travel agents) with your audience and earn a 3–5% commission every time someone actually books.',
     cta: { label: 'Join Creator waitlist', href: '/for-creators' },
   },
   {

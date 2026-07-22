@@ -97,6 +97,7 @@ export default function ForAgentsPage() {
           <span className="font-black text-lg text-blue-900 tracking-tight">Travelbaby</span>
         </Link>
         <div className="flex items-center gap-4">
+          <Link href="/" className="text-sm font-semibold text-gray-600 hover:text-indigo-700">← Home</Link>
           <Link href="/for-creators" className="text-sm font-semibold text-gray-600 hover:text-indigo-700 hidden sm:block">For Creators</Link>
           <Link href="/#signup" className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">Get deal alerts</Link>
         </div>

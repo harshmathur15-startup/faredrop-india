@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase'
 
 const AUTHED_LINKS = [
   { href: '/#deals',      label: 'Deals',       color: 'text-gray-700' },
-  { href: '/alerts',      label: '🔔 Alerts',   color: 'text-blue-600' },
   { href: '/about',       label: 'About',       color: 'text-gray-700' },
   { href: '/pricing',     label: 'Pricing',     color: 'text-gray-700' },
   { href: '/for-creators',label: 'For Creators',color: 'text-purple-600' },
