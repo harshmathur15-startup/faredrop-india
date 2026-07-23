@@ -14,8 +14,8 @@ const TABS: Tab[] = [
     line: 'Get instant alerts on real return-flight deals from India — save up to 90%.',
     activeTab: 'bg-blue-600 text-white shadow',
     ctas: [
-      { href: '/signup', text: 'Sign up to get alerts', cls: 'bg-blue-600 hover:bg-blue-500 text-white' },
-      { href: '/login', text: 'Log in', cls: 'bg-white/90 hover:bg-white text-blue-700 border border-white/70' },
+      { href: '/signup', text: 'Sign up to get alerts', cls: 'bg-white hover:bg-blue-50 text-blue-700 shadow-md' },
+      { href: '/login', text: 'Log in', cls: 'bg-transparent hover:bg-white/25 text-blue-800 border border-blue-700/50' },
     ],
   },
   {
@@ -24,7 +24,7 @@ const TABS: Tab[] = [
     line: 'Sell unsold seats & packages to ready-to-book buyers — with zero ad spend.',
     activeTab: 'bg-indigo-600 text-white shadow',
     ctas: [
-      { href: '/for-agents', text: 'List your deals →', cls: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
+      { href: '/for-agents', text: 'List your deals →', cls: 'bg-white hover:bg-indigo-50 text-indigo-700 shadow-md' },
     ],
   },
   {
@@ -33,7 +33,7 @@ const TABS: Tab[] = [
     line: 'Promote curated deals to your audience and earn a commission on every booking.',
     activeTab: 'bg-purple-600 text-white shadow',
     ctas: [
-      { href: '/for-creators', text: 'Start earning →', cls: 'bg-purple-600 hover:bg-purple-500 text-white' },
+      { href: '/for-creators', text: 'Start earning →', cls: 'bg-white hover:bg-purple-50 text-purple-700 shadow-md' },
     ],
   },
 ]
