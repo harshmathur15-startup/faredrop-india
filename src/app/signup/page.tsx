@@ -152,10 +152,13 @@ export default function SignupPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 flex flex-col">
-      <nav className="bg-white border-b border-gray-100 px-5 py-3.5">
+      <nav className="bg-white border-b border-gray-100 px-5 py-3.5 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 w-fit">
           <Image src="/travel-baby-logo.png" alt="Travelbaby" width={45} height={45} className="h-11 w-auto drop-shadow" />
           <span className="font-display font-bold text-lg text-blue-900 tracking-tight">Travelbaby</span>
+        </Link>
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3.5 py-1.5 rounded-full transition-colors shrink-0">
+          <span aria-hidden="true">←</span> Home
         </Link>
       </nav>
 

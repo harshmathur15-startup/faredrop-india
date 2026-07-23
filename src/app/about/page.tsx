@@ -53,7 +53,8 @@ export default function AboutPage() {
           <Image src="/travel-baby-logo.png" alt="Travelbaby" width={45} height={45} className="h-12 w-auto drop-shadow" />
           <span className="font-black text-lg text-blue-900 tracking-tight">Travelbaby</span>
         </Link>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3.5 py-1.5 rounded-full transition-colors shrink-0"><span aria-hidden="true">←</span> Home</Link>
           <Link href="/for-creators" className="text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors hidden sm:block">For Creators</Link>
           <Link href="/for-agents" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors hidden sm:block">For Agents</Link>
           <Link href="/#signup" className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">Get free alerts</Link>
