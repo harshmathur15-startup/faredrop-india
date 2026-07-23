@@ -101,6 +101,13 @@ export default async function Home() {
             <MarketplaceHeroTabs />
           </div>
 
+          {/* How it works → About */}
+          <p className="mb-4">
+            <Link href="/about" className="text-blue-700 text-sm font-semibold hover:text-blue-800 hover:underline">
+              New here? See how it works →
+            </Link>
+          </p>
+
           {/* Trust line — social proof relocated from the pill */}
           <p className="flex items-center justify-center gap-2 text-slate-700 text-sm font-medium mb-9">
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
@@ -108,42 +115,6 @@ export default async function Home() {
           </p>
 
           <HeroDeals deals={deals} />
-        </div>
-      </section>
-
-      {/* ── One platform, three experiences (marketplace proof) ── */}
-      <section className="px-5 py-16 bg-slate-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-blue-600 font-bold text-sm uppercase tracking-widest mb-3">How it works</p>
-            <h2 className="font-display text-3xl font-black text-slate-900">One platform, three experiences</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Traveller */}
-            <div className="rounded-3xl border p-7 bg-blue-50 border-blue-100">
-              <span className="text-4xl block mb-4">✈️</span>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">For Travellers</p>
-              <h3 className="text-xl font-black mb-3 text-blue-700">Great deals, no hunting</h3>
-              <p className="text-slate-600 text-sm leading-relaxed mb-5">We monitor hundreds of routes from Delhi, Mumbai, Bangalore, Chennai and Hyderabad 24/7. The moment a price drops 40%+, we alert you by email — before the fare disappears.</p>
-              <Link href="/#signup" className="text-sm font-bold text-blue-700 hover:underline">Get free alerts →</Link>
-            </div>
-            {/* Agent */}
-            <div className="rounded-3xl border p-7 bg-indigo-50 border-indigo-100">
-              <span className="text-4xl block mb-4">🏢</span>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">For Travel Agents</p>
-              <h3 className="text-xl font-black mb-3 text-indigo-700">Qualified leads, no ad spend</h3>
-              <p className="text-slate-600 text-sm leading-relaxed mb-5">List your packages and tap into a network of motivated travel creators who promote your inventory to their engaged audiences. You only pay a commission when a booking confirms — not per click.</p>
-              <Link href="/for-agents" className="text-sm font-bold text-indigo-700 hover:underline">Join Agent waitlist →</Link>
-            </div>
-            {/* Creator */}
-            <div className="rounded-3xl border p-7 bg-purple-50 border-purple-100">
-              <span className="text-4xl block mb-4">🎬</span>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">For Travel Creators</p>
-              <h3 className="text-xl font-black mb-3 text-purple-700">Earn on bookings you inspire</h3>
-              <p className="text-slate-600 text-sm leading-relaxed mb-5">Share real travel package deals (posted by travel agents) with your audience and earn a 3–5% commission every time someone actually books.</p>
-              <Link href="/for-creators" className="text-sm font-bold text-purple-700 hover:underline">Join Creator waitlist →</Link>
-            </div>
-          </div>
         </div>
       </section>
 
