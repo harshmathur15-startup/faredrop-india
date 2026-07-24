@@ -229,7 +229,7 @@ export default function SignupPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Full name *</label>
-                    <input type="text" autoComplete="name" required value={fullName} onChange={e => setFullName(e.target.value)} placeholder="e.g. Harsh Mathur" className={inputCls} />
+                    <input type="text" autoComplete="name" required value={fullName} onChange={e => setFullName(e.target.value)} placeholder="e.g. Priya Sharma" className={inputCls} />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Mobile number *</label>
