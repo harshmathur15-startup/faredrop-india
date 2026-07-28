@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { notifyDealPublished } from '@/lib/notifications'
+import type { Deal } from '@/types'
 
 function isAuthorized(req: NextRequest): boolean {
   const token = req.headers.get('x-admin-token')
@@ -28,7 +30,16 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ deal: data })
+  // Broadcast to opted-in travellers (WhatsApp) + confirmed subscribers (email).
+  // Never let a notification failure fail the publish itself.
+  let notified = null
+  try {
+    notified = await notifyDealPublished(data as Deal)
+  } catch (err) {
+    console.error('notifyDealPublished failed', err)
+  }
+
+  return NextResponse.json({ deal: data, notified })
 }
 
 export async function PATCH(req: NextRequest) {

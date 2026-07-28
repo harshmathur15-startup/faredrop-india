@@ -1,6 +1,7 @@
 import { supabaseAdmin } from './supabase'
-import { sendWelcomeEmail, sendPriceAlertEmail } from './email'
-import { sendPriceAlertWhatsApp, sendWelcomeWhatsApp } from './whatsapp'
+import { sendWelcomeEmail, sendPriceAlertEmail, sendDealEmail } from './email'
+import { sendPriceAlertWhatsApp, sendWelcomeWhatsApp, sendDealAlertWhatsApp } from './whatsapp'
+import type { Deal } from '@/types'
 
 type Channel = 'email' | 'whatsapp'
 type NotifType = 'price_drop' | 'target_reached' | 'welcome' | 'weekly_deals' | 'price_increased'
@@ -113,4 +114,73 @@ export async function notifyWelcome({
       await logNotification(userId, null, 'whatsapp', 'welcome', 'failed', { name }, String(err))
     }
   }
+}
+
+// ── New deal published (broadcast) ───────────────────────────────────────────
+// Fires when Travel Baby publishes a deal. WhatsApp → opted-in registered
+// travellers (user_preferences); Email → confirmed subscribers (deal-drop list).
+//
+// NOTE: WhatsApp free-text outside a 24h user session requires an APPROVED
+// Gupshup template — sends will otherwise be dropped by WhatsApp. Email has no
+// such limit. Every send is logged (notification_log for WhatsApp, deal_events
+// for subscriber emails).
+
+export interface DealBroadcastSummary {
+  whatsapp_sent: number; whatsapp_failed: number
+  email_sent: number; email_failed: number
+  recipients: number
+}
+
+export async function notifyDealPublished(deal: Deal): Promise<DealBroadcastSummary> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.startsWith('http')
+    ? process.env.NEXT_PUBLIC_BASE_URL
+    : 'https://travelbaby.in'
+  const dealUrl = `${baseUrl}/deal/${deal.id}`
+
+  const summary: DealBroadcastSummary = {
+    whatsapp_sent: 0, whatsapp_failed: 0, email_sent: 0, email_failed: 0, recipients: 0,
+  }
+
+  // WhatsApp → opted-in registered travellers.
+  const { data: prefs } = await supabaseAdmin
+    .from('user_preferences')
+    .select('user_id, whatsapp_number')
+    .eq('whatsapp_opted_in', true)
+    .not('whatsapp_number', 'is', null)
+
+  for (const p of prefs ?? []) {
+    summary.recipients++
+    try {
+      const res = await sendDealAlertWhatsApp({ phone: p.whatsapp_number, deal, dealUrl })
+      if (res.ok) {
+        summary.whatsapp_sent++
+        await logNotification(p.user_id, null, 'whatsapp', 'weekly_deals', 'sent', { dealId: deal.id })
+      } else {
+        summary.whatsapp_failed++
+        await logNotification(p.user_id, null, 'whatsapp', 'weekly_deals', 'failed', { dealId: deal.id }, res.error)
+      }
+    } catch (err) {
+      summary.whatsapp_failed++
+      await logNotification(p.user_id, null, 'whatsapp', 'weekly_deals', 'failed', { dealId: deal.id }, String(err))
+    }
+  }
+
+  // Email → confirmed subscribers (the deal-drop list).
+  const { data: subs } = await supabaseAdmin
+    .from('subscribers')
+    .select('id, email')
+    .eq('confirmed', true)
+
+  for (const s of subs ?? []) {
+    summary.recipients++
+    try {
+      await sendDealEmail({ to: s.email, deal, dealUrl })
+      summary.email_sent++
+      await supabaseAdmin.from('deal_events').insert({ deal_id: deal.id, subscriber_id: s.id, event_type: 'sent' })
+    } catch {
+      summary.email_failed++
+    }
+  }
+
+  return summary
 }

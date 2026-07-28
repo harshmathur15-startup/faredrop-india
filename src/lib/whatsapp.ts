@@ -104,6 +104,48 @@ export async function sendPriceAlertWhatsApp({
   return send(phone, { type: 'text', text: lines.join('\n') })
 }
 
+export interface DealAlertInfo {
+  origin_city: string; dest_city: string
+  airline: string
+  deal_price: number; normal_price: number
+  validity_start: string | null; validity_end: string | null
+}
+
+// New-deal broadcast to opted-in travellers when a deal is published.
+export async function sendDealAlertWhatsApp({
+  phone, deal, dealUrl,
+}: {
+  phone: string
+  deal: DealAlertInfo
+  dealUrl: string
+}): Promise<SendResult> {
+  const off = deal.normal_price > 0
+    ? Math.round(((deal.normal_price - deal.deal_price) / deal.normal_price) * 100)
+    : 0
+
+  const priceLine = off > 0
+    ? `💰 *₹${deal.deal_price.toLocaleString('en-IN')}*  ~₹${deal.normal_price.toLocaleString('en-IN')}~  (${off}% off)`
+    : `💰 *₹${deal.deal_price.toLocaleString('en-IN')}*`
+
+  const lines = [
+    `🔥 *New Travelbaby Deal*`,
+    '',
+    `✈️ *${deal.origin_city} → ${deal.dest_city}*`,
+    `💺 ${deal.airline}`,
+    priceLine,
+    deal.validity_start
+      ? `📅 ${deal.validity_start}${deal.validity_end ? ` – ${deal.validity_end}` : ''}`
+      : '',
+    '',
+    `⚡ Deals move fast — grab it now:`,
+    `🔗 ${dealUrl}`,
+    '',
+    `Reply STOP to opt out.`,
+  ].filter(Boolean)
+
+  return send(phone, { type: 'text', text: lines.join('\n') })
+}
+
 export async function sendWelcomeWhatsApp({
   phone, name,
 }: {

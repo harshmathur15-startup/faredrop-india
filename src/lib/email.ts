@@ -150,6 +150,72 @@ export async function sendPriceAlertEmail({
   })
 }
 
+// ── New Deal Published (broadcast to subscribers) ────────────────────────────
+
+export async function sendDealEmail({
+  to, deal, dealUrl,
+}: {
+  to: string
+  deal: {
+    origin_iata: string; dest_iata: string
+    origin_city: string; dest_city: string
+    airline: string
+    deal_price: number; normal_price: number
+    validity_start: string | null; validity_end: string | null
+  }
+  dealUrl: string
+}) {
+  const resend = getResend()
+  const off = deal.normal_price > 0
+    ? Math.round(((deal.normal_price - deal.deal_price) / deal.normal_price) * 100)
+    : 0
+  const route = `${deal.origin_city} → ${deal.dest_city}`
+
+  return resend.emails.send({
+    from: FROM,
+    to,
+    subject: `🔥 ${route} from ₹${deal.deal_price.toLocaleString('en-IN')}${off > 0 ? ` (${off}% off)` : ''}`,
+    html: shell(`
+      <div style="text-align:center;margin-bottom:22px">
+        <span style="font-size:48px">🔥</span>
+        <h2 style="margin:8px 0 4px;color:#1e293b;font-size:22px;font-weight:800">New deal just dropped!</h2>
+        <p style="margin:0;color:#64748b;font-size:14px">${route} · ${deal.airline}</p>
+      </div>
+
+      <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:14px;padding:22px;text-align:center;margin-bottom:22px">
+        <p style="margin:0 0 2px;color:#166534;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Deal fare</p>
+        <p style="margin:0;font-size:38px;font-weight:900;color:#15803d;letter-spacing:-1px">
+          ₹${deal.deal_price.toLocaleString('en-IN')}
+        </p>
+        ${off > 0 ? `<p style="margin:6px 0 0;color:#166534;font-size:13px;font-weight:600">${off}% off — normally ₹${deal.normal_price.toLocaleString('en-IN')}</p>` : ''}
+      </div>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:22px">
+        <tr>
+          <td style="background:#f8fafc;border-radius:10px;padding:14px;text-align:center;width:45%">
+            <p style="margin:0;font-size:10px;color:#94a3b8;text-transform:uppercase;font-weight:700;letter-spacing:0.08em">From</p>
+            <p style="margin:4px 0 2px;font-size:22px;font-weight:900;color:#1e293b">${deal.origin_iata}</p>
+            <p style="margin:0;font-size:12px;color:#64748b">${deal.origin_city}</p>
+          </td>
+          <td style="text-align:center;font-size:22px;color:#64748b">✈️</td>
+          <td style="background:#f8fafc;border-radius:10px;padding:14px;text-align:center;width:45%">
+            <p style="margin:0;font-size:10px;color:#94a3b8;text-transform:uppercase;font-weight:700;letter-spacing:0.08em">To</p>
+            <p style="margin:4px 0 2px;font-size:22px;font-weight:900;color:#1e293b">${deal.dest_iata}</p>
+            <p style="margin:0;font-size:12px;color:#64748b">${deal.dest_city}</p>
+          </td>
+        </tr>
+      </table>
+
+      ${deal.validity_start ? `<p style="text-align:center;color:#64748b;font-size:13px;margin:0 0 20px">📅 Travel ${deal.validity_start}${deal.validity_end ? ` – ${deal.validity_end}` : ''}</p>` : ''}
+
+      <p style="background:#fef2f2;border-radius:8px;padding:12px 16px;margin:0 0 22px;color:#b91c1c;font-size:13px;font-weight:600;text-align:center">
+        ⚡ Deals sell out fast — book within 24–48 hours
+      </p>
+      ${btn(dealUrl, 'See the deal →')}
+    `),
+  })
+}
+
 // ── OTP (fallback — Supabase handles OTP natively via Resend SMTP) ───────────
 
 export async function sendOtpEmail({ to, otp }: { to: string; otp: string }) {
