@@ -1,76 +1,68 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 
-type Cta = { href: string; text: string; cls: string }
-type Tab = { id: string; label: string; line: string; activeTab: string; ctas: Cta[] }
-
-// Note: Tailwind class names are written out in full (not composed) so the JIT compiler picks them up.
-const TABS: Tab[] = [
+const AUDIENCES = [
   {
     id: 'traveller',
     label: '✈️ Traveller',
-    line: 'Get instant alerts on real return-flight deals from India — save up to 90%.',
-    activeTab: 'bg-blue-600 text-white shadow',
-    ctas: [
-      { href: '/signup', text: 'Sign up to get alerts', cls: 'bg-white hover:bg-blue-50 text-blue-700 shadow-md' },
-      { href: '/login', text: 'Log in', cls: 'bg-transparent hover:bg-white/25 text-blue-800 border border-blue-700/50' },
-    ],
+    status: 'available',
   },
   {
     id: 'agent',
-    label: '🏢 Agent',
-    line: 'Sell unsold seats & packages to ready-to-book buyers — with zero ad spend.',
-    activeTab: 'bg-indigo-600 text-white shadow',
-    ctas: [
-      { href: '/for-agents', text: 'List your deals →', cls: 'bg-white hover:bg-indigo-50 text-indigo-700 shadow-md' },
-    ],
+    label: '🏢 Travel Agent',
+    status: 'coming-soon',
   },
   {
     id: 'creator',
-    label: '🎥 Creator',
-    line: 'Promote curated deals to your audience and earn a commission on every booking.',
-    activeTab: 'bg-purple-600 text-white shadow',
-    ctas: [
-      { href: '/for-creators', text: 'Start earning →', cls: 'bg-white hover:bg-purple-50 text-purple-700 shadow-md' },
-    ],
+    label: '🎥 Travel Creator',
+    status: 'coming-soon',
   },
-]
+] as const
 
 export default function MarketplaceHeroTabs() {
-  const [active, setActive] = useState('traveller')
-  const tab = TABS.find((t) => t.id === active) ?? TABS[0]
-
   return (
-    <div className="max-w-xl mx-auto">
-      {/* Audience selector */}
-      <div className="inline-flex bg-white/85 backdrop-blur-sm rounded-full p-1 mb-4 shadow-sm border border-white/60">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setActive(t.id)}
-            className={`px-5 sm:px-6 py-2.5 rounded-full text-base sm:text-lg font-bold transition-colors ${
-              active === t.id ? t.activeTab : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+    <div className="max-w-2xl mx-auto">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 mb-5">
+        {AUDIENCES.map((audience) => {
+          const isAvailable = audience.status === 'available'
+
+          return (
+            <div
+              key={audience.id}
+              className={`relative flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm sm:text-base font-bold border transition-colors ${
+                isAvailable
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                  : 'bg-white/75 text-slate-500 border-white/70 cursor-not-allowed'
+              }`}
+              aria-disabled={!isAvailable}
+            >
+              <span>{audience.label}</span>
+              {!isAvailable && (
+                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-600">
+                  Coming soon
+                </span>
+              )}
+            </div>
+          )
+        })}
       </div>
 
-      {/* Audience-specific CTAs */}
+      <p className="text-slate-800 text-base sm:text-lg font-medium leading-relaxed mb-5 max-w-xl mx-auto">
+        Get curated international flight deals from India, set personalised alerts, and book directly with airlines or trusted travel platforms.
+      </p>
+
       <div className="flex flex-wrap gap-3 justify-center">
-        {tab.ctas.map((c) => (
-          <Link
-            key={c.text}
-            href={c.href}
-            className={`font-bold px-6 py-3.5 rounded-xl transition-colors text-sm whitespace-nowrap ${c.cls}`}
-          >
-            {c.text}
-          </Link>
-        ))}
+        <Link
+          href="/signup"
+          className="bg-white hover:bg-blue-50 text-blue-700 shadow-md font-bold px-6 py-3.5 rounded-xl transition-colors text-sm whitespace-nowrap"
+        >
+          Sign up to get alerts
+        </Link>
+        <Link
+          href="/login"
+          className="bg-transparent hover:bg-white/25 text-blue-800 border border-blue-700/50 font-bold px-6 py-3.5 rounded-xl transition-colors text-sm whitespace-nowrap"
+        >
+          Log in
+        </Link>
       </div>
     </div>
   )
