@@ -5,14 +5,18 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
 const AUTHED_LINKS = [
-  { href: '/#deals',  label: 'Deals',   color: 'text-gray-700' },
-  { href: '/about',   label: 'About',   color: 'text-gray-700' },
-  { href: '/pricing', label: 'Pricing', color: 'text-gray-700' },
+  { href: '/#deals',       label: 'Deals',        color: 'text-gray-700' },
+  { href: '/about',        label: 'About',        color: 'text-gray-700' },
+  { href: '/pricing',      label: 'Pricing',      color: 'text-gray-700' },
+  { href: '/for-creators', label: 'For Creators', color: 'text-purple-600' },
+  { href: '/for-agents',   label: 'For Agents',   color: 'text-indigo-600' },
 ]
 
 const GUEST_LINKS = [
   { href: '/about', label: 'About', color: 'text-gray-700' },
   { href: '/pricing', label: 'Pricing', color: 'text-gray-700' },
+  { href: '/for-creators', label: 'For Creators', color: 'text-purple-600' },
+  { href: '/for-agents', label: 'For Agents', color: 'text-indigo-600' },
 ]
 
 export default function MobileMenu() {
