@@ -12,6 +12,8 @@ export default function NavLinks() {
       <>
         <Link href="/about" className="text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors hidden sm:block">About</Link>
         <Link href="/pricing" className="text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors hidden sm:block">Pricing</Link>
+        <Link href="/for-creators" className="text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors hidden sm:block">For Creators</Link>
+        <Link href="/for-agents" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors hidden sm:block">For Agents</Link>
         <Link href="/signup" className="text-sm font-bold text-blue-700 hover:text-blue-800 transition-colors hidden sm:block">Sign up free</Link>
       </>
     )
@@ -22,6 +24,8 @@ export default function NavLinks() {
       <a href="/#deals" className="text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors hidden sm:block">Deals</a>
       <Link href="/about" className="text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors hidden sm:block">About</Link>
       <Link href="/pricing" className="text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors hidden sm:block">Pricing</Link>
+      <Link href="/for-creators" className="text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors hidden sm:block">For Creators</Link>
+      <Link href="/for-agents" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors hidden sm:block">For Agents</Link>
     </>
   )
 }
