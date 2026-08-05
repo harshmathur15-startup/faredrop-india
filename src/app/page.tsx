@@ -82,21 +82,21 @@ export default async function Home() {
 
           {/* Eyebrow */}
           <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-blue-800 mb-2">
-            India&apos;s travel deals marketplace
+            Curated flight deals for Indian travellers
           </p>
 
           {/* Headline */}
           <h1 className="font-display text-4xl sm:text-5xl font-extrabold leading-[1.1] text-slate-900 mb-3">
-            One marketplace.<br />
-            <span className="text-blue-700">Three ways to win.</span>
+            Exceptional flight deals.<br />
+            <span className="text-blue-700">Before they disappear.</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-6 max-w-xl mx-auto">
-<span className="font-bold text-blue-700">Travellers</span> get deals. <span className="font-bold text-indigo-600">Agents</span> get bookings. <span className="font-bold text-purple-600">Creators</span> get paid.
+            We find unusually good international fares from India, verify them, and alert you so you can book before prices move.
           </p>
 
-          {/* Marketplace audience tabs (Option E) */}
+          {/* Traveller-first audience tabs */}
           <div id="signup" className="mb-4">
             <MarketplaceHeroTabs />
           </div>
