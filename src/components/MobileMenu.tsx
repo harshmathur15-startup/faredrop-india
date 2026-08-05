@@ -5,11 +5,9 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
 const AUTHED_LINKS = [
-  { href: '/#deals',      label: 'Deals',       color: 'text-gray-700' },
-  { href: '/about',       label: 'About',       color: 'text-gray-700' },
-  { href: '/pricing',     label: 'Pricing',     color: 'text-gray-700' },
-  { href: '/for-creators',label: 'For Creators',color: 'text-purple-600' },
-  { href: '/for-agents',  label: 'For Agents',  color: 'text-indigo-600' },
+  { href: '/#deals',  label: 'Deals',   color: 'text-gray-700' },
+  { href: '/about',   label: 'About',   color: 'text-gray-700' },
+  { href: '/pricing', label: 'Pricing', color: 'text-gray-700' },
 ]
 
 const GUEST_LINKS = [
@@ -60,7 +58,6 @@ export default function MobileMenu() {
           <div className="fixed inset-0 top-[60px] bg-black/20 z-40" onClick={() => setOpen(false)} />
           <div className="absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-lg z-50 px-5 py-3">
             <div className="flex flex-col">
-              {/* Signed-in header */}
               {name && (
                 <div className="flex items-center gap-3 py-3 border-b border-gray-100">
                   <span className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
@@ -77,7 +74,6 @@ export default function MobileMenu() {
                 </Link>
               ))}
 
-              {/* Auth actions */}
               {name === undefined ? null : name ? (
                 <>
                   <Link href="/account" onClick={() => setOpen(false)} className="py-3 text-base font-semibold border-b border-gray-100 text-gray-700">My profile</Link>
