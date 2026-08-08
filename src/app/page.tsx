@@ -7,7 +7,6 @@ import NavAuth from '@/components/NavAuth'
 import NavLinks from '@/components/NavLinks'
 import HeroDeals from '@/components/HeroDeals'
 import DealsSection from '@/components/DealsSection'
-import MarketplaceHeroTabs from '@/components/MarketplaceHeroTabs'
 import { HomeCTAButtons, FooterAuthLink } from '@/components/HomeCTAAuth'
 
 export const dynamic = 'force-dynamic'
@@ -82,37 +81,44 @@ export default async function Home() {
         <div className="relative max-w-3xl mx-auto text-center">
 
           {/* Eyebrow */}
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-blue-800 mb-2">
-            Curated flight deals for Indian travellers
+          <p className="text-xs sm:text-sm font-black uppercase tracking-widest text-blue-800 mb-4">
+            Curated Flight Deals
           </p>
 
           {/* Headline */}
-          <h1 className="font-display text-4xl sm:text-5xl font-extrabold leading-[1.1] text-slate-900 mb-3">
-            Exceptional flight deals.<br />
-            <span className="text-blue-700">Before they disappear.</span>
+          <h1 className="font-display text-4xl sm:text-6xl font-extrabold leading-[1.1] text-slate-900 mb-2">
+            Stop hunting for cheaper flights.
           </h1>
 
-          {/* Subheadline */}
-          <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-6 max-w-xl mx-auto">
-            We find unusually good international fares from India, verify them, and alert you so you can book before prices move.
+          {/* Punch line */}
+          <p className="font-display text-3xl sm:text-5xl font-extrabold text-blue-700 mb-6">
+            We do it for you.
           </p>
 
-          {/* Traveller-first audience tabs */}
-          <div id="signup" className="mb-4">
-            <MarketplaceHeroTabs />
+          {/* Subheadline */}
+          <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-8 max-w-xl mx-auto">
+            Travelbaby monitors international fares from India, hand-picks the deals worth booking, and alerts you before prices move.
+          </p>
+
+          {/* CTAs */}
+          <div id="signup" className="flex flex-wrap gap-3 justify-center mb-6">
+            <Link
+              href="#deals"
+              className="bg-white hover:bg-blue-50 text-blue-700 shadow-md font-bold px-6 py-3.5 rounded-xl transition-colors text-sm whitespace-nowrap"
+            >
+              See live deals
+            </Link>
+            <Link
+              href="/signup"
+              className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 py-3.5 rounded-xl transition-colors text-sm whitespace-nowrap shadow-md"
+            >
+              Get free deal alerts
+            </Link>
           </div>
 
-          {/* How it works → About */}
-          <p className="mb-4">
-            <Link href="/about" className="text-blue-700 text-sm font-semibold hover:text-blue-800 hover:underline">
-              New here? See how it works →
-            </Link>
-          </p>
-
-          {/* Trust line — social proof relocated from the pill */}
-          <p className="flex items-center justify-center gap-2 text-slate-700 text-sm font-medium mb-9">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-            200+ Indian travellers already saving big
+          {/* Trust line */}
+          <p className="text-slate-700 text-sm font-medium mb-9">
+            Direct &amp; 1-stop flights · Human-checked · Book directly with airlines &amp; trusted travel sites
           </p>
 
           <HeroDeals deals={deals} />
