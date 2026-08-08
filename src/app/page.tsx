@@ -8,6 +8,7 @@ import NavLinks from '@/components/NavLinks'
 import HeroDeals from '@/components/HeroDeals'
 import DealsSection from '@/components/DealsSection'
 import MarketplaceHeroTabs from '@/components/MarketplaceHeroTabs'
+import { HomeCTAButtons, FooterAuthLink } from '@/components/HomeCTAAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +30,7 @@ async function getDeals(): Promise<Deal[]> {
 const STATS = [
   { value: '₹20 lakhs +', label: 'saved by travellers' },
   { value: '200+', label: 'subscribers' },
-  { value: '40–90%', label: 'average discount' },
+  { value: 'Up to 90%', label: 'off on top deals' },
   { value: '5 Indian metros', label: 'covered' },
 ]
 
@@ -132,7 +133,7 @@ export default async function Home() {
               {
                 icon: '🔍',
                 title: 'We monitor constantly',
-                desc: 'Our systems track 100+ international routes from Delhi, Mumbai, Bangalore, Chennai, and Hyderabad 24/7, looking for fares that drop 40%+ from baseline.'
+                desc: 'Our systems track 100+ international routes from Delhi, Mumbai, Bangalore, Chennai, and Hyderabad 24/7, looking for significant price drops — up to 90% off the going rate.'
               },
               {
                 icon: '✋',
@@ -207,7 +208,7 @@ export default async function Home() {
               {
                 emoji: '💰',
                 title: 'Save money',
-                desc: 'Average savings of 40–90% on international flights. Every deal is verified before you see it.'
+                desc: 'Savings of up to 90% on international flights. Every deal is verified before you see it.'
               },
               {
                 emoji: '✈️',
@@ -239,7 +240,7 @@ export default async function Home() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-semibold text-blue-200">
             <span className="flex items-center gap-1">✈ Direct & 1-stop only</span>
             <span className="hidden sm:block text-blue-700">|</span>
-            <span className="flex items-center gap-1">💰 40%+ off guaranteed</span>
+            <span className="flex items-center gap-1">💰 Up to 90% off</span>
             <span className="hidden sm:block text-blue-700">|</span>
             <span className="flex items-center gap-1">✅ Human-verified</span>
             <span className="hidden sm:block text-blue-700">|</span>
@@ -302,8 +303,7 @@ export default async function Home() {
           <h2 className="text-3xl font-black mt-4 mb-2">Never miss a deal again</h2>
           <p className="text-blue-200 mb-6 text-lg">Free alerts. No spam. Just flights worth booking.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/signup" className="bg-white text-blue-800 font-bold px-7 py-3.5 rounded-xl hover:bg-blue-50 transition-colors">Sign up free</Link>
-            <Link href="/login" className="bg-white/10 border border-white/40 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-white/20 transition-colors">Log in</Link>
+            <HomeCTAButtons />
           </div>
           <p className="text-blue-400 text-xs mt-4">Join 200+ travellers already saving big</p>
         </div>
@@ -334,7 +334,7 @@ export default async function Home() {
                 <p className="font-bold text-white text-xs uppercase tracking-wider mb-3">Company</p>
                 <Link href="/about" className="block hover:text-white transition-colors">About</Link>
                 <Link href="/contact" className="block hover:text-white transition-colors">Contact us</Link>
-                <Link href="/signup" className="block hover:text-white transition-colors">Login / Sign up</Link>
+                <FooterAuthLink />
               </div>
             </div>
           </div>
