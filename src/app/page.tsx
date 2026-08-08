@@ -112,7 +112,7 @@ export default async function Home() {
 
           {/* Trust line */}
           <p className="text-slate-700 text-sm font-medium mb-9">
-            Direct &amp; 1-stop flights · Human-checked · Book directly with airlines &amp; trusted travel sites
+            Direct &amp; 1-stop flights · Human-verified · Book directly with airlines &amp; trusted travel sites
           </p>
 
           <HeroDeals deals={deals} />
