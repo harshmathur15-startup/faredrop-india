@@ -125,25 +125,25 @@ export default async function Home() {
       {/* ── What we do ── */}
       <section className="bg-gradient-to-b from-slate-50 to-white px-5 py-16">
         <div className="max-w-5xl mx-auto">
-          <h2 className="font-display text-3xl font-bold text-slate-900 text-center mb-3">What Travelbaby does</h2>
-          <p className="text-center text-gray-500 mb-12 max-w-2xl mx-auto">We constantly monitor fares from Indian airports for significant price drops, mistake fares, and rare discounts</p>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-2">Not every cheap flight is a good deal.</h2>
+          <p className="text-center text-gray-500 text-lg mb-12 max-w-xl mx-auto">We look beyond the price.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 icon: '🔍',
-                title: 'We monitor constantly',
-                desc: 'Our systems track 100+ international routes from Delhi, Mumbai, Bangalore, Chennai, and Hyderabad 24/7, looking for significant price drops — up to 90% off the going rate.'
+                title: 'We find the drops',
+                desc: 'We monitor international fares from India for unusually good prices.',
               },
               {
                 icon: '✋',
-                title: 'We hand-pick the best',
-                desc: 'Our team filters out complex itineraries, long layovers, self-transfers, and routes requiring visas. Only easy-to-book, high-quality deals make the cut.'
+                title: 'We filter the rubbish',
+                desc: 'Long layovers, awkward self-transfers and unnecessary transit hassles don\'t make the cut.',
               },
               {
-                icon: '📬',
-                title: 'We alert you instantly',
-                desc: 'As soon as a deal goes live, you get an email alert. Click through to book directly with airlines or OTAs — no hunting, no guesswork.'
+                icon: '🔗',
+                title: 'You choose where to book',
+                desc: 'Found one you like? Book directly with the airline or travel site you trust.',
               },
             ].map(({ icon, title, desc }) => (
               <div key={title} className="bg-white rounded-2xl p-8 border border-gray-100">
