@@ -108,12 +108,6 @@ export default async function Home() {
             >
               See live deals
             </Link>
-            <Link
-              href="/signup"
-              className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 py-3.5 rounded-xl transition-colors text-sm whitespace-nowrap shadow-md"
-            >
-              Get free deal alerts
-            </Link>
           </div>
 
           {/* Trust line */}
