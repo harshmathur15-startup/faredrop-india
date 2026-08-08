@@ -137,7 +137,7 @@ export default async function Home() {
               },
               {
                 icon: '✋',
-                title: 'We filter the rubbish',
+                title: 'We cut out the noise',
                 desc: 'Long layovers, awkward self-transfers and unnecessary transit hassles don\'t make the cut.',
               },
               {
