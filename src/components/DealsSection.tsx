@@ -121,10 +121,10 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
             <p className="text-lg font-bold text-gray-900 mb-1">
               Upgrade to unlock {premiumDeals.length} more deal{premiumDeals.length > 1 ? 's' : ''}
             </p>
-            <p className="text-gray-500 text-sm mb-5">Silver plan from ₹399/month · Cancel anytime</p>
+            <p className="text-gray-500 text-sm mb-5">Cancel anytime</p>
             <Link href="/pricing"
               className="inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold px-7 py-3 rounded-xl transition-colors">
-              View plans →
+              Try Silver for ₹1 →
             </Link>
           </div>
         </div>
