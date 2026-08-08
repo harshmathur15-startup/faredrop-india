@@ -120,7 +120,7 @@ export default function PricingCards() {
           </ul>
 
           <Link href="/signup" className="block w-full text-center bg-white hover:bg-gray-100 text-slate-700 font-bold py-3 rounded-xl transition-colors">
-            {annual ? `Get Silver for ${INR(1199)}/yr` : 'Get Silver for ₹1'}
+            {annual ? `Get Silver for ${INR(1199)}/yr` : 'Try Silver for ₹1'}
           </Link>
         </div>
 
