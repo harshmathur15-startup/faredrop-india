@@ -82,13 +82,13 @@ export default async function Home() {
 
           {/* Headline */}
           <h1 className="font-display text-4xl sm:text-6xl font-extrabold leading-[1.1] text-slate-900 mb-6">
-            Discover Better Flight Deals.{' '}
+            Discover Great Flight Deals.{' '}
             <span className="text-blue-700">Book Wherever You Trust.</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-8 max-w-xl mx-auto">
-            Skip the endless searching. We find the best opportunities to travel, highlight the best dates to fly, and let you book directly with the airline or travel platform you trust.
+            Skip the endless searching. We handpick standout fares on the best dates to fly — you just choose where to go.
           </p>
 
           {/* CTAs */}
@@ -103,7 +103,7 @@ export default async function Home() {
 
           {/* Trust line */}
           <p className="text-slate-700 text-sm font-medium mb-9">
-            ✓ Book directly with airlines &amp; trusted travel platforms &nbsp;✓ No booking markups &nbsp;✓ Carefully selected deals
+            ✓ Carefully selected deals &nbsp;·&nbsp; ✓ No booking markups &nbsp;·&nbsp; ✓ Domestic &amp; international
           </p>
 
           <HeroDeals deals={deals} />
