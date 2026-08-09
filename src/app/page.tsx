@@ -103,7 +103,7 @@ export default async function Home() {
 
           {/* Trust line */}
           <p className="text-slate-700 text-sm font-medium mb-9">
-            ✓ Carefully selected deals &nbsp;·&nbsp; ✓ No booking markups &nbsp;·&nbsp; ✓ Domestic &amp; international
+            ✓ Carefully selected deals &nbsp;&nbsp;✓ No booking markups &nbsp;&nbsp;✓ Domestic &amp; international
           </p>
 
           <HeroDeals deals={deals} />
