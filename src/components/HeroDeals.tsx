@@ -29,7 +29,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
     .sort((a, b) => b.discount - a.discount)
 
   const heroDeals = HERO_ORDER.flatMap(iata => {
-    const forDest = scored.filter(d => d.dest_iata === iata)
+    const forDest = scored.filter(d => d.dest_iata === iata && !d.is_premium)
     let chosen = forDest.find(d => !isPE(d.curator_note))
     if (!chosen) {
       const pe = forDest.find(d => isPE(d.curator_note))
