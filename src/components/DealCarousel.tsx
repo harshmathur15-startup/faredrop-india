@@ -167,13 +167,18 @@ function FilterSelect({ label, options, value, onChange }: {
   )
 }
 
+const CABIN_SECTIONS: { key: string; label: string; icon: string; headerCls: string; countCls: string }[] = [
+  { key: 'Economy',         label: 'Economy',          icon: '✈',  headerCls: 'text-blue-700',   countCls: 'bg-blue-100 text-blue-700 border-blue-200' },
+  { key: 'Premium Economy', label: 'Premium Economy',  icon: '⭐', headerCls: 'text-violet-700', countCls: 'bg-violet-100 text-violet-700 border-violet-200' },
+  { key: 'Business',        label: 'Business Class',   icon: '👑', headerCls: 'text-amber-700',  countCls: 'bg-amber-100 text-amber-800 border-amber-200' },
+]
+
 export default function DealCarousel({ deals }: { deals: Deal[] }) {
   const [scope, setScope] = useState<'International' | 'Domestic'>('International')
   const [city, setCity] = useState('All cities')
   const [month, setMonth] = useState('All months')
-  const [cls, setCls] = useState('All classes')
 
-  function reset() { setCity('All cities'); setMonth('All months'); setCls('All classes') }
+  function reset() { setCity('All cities'); setMonth('All months') }
 
   if (deals.length === 0) {
     return (
@@ -187,22 +192,24 @@ export default function DealCarousel({ deals }: { deals: Deal[] }) {
 
   const scopeDeals = deals.filter(d => scope === 'Domestic' ? isDomestic(d) : !isDomestic(d))
 
-  // Filter options derived from the current scope so there are never dead options
-  const cityOptions = ['All cities', ...Array.from(new Set(scopeDeals.map(d => d.origin_city))).sort()]
+  const cityOptions  = ['All cities',  ...Array.from(new Set(scopeDeals.map(d => d.origin_city))).sort()]
   const monthOptions = ['All months', ...Array.from(new Set(scopeDeals.map(d => monthLabel(d.validity_start))))
     .sort((a, b) => new Date('1 ' + a).getTime() - new Date('1 ' + b).getTime())]
-  const classOptions = ['All classes', ...CLASS_ORDER.filter(c => scopeDeals.some(d => cabinLabel(d) === c))]
 
   const filtered = scopeDeals.filter(d =>
-    (city === 'All cities' || d.origin_city === city) &&
-    (month === 'All months' || monthLabel(d.validity_start) === month) &&
-    (cls === 'All classes' || cabinLabel(d) === cls)
+    (city  === 'All cities'  || d.origin_city === city) &&
+    (month === 'All months'  || monthLabel(d.validity_start) === month)
   )
-  const filtersActive = city !== 'All cities' || month !== 'All months' || cls !== 'All classes'
+  const filtersActive = city !== 'All cities' || month !== 'All months'
+
+  // Group by cabin
+  const bycabin: Record<string, Deal[]> = {}
+  for (const s of CABIN_SECTIONS) bycabin[s.key] = []
+  for (const d of filtered) bycabin[cabinLabel(d)]?.push(d)
 
   return (
     <div>
-      {/* International / Domestic tabs — International open by default */}
+      {/* International / Domestic tabs */}
       <div className="inline-flex p-1 mb-6 bg-slate-100 rounded-full">
         {(['International', 'Domestic'] as const).map(s => (
           <button key={s} onClick={() => { setScope(s); reset() }}
@@ -222,11 +229,10 @@ export default function DealCarousel({ deals }: { deals: Deal[] }) {
         </div>
       ) : (
         <>
-          {/* Quick filters */}
-          <div className="flex flex-wrap items-end gap-3 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+          {/* Quick filters — city + month only (class is now a visual section) */}
+          <div className="flex flex-wrap items-end gap-3 mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
             <FilterSelect label="Home city" options={cityOptions} value={city} onChange={setCity} />
-            <FilterSelect label="Month" options={monthOptions} value={month} onChange={setMonth} />
-            <FilterSelect label="Class" options={classOptions} value={cls} onChange={setCls} />
+            <FilterSelect label="Month"     options={monthOptions} value={month} onChange={setMonth} />
             {filtersActive && (
               <div className="flex items-center gap-3 text-sm pb-2">
                 <span className="text-slate-500">{filtered.length} deal{filtered.length === 1 ? '' : 's'}</span>
@@ -238,11 +244,30 @@ export default function DealCarousel({ deals }: { deals: Deal[] }) {
           {filtered.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-3xl border-2 border-dashed border-gray-200">
               <p className="text-gray-700 font-semibold text-lg">No deals match these filters</p>
-              <p className="text-gray-400 text-sm mt-1">Try a different month, class or home city — or reset.</p>
+              <p className="text-gray-400 text-sm mt-1">Try a different month or home city — or reset.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-              {filtered.map(deal => <DealCard key={deal.id} deal={deal} />)}
+            <div className="space-y-12">
+              {CABIN_SECTIONS.map(section => {
+                const sectionDeals = bycabin[section.key]
+                if (!sectionDeals || sectionDeals.length === 0) return null
+                return (
+                  <div key={section.key}>
+                    {/* Section header */}
+                    <div className="flex items-center gap-3 mb-5">
+                      <h3 className={`font-display text-xl font-bold ${section.headerCls}`}>
+                        {section.icon} {section.label}
+                      </h3>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${section.countCls}`}>
+                        {sectionDeals.length} deal{sectionDeals.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+                      {sectionDeals.map(deal => <DealCard key={deal.id} deal={deal} />)}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </>

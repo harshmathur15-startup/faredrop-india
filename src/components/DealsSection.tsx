@@ -93,37 +93,51 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
         <DealCarousel deals={freeDeals} />
       )}
 
-      {/* Premium deals — locked preview */}
+      {/* Premium deals — locked, grouped by cabin */}
       {premiumDeals.length > 0 && (
         <div className="mt-14">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
-                👑 Members-only deals
-              </h3>
-              <p className="text-gray-500 text-sm mt-0.5">
-                {premiumDeals.length} exclusive deals · dates &amp; booking links hidden
-              </p>
+              <h3 className="font-display text-xl font-bold text-slate-900">👑 Members-only deals</h3>
+              <p className="text-gray-500 text-sm mt-0.5">{premiumDeals.length} exclusive deals · dates &amp; booking links hidden</p>
             </div>
-            <Link href="/pricing"
-              className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shrink-0">
+            <Link href="/pricing" className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shrink-0">
               Unlock all →
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {premiumDeals.map(deal => (
-              <DealCard key={deal.id} deal={deal} locked />
-            ))}
+          {/* Cabin sub-sections */}
+          <div className="space-y-10">
+            {([
+              { key: 'Economy',         label: 'Economy',         icon: '✈',  hdr: 'text-blue-700',   cnt: 'bg-blue-100 text-blue-700 border-blue-200' },
+              { key: 'Premium Economy', label: 'Premium Economy', icon: '⭐', hdr: 'text-violet-700', cnt: 'bg-violet-100 text-violet-700 border-violet-200' },
+              { key: 'Business',        label: 'Business Class',  icon: '👑', hdr: 'text-amber-700',  cnt: 'bg-amber-100 text-amber-800 border-amber-200' },
+            ] as const).map(sec => {
+              const sDeals = premiumDeals.filter(d => {
+                const n = (d.curator_note || '').toLowerCase()
+                if (sec.key === 'Business')        return n.startsWith('business') || n.includes('business ·')
+                if (sec.key === 'Premium Economy') return n.startsWith('premium economy') || n.includes('premium economy')
+                return !n.startsWith('business') && !n.includes('business ·') && !n.startsWith('premium economy') && !n.includes('premium economy')
+              })
+              if (sDeals.length === 0) return null
+              return (
+                <div key={sec.key}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <h4 className={`font-display text-lg font-bold ${sec.hdr}`}>{sec.icon} {sec.label}</h4>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${sec.cnt}`}>{sDeals.length} deal{sDeals.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {sDeals.map(deal => <DealCard key={deal.id} deal={deal} locked />)}
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
-          <div className="mt-6 text-center py-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
-            <p className="text-lg font-bold text-gray-900 mb-1">
-              Upgrade to unlock {premiumDeals.length} more deal{premiumDeals.length > 1 ? 's' : ''}
-            </p>
+          <div className="mt-8 text-center py-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
+            <p className="text-lg font-bold text-gray-900 mb-1">Upgrade to unlock {premiumDeals.length} more deal{premiumDeals.length > 1 ? 's' : ''}</p>
             <p className="text-gray-500 text-sm mb-5">Cancel anytime</p>
-            <Link href="/pricing"
-              className="inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold px-7 py-3 rounded-xl transition-colors">
+            <Link href="/pricing" className="inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold px-7 py-3 rounded-xl transition-colors">
               Try Silver for ₹1 →
             </Link>
           </div>
