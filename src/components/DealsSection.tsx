@@ -76,22 +76,12 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
     )
   }
 
-  // Free user — see free deals fully, premium deals locked
-  const freeDeals    = sortedDeals.filter(d => !d.is_premium)
-  const premiumDeals = sortedDeals.filter(d =>  d.is_premium)
+  // Free user — hero section already shows free deals; here only show locked premium deals
+  const premiumDeals = sortedDeals.filter(d => d.is_premium)
 
   return (
     <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
       <SectionHeader deals={deals} />
-
-      {/* Free deals — full access */}
-      {freeDeals.length === 0 ? (
-        <div className="text-center py-8 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
-          No free deals right now — check back soon or upgrade to see all deals.
-        </div>
-      ) : (
-        <DealCarousel deals={freeDeals} />
-      )}
 
       {/* Premium deals — locked, grouped by cabin */}
       {premiumDeals.length > 0 && (
