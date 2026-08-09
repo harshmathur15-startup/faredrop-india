@@ -86,18 +86,14 @@ export default async function Home() {
           </p>
 
           {/* Headline */}
-          <h1 className="font-display text-4xl sm:text-6xl font-extrabold leading-[1.1] text-slate-900 mb-2">
-            Stop hunting for cheaper flights.
+          <h1 className="font-display text-4xl sm:text-6xl font-extrabold leading-[1.1] text-slate-900 mb-6">
+            Discover Better Flight Deals.{' '}
+            <span className="text-blue-700">Book Wherever You Trust.</span>
           </h1>
-
-          {/* Punch line */}
-          <p className="font-display text-3xl sm:text-5xl font-extrabold text-blue-700 mb-6">
-            We do it for you.
-          </p>
 
           {/* Subheadline */}
           <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-8 max-w-xl mx-auto">
-            Travelbaby monitors international fares from India, hand-picks the deals worth booking, and alerts you before prices move.
+            Skip the endless searching. We find the best opportunities to travel, highlight the best dates to fly, and let you book directly with the airline or travel platform you trust.
           </p>
 
           {/* CTAs */}
@@ -106,13 +102,13 @@ export default async function Home() {
               href="#deals"
               className="bg-white hover:bg-blue-50 text-blue-700 shadow-md font-bold px-6 py-3.5 rounded-xl transition-colors text-sm whitespace-nowrap"
             >
-              See live deals
+              Browse Live Deals
             </Link>
           </div>
 
           {/* Trust line */}
           <p className="text-slate-700 text-sm font-medium mb-9">
-            Direct &amp; 1-stop flights · Human-verified · Book directly with airlines &amp; trusted travel sites
+            ✓ Book directly with airlines &amp; trusted travel platforms &bull; No booking markups &bull; Carefully selected deals
           </p>
 
           <HeroDeals deals={deals} />
