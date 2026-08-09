@@ -14,28 +14,18 @@ const DEST_META: Record<string, { flag: string }> = {
   SXR: { flag: '🇮🇳' }, PVG: { flag: '🇨🇳' }, SHA: { flag: '🇨🇳' },
 }
 
-const HERO_ORDER = ['LHR', 'NRT', 'ICN', 'SIN', 'HAN', 'SGN']
-
-function isPE(note: string | null) {
-  const n = (note ?? '').toLowerCase()
-  return n.includes('premium economy') || n.includes('premium_economy')
-}
-
 export default function HeroDeals({ deals }: { deals: Deal[] }) {
-  let peCount = 0
   const scored = deals
     .map(d => ({ ...d, discount: calcDiscount(d.normal_price, d.deal_price) }))
-    .filter(d => d.discount > 0)
+    .filter(d => d.discount > 0 && !d.is_premium)
     .sort((a, b) => b.discount - a.discount)
 
-  const heroDeals = HERO_ORDER.flatMap(iata => {
-    const forDest = scored.filter(d => d.dest_iata === iata && !d.is_premium)
-    let chosen = forDest.find(d => !isPE(d.curator_note))
-    if (!chosen) {
-      const pe = forDest.find(d => isPE(d.curator_note))
-      if (pe && peCount < 1) { chosen = pe; peCount++ }
-    }
-    return chosen ? [chosen] : []
+  // One card per destination — keep the highest-discount deal for each
+  const seen = new Set<string>()
+  const heroDeals = scored.filter(d => {
+    if (seen.has(d.dest_iata)) return false
+    seen.add(d.dest_iata)
+    return true
   })
 
   if (heroDeals.length === 0) return null
