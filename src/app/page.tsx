@@ -80,11 +80,6 @@ export default async function Home() {
 
         <div className="relative max-w-3xl mx-auto text-center">
 
-          {/* Eyebrow */}
-          <p className="text-xs sm:text-sm font-black uppercase tracking-widest text-blue-800 mb-4">
-            Curated Flight Deals
-          </p>
-
           {/* Headline */}
           <h1 className="font-display text-4xl sm:text-6xl font-extrabold leading-[1.1] text-slate-900 mb-6">
             Discover Better Flight Deals.{' '}
