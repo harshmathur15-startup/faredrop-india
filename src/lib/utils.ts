@@ -9,6 +9,8 @@ export function calcDiscount(normal: number, deal: number): number {
 export function formatDateRange(start: string, end: string): string {
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+  // One-way deals store the same start & end — show a single date, not a range.
+  if (start === end) return fmt(start)
   return `${fmt(start)} – ${fmt(end)}`
 }
 
@@ -19,4 +21,11 @@ export function cabinFromNote(note?: string | null): 'Business' | 'Premium Econo
   if (/business/i.test(note)) return 'Business'
   if (/premium economy/i.test(note)) return 'Premium Economy'
   return null
+}
+
+// Trip type is also stored in the curator note (no dedicated column).
+// Defaults to round trip unless the note explicitly marks it one way.
+export function tripFromNote(note?: string | null): 'oneway' | 'roundtrip' {
+  if (note && /one.?way/i.test(note)) return 'oneway'
+  return 'roundtrip'
 }

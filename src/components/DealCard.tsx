@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Deal } from '@/types'
-import { formatPrice, calcDiscount, formatDateRange, cabinFromNote } from '@/lib/utils'
+import { formatPrice, calcDiscount, formatDateRange, cabinFromNote, tripFromNote } from '@/lib/utils'
 
 export default function DealCard({ deal, locked = false }: { deal: Deal; locked?: boolean }) {
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
   const cabin = cabinFromNote(deal.curator_note)
+  const oneWay = tripFromNote(deal.curator_note) === 'oneway'
+  const fareLabel = oneWay ? '✈ One way' : '✈ Round trip fare'
+  const arrow = oneWay ? '→' : '⇄'
 
   if (locked) {
     return (
@@ -26,7 +29,7 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
           {/* Route overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
             <p className="text-white font-bold text-base leading-tight">
-              {deal.origin_city} ⇄ {deal.dest_city}
+              {deal.origin_city} {arrow} {deal.dest_city}
             </p>
             <p className="text-white/70 text-xs flex items-center gap-1.5">
               {deal.airline}
@@ -44,10 +47,10 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
             <div>
               <p className="text-2xl font-black text-gray-900">{formatPrice(deal.deal_price, deal.currency)}</p>
               <p className="text-sm text-gray-400 line-through">{formatPrice(deal.normal_price, deal.currency)}</p>
-              <p className="text-[11px] font-bold text-emerald-700 mt-0.5">✈ Round trip fare</p>
+              <p className="text-[11px] font-bold text-emerald-700 mt-0.5">{fareLabel}</p>
             </div>
             <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-              {deal.origin_iata} ⇄ {deal.dest_iata}
+              {deal.origin_iata} {arrow} {deal.dest_iata}
             </span>
           </div>
 
@@ -84,7 +87,7 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
         {/* Route overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
           <p className="text-white font-bold text-base leading-tight">
-            {deal.origin_city} ⇄ {deal.dest_city}
+            {deal.origin_city} {arrow} {deal.dest_city}
           </p>
           <p className="text-white/70 text-xs flex items-center gap-1.5">
             {deal.airline}
@@ -102,10 +105,10 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
           <div>
             <p className="text-2xl font-black text-gray-900">{formatPrice(deal.deal_price, deal.currency)}</p>
             <p className="text-sm text-gray-400 line-through">{formatPrice(deal.normal_price, deal.currency)}</p>
-            <p className="text-[11px] font-bold text-emerald-700 mt-0.5">✈ Round trip fare</p>
+            <p className="text-[11px] font-bold text-emerald-700 mt-0.5">{fareLabel}</p>
           </div>
           <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-            {deal.origin_iata} ⇄ {deal.dest_iata}
+            {deal.origin_iata} {arrow} {deal.dest_iata}
           </span>
         </div>
 

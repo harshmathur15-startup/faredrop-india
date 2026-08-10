@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Deal } from '@/types'
-import { formatPrice, calcDiscount } from '@/lib/utils'
+import { formatPrice, calcDiscount, tripFromNote } from '@/lib/utils'
 import DealLink from '@/components/DealLink'
 
 // Curated Unsplash photos per destination (no API key needed)
@@ -71,6 +71,7 @@ function DealCard({ deal }: { deal: Deal }) {
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
   const tierColor = discount >= 70 ? 'bg-violet-600' : discount >= 50 ? 'bg-emerald-600' : 'bg-blue-600'
   const cabin = getCabinClass(deal.curator_note)
+  const oneWay = tripFromNote(deal.curator_note) === 'oneway'
 
   return (
     <DealLink
@@ -101,9 +102,13 @@ function DealCard({ deal }: { deal: Deal }) {
           </div>
         )}
 
-        {/* Round-trip route on image */}
+        {/* Route on image */}
         <div className="absolute bottom-2.5 left-3 right-3">
-          <p className="text-white/75 text-[11px] font-semibold tracking-wider uppercase">{deal.origin_iata} · {deal.dest_iata} · {deal.origin_iata} · Round trip</p>
+          <p className="text-white/75 text-[11px] font-semibold tracking-wider uppercase">
+            {oneWay
+              ? `${deal.origin_iata} · ${deal.dest_iata} · One way`
+              : `${deal.origin_iata} · ${deal.dest_iata} · ${deal.origin_iata} · Round trip`}
+          </p>
           <p className="font-display text-white text-lg font-bold leading-tight">{deal.dest_city}</p>
         </div>
       </div>
@@ -116,11 +121,17 @@ function DealCard({ deal }: { deal: Deal }) {
           <span className="font-display text-xl font-bold text-slate-900">{formatPrice(deal.deal_price, deal.currency)}</span>
           <span className="text-sm text-slate-400 line-through">{formatPrice(deal.normal_price, deal.currency)}</span>
         </div>
-        <p className="text-[11px] font-semibold text-emerald-700 mt-0.5">✈ Round trip fare</p>
+        <p className="text-[11px] font-semibold text-emerald-700 mt-0.5">{oneWay ? '✈ One way' : '✈ Round trip fare'}</p>
 
         <p className="text-xs text-slate-400 mt-2">
-          {new Date(deal.validity_start).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} –{' '}
-          {new Date(deal.validity_end).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+          {oneWay ? (
+            new Date(deal.validity_start).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+          ) : (
+            <>
+              {new Date(deal.validity_start).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} –{' '}
+              {new Date(deal.validity_end).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </>
+          )}
         </p>
 
         <div className="mt-auto pt-3 flex items-center text-blue-600 text-sm font-semibold">

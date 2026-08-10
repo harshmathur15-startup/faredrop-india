@@ -3,7 +3,7 @@ import { Deal } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { formatPrice, calcDiscount, formatDateRange } from '@/lib/utils'
+import { formatPrice, calcDiscount, formatDateRange, tripFromNote } from '@/lib/utils'
 import DealGate from '@/components/DealGate'
 
 const CITY_IMAGES: Record<string, string> = {
@@ -82,8 +82,30 @@ function googleFlightsCabinUrl(orig: string, dest: string, dept: string, ret: st
   return `https://www.google.com/travel/flights/search?tfs=${tfs}&tfu=${tfu}&curr=INR`
 }
 
+// One-way variant — tfs f2:1 (one way) with a single leg, cheapest sort.
+function googleFlightsOneWayUrl(orig: string, dest: string, dept: string, tfsCabin: number): string {
+  const airport = (iata: string) => [...vfield(1, 1), ...lfield(2, bytesOf(iata))]
+  const leg = (date: string, from: string, to: string) => [...lfield(2, bytesOf(date)), ...lfield(13, airport(from)), ...lfield(14, airport(to))]
+  const tfs = b64url([
+    ...vfield(1, 28), ...vfield(2, 1),
+    ...lfield(3, leg(dept, orig, dest)),
+    ...vfield(8, 1), ...vfield(9, tfsCabin), ...vfield(14, 1),
+    ...vfield(19, 1),
+  ])
+  const tfu = b64url(lfield(2, [...vfield(4, 2), ...vfield(5, 5)]))
+  return `https://www.google.com/travel/flights/search?tfs=${tfs}&tfu=${tfu}&curr=INR`
+}
+
 function buildSearchUrls(deal: Deal): { google: string } {
   const dept = deal.validity_start
+  const cabin = detectCabin(deal.curator_note)
+  const tfsCabin = cabin?.tfsCabin ?? 1
+
+  // One-way deals → single-leg one-way search.
+  if (tripFromNote(deal.curator_note) === 'oneway') {
+    return { google: googleFlightsOneWayUrl(deal.origin_iata, deal.dest_iata, dept, tfsCabin) }
+  }
+
   let ret = deal.validity_end
   if (!ret || ret === dept) {
     const d = new Date(dept)
@@ -91,11 +113,9 @@ function buildSearchUrls(deal: Deal): { google: string } {
     ret = d.toISOString().split('T')[0]
   }
 
-  const cabin = detectCabin(deal.curator_note)
-
   // Google Flights — protobuf deep link with dates + cheapest sort for every deal.
   // Cabin defaults to economy (1) when no premium cabin is detected.
-  const google = googleFlightsCabinUrl(deal.origin_iata, deal.dest_iata, dept, ret, cabin?.tfsCabin ?? 1)
+  const google = googleFlightsCabinUrl(deal.origin_iata, deal.dest_iata, dept, ret, tfsCabin)
 
   return { google }
 }
@@ -110,6 +130,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
   const { google: googleUrl } = buildSearchUrls(deal)
   const cabin = detectCabin(deal.curator_note)
+  const oneWay = tripFromNote(deal.curator_note) === 'oneway'
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -127,7 +148,9 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
           <div className="p-6">
             <p className="text-sm text-gray-500 uppercase tracking-wide font-medium">
-              {deal.origin_iata}–{deal.dest_iata}–{deal.origin_iata} · {deal.origin_city} ↔ {deal.dest_city}
+              {oneWay
+                ? `${deal.origin_iata}–${deal.dest_iata} · ${deal.origin_city} → ${deal.dest_city}`
+                : `${deal.origin_iata}–${deal.dest_iata}–${deal.origin_iata} · ${deal.origin_city} ↔ ${deal.dest_city}`}
             </p>
             <h1 className="text-2xl font-bold text-gray-900 mt-1">{deal.airline}</h1>
 
@@ -136,7 +159,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               <span className="text-lg text-gray-400 line-through">{formatPrice(deal.normal_price, deal.currency)}</span>
             </div>
             <span className="inline-block mt-2 text-xs font-bold text-green-700 bg-green-50 border border-green-100 px-2.5 py-1 rounded-full">
-              ✈ Round trip fare · both ways included
+              {oneWay ? '✈ One way fare · single journey' : '✈ Round trip fare · both ways included'}
             </span>
 
             <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-600">

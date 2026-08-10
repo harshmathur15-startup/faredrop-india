@@ -2,7 +2,7 @@
 
 import { Deal } from '@/types'
 import DealLink from './DealLink'
-import { calcDiscount, formatPrice } from '@/lib/utils'
+import { calcDiscount, formatPrice, tripFromNote } from '@/lib/utils'
 
 const DEST_META: Record<string, { flag: string }> = {
   BKK: { flag: '🇹🇭' }, DMK: { flag: '🇹🇭' }, DPS: { flag: '🇮🇩' },
@@ -16,6 +16,9 @@ const DEST_META: Record<string, { flag: string }> = {
   CGK: { flag: '🇮🇩' }, CAI: { flag: '🇪🇬' }, GAN: { flag: '🇲🇻' },
   AMS: { flag: '🇳🇱' }, YYZ: { flag: '🇨🇦' }, MEL: { flag: '🇦🇺' },
   ATL: { flag: '🇺🇸' }, JFK: { flag: '🇺🇸' }, IAD: { flag: '🇺🇸' },
+  GOI: { flag: '🇮🇳' }, GOX: { flag: '🇮🇳' }, IXL: { flag: '🇮🇳' },
+  COK: { flag: '🇮🇳' }, UDR: { flag: '🇮🇳' }, DEL: { flag: '🇮🇳' },
+  BOM: { flag: '🇮🇳' }, BLR: { flag: '🇮🇳' }, MAA: { flag: '🇮🇳' },
 }
 
 export default function HeroDeals({ deals }: { deals: Deal[] }) {
@@ -48,6 +51,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
           const note = (deal.curator_note ?? '').toLowerCase()
           const isBusiness = note.includes('business')
           const isPEDeal = note.includes('premium economy') || note.includes('premium_economy')
+          const oneWay = tripFromNote(deal.curator_note) === 'oneway'
           const tierColor = deal.discount >= 70 ? 'bg-violet-600' : deal.discount >= 50 ? 'bg-emerald-600' : 'bg-blue-600'
           return (
             <DealLink key={deal.id} dealId={deal.id}
@@ -63,11 +67,11 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
                   {isBusiness ? '✦ Business' : '⬆ Prem. Eco'}
                 </span>
               )}
-              <p className="text-slate-500 text-[11px] mb-2 truncate">{deal.origin_iata}–{deal.dest_iata}–{deal.origin_iata}</p>
+              <p className="text-slate-500 text-[11px] mb-2 truncate">{oneWay ? `${deal.origin_iata}–${deal.dest_iata}` : `${deal.origin_iata}–${deal.dest_iata}–${deal.origin_iata}`}</p>
               <p className="text-slate-400 text-xs line-through leading-none">{formatPrice(deal.normal_price, deal.currency)}</p>
               <p className="font-display font-bold text-xl text-slate-900 leading-tight">
                 {formatPrice(deal.deal_price, deal.currency)}{' '}
-                <span className="text-slate-400 text-[11px] font-medium">round trip</span>
+                <span className="text-slate-400 text-[11px] font-medium">{oneWay ? 'one way' : 'round trip'}</span>
               </p>
               <p className="text-blue-600 text-xs mt-2 font-semibold group-hover:translate-x-0.5 transition-transform">View deal →</p>
             </DealLink>
