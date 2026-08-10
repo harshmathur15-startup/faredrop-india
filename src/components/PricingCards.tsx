@@ -2,11 +2,41 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
 const INR = (n: number) => `₹${n.toLocaleString('en-IN')}`
 
 export default function PricingCards() {
   const [annual, setAnnual] = useState(false)
+  const [loading, setLoading] = useState<'silver' | 'gold' | null>(null)
+  const [err, setErr] = useState('')
+  const router = useRouter()
+
+  // Payment gateway isn't live yet — clicking a paid plan grants the tier
+  // immediately (no payment) so the deals unlock. Not signed in → sign up first.
+  async function handleUpgrade(tier: 'silver' | 'gold') {
+    setErr('')
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { router.push('/signup'); return }
+    setLoading(tier)
+    try {
+      const res = await fetch('/api/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ tier }),
+      })
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}))
+        throw new Error(j.error || 'Could not unlock. Please try again.')
+      }
+      // Unlocked — hard-navigate so the tier is re-read fresh and deals appear.
+      window.location.href = '/#deals'
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Something went wrong')
+      setLoading(null)
+    }
+  }
 
   return (
     <>
@@ -119,9 +149,13 @@ export default function PricingCards() {
             </li>
           </ul>
 
-          <Link href="/signup" className="block w-full text-center bg-white hover:bg-gray-100 text-slate-700 font-bold py-3 rounded-xl transition-colors">
-            {annual ? `Get Silver for ${INR(1199)}/yr` : 'Try Silver for ₹1'}
-          </Link>
+          <button
+            onClick={() => handleUpgrade('silver')}
+            disabled={loading === 'silver'}
+            className="block w-full text-center bg-white hover:bg-gray-100 text-slate-700 font-bold py-3 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading === 'silver' ? 'Unlocking…' : annual ? `Get Silver for ${INR(1199)}/yr` : 'Try Silver for ₹1'}
+          </button>
         </div>
 
         {/* Gold */}
@@ -166,12 +200,18 @@ export default function PricingCards() {
             ))}
           </ul>
 
-          <Link href="/signup" className="block w-full text-center bg-amber-900 hover:bg-amber-950 text-white font-bold py-3 rounded-xl transition-colors">
-            {annual ? `Get Gold for ${INR(9999)}/yr` : 'Upgrade to Gold'}
-          </Link>
+          <button
+            onClick={() => handleUpgrade('gold')}
+            disabled={loading === 'gold'}
+            className="block w-full text-center bg-amber-900 hover:bg-amber-950 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading === 'gold' ? 'Unlocking…' : annual ? `Get Gold for ${INR(9999)}/yr` : 'Upgrade to Gold'}
+          </button>
           <p className="text-center text-amber-800 text-xs mt-3">Best value for frequent travelers</p>
         </div>
       </div>
+
+      {err && <p className="text-center text-red-600 text-sm mt-6">{err}</p>}
     </>
   )
 }
