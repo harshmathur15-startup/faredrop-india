@@ -147,6 +147,17 @@ function monthLabel(iso: string): string {
   return new Date(iso).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
 }
 
+function cabinLabel(deal: Deal): 'Economy' | 'Premium Economy' | 'Business' {
+  const c = getCabinClass(deal.curator_note)
+  return c === 'business' ? 'Business' : c === 'premium_economy' ? 'Premium Economy' : 'Economy'
+}
+
+const CABIN_SECTIONS: { key: 'Economy' | 'Premium Economy' | 'Business'; label: string; icon: string; headerCls: string; countCls: string }[] = [
+  { key: 'Economy',         label: 'Economy',         icon: '✈',  headerCls: 'text-blue-700',   countCls: 'bg-blue-100 text-blue-700 border-blue-200' },
+  { key: 'Premium Economy', label: 'Premium Economy', icon: '⭐', headerCls: 'text-violet-700', countCls: 'bg-violet-100 text-violet-700 border-violet-200' },
+  { key: 'Business',        label: 'Business Class',  icon: '👑', headerCls: 'text-amber-700',  countCls: 'bg-amber-100 text-amber-800 border-amber-200' },
+]
+
 function FilterSelect({ label, options, value, onChange }: {
   label: string; options: string[]; value: string; onChange: (v: string) => void
 }) {
@@ -190,6 +201,10 @@ export default function DealCarousel({ deals }: { deals: Deal[] }) {
   )
   const filtersActive = city !== 'All cities' || month !== 'All months'
 
+  // Group filtered deals by cabin class
+  const byCabin: Record<string, Deal[]> = { Economy: [], 'Premium Economy': [], Business: [] }
+  for (const d of filtered) byCabin[cabinLabel(d)].push(d)
+
   return (
     <div>
       {/* International / Domestic tabs */}
@@ -230,8 +245,27 @@ export default function DealCarousel({ deals }: { deals: Deal[] }) {
               <p className="text-gray-400 text-sm mt-1">Try a different month or home city — or reset.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-              {filtered.map(deal => <DealCard key={deal.id} deal={deal} />)}
+            <div className="space-y-12">
+              {CABIN_SECTIONS.map(section => {
+                const sectionDeals = byCabin[section.key]
+                if (!sectionDeals || sectionDeals.length === 0) return null
+                return (
+                  <div key={section.key}>
+                    {/* Class section header */}
+                    <div className="flex items-center gap-3 mb-5">
+                      <h3 className={`font-display text-xl font-bold ${section.headerCls}`}>
+                        {section.icon} {section.label}
+                      </h3>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${section.countCls}`}>
+                        {sectionDeals.length} deal{sectionDeals.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+                      {sectionDeals.map(deal => <DealCard key={deal.id} deal={deal} />)}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </>
