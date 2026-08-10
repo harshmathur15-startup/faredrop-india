@@ -3,6 +3,7 @@
 import { Deal } from '@/types'
 import DealLink from './DealLink'
 import { calcDiscount, formatPrice, tripFromNote } from '@/lib/utils'
+import { pickHeroDeals } from '@/lib/heroDeals'
 
 const DEST_META: Record<string, { flag: string }> = {
   BKK: { flag: '🇹🇭' }, DMK: { flag: '🇹🇭' }, DPS: { flag: '🇮🇩' },
@@ -22,18 +23,8 @@ const DEST_META: Record<string, { flag: string }> = {
 }
 
 export default function HeroDeals({ deals }: { deals: Deal[] }) {
-  const scored = deals
-    .map(d => ({ ...d, discount: calcDiscount(d.normal_price, d.deal_price) }))
-    .filter(d => d.discount > 0 && !d.is_premium)
-    .sort((a, b) => b.discount - a.discount)
-
-  // One card per destination — keep the highest-discount deal for each
-  const seen = new Set<string>()
-  const heroDeals = scored.filter(d => {
-    if (seen.has(d.dest_iata)) return false
-    seen.add(d.dest_iata)
-    return true
-  })
+  // Featured strip = top 5 free deals (one row); the rest show in the deals grid.
+  const heroDeals = pickHeroDeals(deals, 5).map(d => ({ ...d, discount: calcDiscount(d.normal_price, d.deal_price) }))
 
   if (heroDeals.length === 0) return null
 
@@ -42,7 +33,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
       <div className="mb-4 mt-12 flex items-center justify-center gap-2">
         <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
         <p className="text-white text-xs font-bold uppercase tracking-widest">
-          Live curated deals · round trip · sign up to book
+          Live curated deals · sign up to book
         </p>
       </div>
       <div className="flex flex-wrap justify-center gap-3 mb-0 max-w-3xl mx-auto">

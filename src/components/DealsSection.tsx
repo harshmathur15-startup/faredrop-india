@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Deal } from '@/types'
 import { calcDiscount } from '@/lib/utils'
+import { pickHeroDeals } from '@/lib/heroDeals'
 import { useUserTier } from '@/lib/useAuth'
 import DealCard from './DealCard'
 import DealCarousel from './DealCarousel'
@@ -21,7 +22,7 @@ function SectionHeader({ deals }: { deals: Deal[] }) {
       </div>
       {deals.length > 0 && (
         <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-100 px-3 py-1.5 rounded-full">
-          ✈ All prices are round-trip fares
+          ✈ Round-trip &amp; one-way fares
         </span>
       )}
     </div>
@@ -76,12 +77,22 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
     )
   }
 
-  // Free user — hero section already shows free deals; here only show locked premium deals
+  // Free user — the hero shows the top 5 featured free deals; show the rest
+  // here as regular cards, then the locked members-only deals below.
+  const heroIds = new Set(pickHeroDeals(sortedDeals, 5).map(d => d.id))
+  const freeDeals = sortedDeals.filter(d => !d.is_premium && !heroIds.has(d.id))
   const premiumDeals = sortedDeals.filter(d => d.is_premium)
 
   return (
     <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
       <SectionHeader deals={deals} />
+
+      {/* More free deals — beyond the featured hero row */}
+      {freeDeals.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {freeDeals.map(deal => <DealCard key={deal.id} deal={deal} />)}
+        </div>
+      )}
 
       {/* Premium deals — locked, grouped by cabin */}
       {premiumDeals.length > 0 && (
