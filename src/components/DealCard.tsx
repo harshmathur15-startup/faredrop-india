@@ -44,7 +44,7 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
             <div>
               <p className="text-2xl font-black text-gray-900">{formatPrice(deal.deal_price, deal.currency)}</p>
               <p className="text-sm text-gray-400 line-through">{formatPrice(deal.normal_price, deal.currency)}</p>
-              <p className="text-[11px] font-bold text-emerald-700 mt-0.5">✈ Return fare · round trip</p>
+              <p className="text-[11px] font-bold text-emerald-700 mt-0.5">✈ Round trip fare</p>
             </div>
             <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
               {deal.origin_iata} ⇄ {deal.dest_iata}
@@ -102,7 +102,7 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
           <div>
             <p className="text-2xl font-black text-gray-900">{formatPrice(deal.deal_price, deal.currency)}</p>
             <p className="text-sm text-gray-400 line-through">{formatPrice(deal.normal_price, deal.currency)}</p>
-            <p className="text-[11px] font-bold text-emerald-700 mt-0.5">✈ Return fare · round trip</p>
+            <p className="text-[11px] font-bold text-emerald-700 mt-0.5">✈ Round trip fare</p>
           </div>
           <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
             {deal.origin_iata} ⇄ {deal.dest_iata}

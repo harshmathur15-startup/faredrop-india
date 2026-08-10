@@ -21,7 +21,7 @@ function SectionHeader({ deals }: { deals: Deal[] }) {
       </div>
       {deals.length > 0 && (
         <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-100 px-3 py-1.5 rounded-full">
-          ✈ All prices are return (round-trip) fares
+          ✈ All prices are round-trip fares
         </span>
       )}
     </div>

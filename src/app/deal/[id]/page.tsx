@@ -136,7 +136,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               <span className="text-lg text-gray-400 line-through">{formatPrice(deal.normal_price, deal.currency)}</span>
             </div>
             <span className="inline-block mt-2 text-xs font-bold text-green-700 bg-green-50 border border-green-100 px-2.5 py-1 rounded-full">
-              ✈ Return (round-trip) fare · both ways included
+              ✈ Round trip fare · both ways included
             </span>
 
             <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-600">

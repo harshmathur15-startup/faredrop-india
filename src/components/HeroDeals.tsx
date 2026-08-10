@@ -39,7 +39,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
       <div className="mb-4 mt-12 flex items-center justify-center gap-2">
         <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
         <p className="text-white text-xs font-bold uppercase tracking-widest">
-          Live curated deals · return fares · sign up to book
+          Live curated deals · round trip · sign up to book
         </p>
       </div>
       <div className="flex flex-wrap justify-center gap-3 mb-0 max-w-3xl mx-auto">
@@ -67,7 +67,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
               <p className="text-slate-400 text-xs line-through leading-none">{formatPrice(deal.normal_price, deal.currency)}</p>
               <p className="font-display font-bold text-xl text-slate-900 leading-tight">
                 {formatPrice(deal.deal_price, deal.currency)}{' '}
-                <span className="text-slate-400 text-[11px] font-medium">return</span>
+                <span className="text-slate-400 text-[11px] font-medium">round trip</span>
               </p>
               <p className="text-blue-600 text-xs mt-2 font-semibold group-hover:translate-x-0.5 transition-transform">View deal →</p>
             </DealLink>

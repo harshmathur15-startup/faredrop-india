@@ -103,7 +103,7 @@ function DealCard({ deal }: { deal: Deal }) {
 
         {/* Round-trip route on image */}
         <div className="absolute bottom-2.5 left-3 right-3">
-          <p className="text-white/75 text-[11px] font-semibold tracking-wider uppercase">{deal.origin_iata} · {deal.dest_iata} · {deal.origin_iata} · Return</p>
+          <p className="text-white/75 text-[11px] font-semibold tracking-wider uppercase">{deal.origin_iata} · {deal.dest_iata} · {deal.origin_iata} · Round trip</p>
           <p className="font-display text-white text-lg font-bold leading-tight">{deal.dest_city}</p>
         </div>
       </div>
@@ -116,7 +116,7 @@ function DealCard({ deal }: { deal: Deal }) {
           <span className="font-display text-xl font-bold text-slate-900">{formatPrice(deal.deal_price, deal.currency)}</span>
           <span className="text-sm text-slate-400 line-through">{formatPrice(deal.normal_price, deal.currency)}</span>
         </div>
-        <p className="text-[11px] font-semibold text-emerald-700 mt-0.5">Return fare · round trip</p>
+        <p className="text-[11px] font-semibold text-emerald-700 mt-0.5">✈ Round trip fare</p>
 
         <p className="text-xs text-slate-400 mt-2">
           {new Date(deal.validity_start).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} –{' '}
