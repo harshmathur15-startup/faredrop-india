@@ -236,3 +236,46 @@ export async function sendOtpEmail({ to, otp }: { to: string; otp: string }) {
     `),
   })
 }
+
+// ── "Can't find your deal?" request → notify the team ───────────────────────
+export interface DealRequest {
+  email: string
+  name?: string
+  departure_month: string
+  trip_scope: string
+  trip_duration_days?: number | null
+  origin_city?: string
+  dest_city: string
+  dest_country: string
+  trip_type: string
+  notes?: string
+}
+
+export async function sendDealRequestEmail(req: DealRequest) {
+  const resend = getResend()
+  const to = process.env.DEAL_REQUESTS_EMAIL || 'harshmathur15@gmail.com'
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:8px 0;color:#94a3b8;font-size:13px;width:170px;vertical-align:top">${label}</td><td style="padding:8px 0;color:#1e293b;font-size:14px;font-weight:600">${value || '—'}</td></tr>`
+  return resend.emails.send({
+    from: FROM,
+    to,
+    replyTo: req.email,
+    subject: `🔎 New deal request: ${req.dest_city}, ${req.dest_country} (${req.departure_month})`,
+    html: shell(`
+      <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px;font-weight:800">New deal request</h2>
+      <p style="color:#64748b;margin:0 0 20px">A traveller couldn't find their deal and submitted the form.</p>
+      <table style="width:100%;border-collapse:collapse;border-top:1px solid #e2e8f0">
+        ${row('Destination', `${req.dest_city}, ${req.dest_country}`)}
+        ${row('Departure month', req.departure_month)}
+        ${row('Trip', req.trip_scope)}
+        ${row('Trip type', req.trip_type)}
+        ${row('Duration', req.trip_duration_days ? `${req.trip_duration_days} days` : '—')}
+        ${row('From (origin)', req.origin_city || '—')}
+        ${row('Notes', req.notes || '—')}
+      </table>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0">
+        ${row('Requested by', req.name ? `${req.name} · ${req.email}` : req.email)}
+      </div>
+    `),
+  })
+}
