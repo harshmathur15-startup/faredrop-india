@@ -12,6 +12,10 @@ const DEST_META: Record<string, { flag: string }> = {
   HKT: { flag: '🇹🇭' }, HAN: { flag: '🇻🇳' }, SGN: { flag: '🇻🇳' },
   ICN: { flag: '🇰🇷' }, DOH: { flag: '🇶🇦' }, CMB: { flag: '🇱🇰' },
   SXR: { flag: '🇮🇳' }, PVG: { flag: '🇨🇳' }, SHA: { flag: '🇨🇳' },
+  MUC: { flag: '🇩🇪' }, TBS: { flag: '🇬🇪' }, IST: { flag: '🇹🇷' },
+  CGK: { flag: '🇮🇩' }, CAI: { flag: '🇪🇬' }, GAN: { flag: '🇲🇻' },
+  AMS: { flag: '🇳🇱' }, YYZ: { flag: '🇨🇦' }, MEL: { flag: '🇦🇺' },
+  ATL: { flag: '🇺🇸' }, JFK: { flag: '🇺🇸' }, IAD: { flag: '🇺🇸' },
 }
 
 export default function HeroDeals({ deals }: { deals: Deal[] }) {
