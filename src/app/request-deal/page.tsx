@@ -146,10 +146,10 @@ export default function RequestDealPage() {
                 </div>
               </div>
 
-              {/* Origin (optional) */}
+              {/* Origin */}
               <div>
-                <label className={labelCls}>Departing from (optional)</label>
-                <input type="text" placeholder="e.g. Delhi" value={form.origin_city} onChange={e => set('origin_city', e.target.value)} className={inputCls} />
+                <label className={labelCls}>Departing from *</label>
+                <input type="text" required placeholder="e.g. Delhi" value={form.origin_city} onChange={e => set('origin_city', e.target.value)} className={inputCls} />
               </div>
 
               {/* Notes */}

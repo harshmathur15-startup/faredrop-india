@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Required fields
-  const missing = (['email', 'departure_month', 'trip_scope', 'dest_city', 'dest_country', 'trip_type'] as const)
+  const missing = (['email', 'departure_month', 'trip_scope', 'origin_city', 'dest_city', 'dest_country', 'trip_type'] as const)
     .filter(k => !request[k])
   if (missing.length) {
     return NextResponse.json({ error: `Missing: ${missing.join(', ')}` }, { status: 400 })
