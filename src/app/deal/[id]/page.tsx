@@ -82,15 +82,19 @@ function googleFlightsCabinUrl(orig: string, dest: string, dept: string, ret: st
   return `https://www.google.com/travel/flights/search?tfs=${tfs}&tfu=${tfu}&curr=INR`
 }
 
-// One-way variant — tfs f2:1 (one way) with a single leg, cheapest sort.
+// One-way variant — single leg, trip type f19:2 (one way; round trip is f19:1).
+// Verified byte-for-byte against a Google-generated one-way URL.
 function googleFlightsOneWayUrl(orig: string, dest: string, dept: string, tfsCabin: number): string {
   const airport = (iata: string) => [...vfield(1, 1), ...lfield(2, bytesOf(iata))]
   const leg = (date: string, from: string, to: string) => [...lfield(2, bytesOf(date)), ...lfield(13, airport(from)), ...lfield(14, airport(to))]
+  // f16 all-stops sentinel {f1:-1} — matches Google's own one-way output.
+  const allStops = [0x08, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01]
   const tfs = b64url([
-    ...vfield(1, 28), ...vfield(2, 1),
+    ...vfield(1, 28), ...vfield(2, 2),
     ...lfield(3, leg(dept, orig, dest)),
     ...vfield(8, 1), ...vfield(9, tfsCabin), ...vfield(14, 1),
-    ...vfield(19, 1),
+    ...lfield(16, allStops),
+    ...vfield(19, 2),
   ])
   const tfu = b64url(lfield(2, [...vfield(4, 2), ...vfield(5, 5)]))
   return `https://www.google.com/travel/flights/search?tfs=${tfs}&tfu=${tfu}&curr=INR`
