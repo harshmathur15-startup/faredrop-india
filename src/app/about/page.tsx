@@ -13,7 +13,7 @@ const PILLARS = [
     tagline: 'Great deals, no hunting',
     color: 'bg-blue-50 border-blue-100',
     accent: 'text-blue-700',
-    desc: 'We monitor hundreds of routes from Delhi, Mumbai, Bangalore, Chennai and Hyderabad 24/7. The moment a price drops 40%+, we alert you by email — before the fare disappears.',
+    desc: 'We monitor hundreds of routes from Delhi, Mumbai, Bangalore, Chennai and Hyderabad 24/7 — to both domestic getaways (Goa, Leh, Srinagar, Udaipur…) and international destinations (Bangkok, London, Tokyo, Istanbul, Bali…). The moment a price drops sharply — up to 90% off — we alert you by email, before the fare disappears.',
     cta: { label: 'Get free alerts', href: '/#signup' },
   },
   {
@@ -40,7 +40,7 @@ const VALUES = [
   { icon: '🎯', title: 'Only real deals', desc: 'We don\'t publish fares that are barely 10% off the normal price. If it\'s not remarkable, it doesn\'t make the cut.' },
   { icon: '⚡', title: 'Speed over noise', desc: 'One email alert per genuine deal — never a daily digest of mediocre offers. Your inbox stays clean.' },
   { icon: '🤝', title: 'Honest economics', desc: 'Creators earn on confirmed bookings, not clicks. Agents pay only on results. No vanity metrics.' },
-  { icon: '🇮🇳', title: 'Built for India', desc: 'Prices in rupees. Routes from Indian metros. Advice for Indian passport holders. We\'re not a copy-paste of a Western deal site.' },
+  { icon: '🇮🇳', title: 'Built for India', desc: 'Prices in rupees. Deals from Indian metros to both domestic and international destinations. Advice for Indian passport holders. We\'re not a copy-paste of a Western deal site.' },
 ]
 
 export default function AboutPage() {
@@ -89,7 +89,7 @@ export default function AboutPage() {
               Flight deals disappear in hours. Most Indians never see them.
             </h2>
             <p className="text-slate-600 leading-relaxed mb-4">
-              Airlines occasionally publish fares that are 40–90% below the going rate — mistake fares, flash sales, unsold inventory. These windows last 4–24 hours. If you happen to be browsing at the right moment, you win. If not, you pay full price.
+              Airlines occasionally publish fares that are up to 90% below the going rate — mistake fares, flash sales, unsold inventory. These windows last 4–24 hours. If you happen to be browsing at the right moment, you win. If not, you pay full price.
             </p>
             <p className="text-slate-600 leading-relaxed">
               Meanwhile, travel creators with engaged audiences have no clean way to earn from the travel decisions they influence. And boutique travel agents — who know their destinations better than any OTA — have no affordable way to reach motivated buyers.
