@@ -20,7 +20,7 @@ async function getDeals(): Promise<Deal[]> {
       .select('id, origin_iata, dest_iata, origin_city, dest_city, airline, normal_price, deal_price, currency, validity_start, validity_end, source_url, image_url, status, published_at, curator_note, created_at, is_premium')
       .eq('status', 'published')
       .order('published_at', { ascending: false })
-      .limit(50)
+      .limit(400)
     return data ?? []
   } catch {
     return []
