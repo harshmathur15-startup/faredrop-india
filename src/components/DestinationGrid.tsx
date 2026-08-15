@@ -169,23 +169,32 @@ export default function DestinationGrid({ deals }: { deals: Deal[] }) {
                   {mg.deals.length} deal{mg.deals.length !== 1 ? 's' : ''}
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
                 {mg.deals.map(deal => {
                   const disc = calcDiscount(deal.normal_price, deal.deal_price)
                   const oneWay = tripFromNote(deal.curator_note) === 'oneway'
                   return (
                     <Link key={deal.id} href={`/deal/${deal.id}`}
-                      className="group flex bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all">
-                      <div className="relative w-28 shrink-0">
-                        <Image src={deal.image_url} alt={deal.dest_city} fill sizes="112px" className="object-cover" />
+                      className="group flex sm:flex-col bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 sm:hover:-translate-y-1 transition-all duration-300">
+                      {/* Image: compact left on mobile, full image-forward on desktop */}
+                      <div className="relative w-28 shrink-0 sm:w-full sm:aspect-[3/2] overflow-hidden">
+                        <Image src={deal.image_url} alt={deal.dest_city} fill sizes="(max-width:640px) 112px, 300px"
+                          className="object-cover sm:group-hover:scale-105 transition-transform duration-500" />
+                        <div className="hidden sm:block absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                        <div className="hidden sm:block absolute bottom-2.5 left-3 right-3">
+                          <p className="text-white/85 text-base leading-none mb-0.5">{FLAG[deal.dest_iata] ?? '✈️'}</p>
+                          <p className="font-display text-white text-lg font-bold leading-tight">{deal.dest_city}</p>
+                        </div>
+                        {disc > 0 && <span className="hidden sm:block absolute top-2.5 left-2.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">{disc}% off</span>}
                       </div>
-                      <div className="p-3 flex-1 min-w-0">
-                        <p className="font-bold text-slate-900 text-sm truncate">{FLAG[deal.dest_iata] ?? '✈️'} {deal.dest_city}</p>
+                      {/* Body */}
+                      <div className="p-3 sm:p-4 flex-1 min-w-0">
+                        <p className="font-bold text-slate-900 text-sm truncate sm:hidden">{FLAG[deal.dest_iata] ?? '✈️'} {deal.dest_city}</p>
                         <p className="text-xs text-slate-500 truncate">{deal.origin_city} {oneWay ? '→' : '⇄'} {deal.dest_city}</p>
                         <p className="text-[11px] text-slate-400 truncate mt-0.5">{deal.airline} · {mon(deal.validity_start)} · {oneWay ? 'One way' : 'Round trip'}</p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <span className="font-display font-bold text-slate-900">{formatPrice(deal.deal_price, deal.currency)}</span>
-                          {disc > 0 && <span className="text-[11px] font-bold text-emerald-600">{disc}% off</span>}
+                        <div className="flex items-center gap-2 mt-1.5 sm:mt-2">
+                          <span className="font-display font-bold text-slate-900 sm:text-xl">{formatPrice(deal.deal_price, deal.currency)}</span>
+                          {disc > 0 && <span className="text-[11px] font-bold text-emerald-600 sm:hidden">{disc}% off</span>}
                           <CabinBadge note={deal.curator_note} />
                         </div>
                       </div>
