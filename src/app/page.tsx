@@ -83,13 +83,13 @@ export default async function Home() {
 
           {/* Headline */}
           <h1 className="font-display text-4xl sm:text-6xl font-extrabold leading-[1.1] text-slate-900 mb-6">
-            Discover Great Flight Deals.{' '}
-            <span className="text-blue-700">Book Wherever You Trust.</span>
+            Flexible with your dates?{' '}
+            <span className="text-blue-700">Discover great flight deals.</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-slate-800 text-lg sm:text-xl font-medium leading-relaxed mb-8 max-w-xl mx-auto">
-            Skip the endless searching. We handpick standout fares on the best dates to fly — you just choose where to go.
+            Skip the endless searching. We handpick standout fares on dates with especially attractive prices — you just choose where to go.
           </p>
 
           {/* CTAs */}
