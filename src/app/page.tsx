@@ -133,7 +133,7 @@ export default async function Home() {
               {
                 icon: '✋',
                 title: 'We cut out the noise',
-                desc: 'Long layovers, awkward self-transfers and unnecessary transit hassles don\'t make the cut.',
+                desc: 'We stick to non-stop and 1-stop flights and skip fares with very long layovers — so you get sensible routings, not just a low price.',
               },
               {
                 icon: '🔗',
