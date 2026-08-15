@@ -6,7 +6,7 @@ import { calcDiscount } from '@/lib/utils'
 import { pickHeroDeals } from '@/lib/heroDeals'
 import { useUserTier } from '@/lib/useAuth'
 import DealCard from './DealCard'
-import DealCarousel from './DealCarousel'
+import DestinationGrid from './DestinationGrid'
 
 function SectionHeader({ deals }: { deals: Deal[] }) {
   const liveCount = deals.filter(d => calcDiscount(d.normal_price, d.deal_price) > 0).length
@@ -67,12 +67,12 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
     calcDiscount(b.normal_price, b.deal_price) - calcDiscount(a.normal_price, a.deal_price)
   )
 
-  // Premium user — see everything
+  // Premium user — see everything, in the destination/month storefront
   if (isPremiumUser) {
     return (
       <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
         <SectionHeader deals={deals} />
-        <DealCarousel deals={sortedDeals} />
+        <DestinationGrid deals={sortedDeals} />
       </section>
     )
   }
