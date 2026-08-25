@@ -1,15 +1,35 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin, rateLimit, clientKey, tooManyRequests } from '@/lib/api-guard'
 
 export const dynamic = 'force-dynamic'
 
+const MAX_BYTES = 5 * 1024 * 1024 // 5 MB request cap
+const MAX_ROWS = 5000             // per-request row cap
+const RATE_LIMIT = 6              // imports per window
+const RATE_WINDOW_MS = 60_000
+
 export async function POST(req: NextRequest) {
+  // AUTH + limits before any parsing/DB work.
+  const authErr = requireAdmin(req)
+  if (authErr) return authErr
+  if (!rateLimit(clientKey(req, 'analytics-import'), RATE_LIMIT, RATE_WINDOW_MS)) {
+    return tooManyRequests()
+  }
+  const contentLength = Number(req.headers.get('content-length') ?? '0')
+  if (contentLength && contentLength > MAX_BYTES) {
+    return NextResponse.json({ error: `Request too large (max ${MAX_BYTES} bytes)` }, { status: 413 })
+  }
+
   try {
     const body = await req.json()
     const { flights, source = 'flightapi-import' } = body
 
     if (!flights || !Array.isArray(flights)) {
       return NextResponse.json({ error: 'flights array required' }, { status: 400 })
+    }
+    if (flights.length > MAX_ROWS) {
+      return NextResponse.json({ error: `Too many rows (max ${MAX_ROWS} per request)` }, { status: 413 })
     }
 
     // Transform and insert flight data into price_history

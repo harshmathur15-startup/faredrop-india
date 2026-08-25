@@ -1,12 +1,16 @@
 import { supabaseAdmin } from '@/lib/supabase'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/api-guard'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authErr = requireAdmin(req)
+  if (authErr) return authErr
+
   try {
-    // Check all tables for record counts
-    const tables = ['deals', 'price_history', 'explore_cache', 'email_subscribers']
+    // Head-only counts (no row data pulled) for the tables that actually exist.
+    const tables = ['flight_itineraries', 'deals', 'price_history', 'route_prices', 'route_price_daily', 'explore_cache', 'subscribers']
     const results: any = {}
 
     for (const table of tables) {

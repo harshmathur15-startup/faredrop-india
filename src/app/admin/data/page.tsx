@@ -1,38 +1,55 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 export default function DataAnalyticsPage() {
   const [data, setData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [secret, setSecret] = useState('')
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch('/api/analytics')
-        const json = await res.json()
-        if (res.ok) {
-          setData(json)
-        } else {
-          setError(json.error || 'Failed to fetch data')
-        }
-      } catch (err) {
-        setError(String(err))
-      } finally {
-        setLoading(false)
+  const loadData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/analytics?pageSize=500', { headers: { 'x-admin-token': secret } })
+      const json = await res.json()
+      if (res.ok) {
+        setData(json)
+      } else {
+        setError(json.error || 'Failed to fetch data')
       }
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setLoading(false)
     }
+  }
 
-    fetchData()
-  }, [])
-
-  if (loading) return <div className="p-8">Loading...</div>
-  if (error) return <div className="p-8 text-red-600">Error: {error}</div>
-  if (!data) return <div className="p-8">No data</div>
+  if (!data) {
+    return (
+      <div className="p-8 max-w-md">
+        <h1 className="text-2xl font-black text-gray-900 mb-4">Data Analytics</h1>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Admin password</label>
+        <input
+          type="password"
+          value={secret}
+          onChange={(e) => setSecret(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') loadData() }}
+          placeholder="Enter admin password"
+          className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button onClick={loadData} disabled={loading || !secret}
+          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg">
+          {loading ? 'Loading…' : 'Load analytics'}
+        </button>
+        {error && <p className="text-red-600 mt-4">Error: {error}</p>}
+      </div>
+    )
+  }
 
   const handleDownloadCSV = async () => {
-    const response = await fetch('/api/analytics/export')
+    const response = await fetch('/api/analytics/export', { headers: { 'x-admin-token': secret } })
     const csv = await response.text()
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)

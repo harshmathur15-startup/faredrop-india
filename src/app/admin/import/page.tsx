@@ -9,6 +9,7 @@ export default function DataImportPage() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [secret, setSecret] = useState('')
 
   // Parse CSV to JSON
   const parseCSV = (csvText: string): any[] => {
@@ -67,7 +68,7 @@ export default function DataImportPage() {
 
       const res = await fetch('/api/analytics/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': secret },
         body: JSON.stringify({
           flights: flightsData,
           source: 'flightapi-io-csv-import',
@@ -118,7 +119,7 @@ export default function DataImportPage() {
 
       const res = await fetch('/api/analytics/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': secret },
         body: JSON.stringify({
           flights: flightsData,
           source: 'flightapi-io-paste-import',
@@ -143,7 +144,18 @@ export default function DataImportPage() {
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <h1 className="text-4xl font-black mb-2 text-gray-900">Import Flight Data</h1>
-      <p className="text-gray-600 mb-8">Choose how to import your FlightAPI.io data - CSV, JSON, or paste</p>
+      <p className="text-gray-600 mb-4">Choose how to import your FlightAPI.io data - CSV, JSON, or paste</p>
+
+      <div className="mb-8 max-w-md">
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Admin password</label>
+        <input
+          type="password"
+          value={secret}
+          onChange={(e) => setSecret(e.target.value)}
+          placeholder="Enter admin password to import"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Section */}

@@ -29,3 +29,23 @@ export function tripFromNote(note?: string | null): 'oneway' | 'roundtrip' {
   if (note && /one.?way/i.test(note)) return 'oneway'
   return 'roundtrip'
 }
+
+// Human "price checked N ago" label from a last_verified_at timestamp.
+// Returns null when there is NO timestamp — never claim a fare is live/verified
+// without evidence. `stale` flags fares that should be re-verified before booking.
+export function formatFreshness(lastVerifiedAt?: string | null): { text: string; stale: boolean } | null {
+  if (!lastVerifiedAt) return null
+  const then = new Date(lastVerifiedAt).getTime()
+  if (!Number.isFinite(then)) return null
+
+  const mins = Math.floor((Date.now() - then) / 60000)
+  if (mins < 2) return { text: 'Price checked just now', stale: false }
+  if (mins < 60) return { text: `Price checked ${mins} minutes ago`, stale: false }
+
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return { text: `Price checked ${hours} hour${hours === 1 ? '' : 's'} ago`, stale: false }
+
+  const days = Math.floor(hours / 24)
+  if (days === 1) return { text: 'Last checked yesterday — verify the final fare before booking', stale: true }
+  return { text: `Last checked ${days} days ago — verify the final fare before booking`, stale: true }
+}

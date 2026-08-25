@@ -3,7 +3,7 @@ import { Deal } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { formatPrice, calcDiscount, formatDateRange, tripFromNote } from '@/lib/utils'
+import { formatPrice, calcDiscount, formatDateRange, tripFromNote, formatFreshness } from '@/lib/utils'
 import DealGate from '@/components/DealGate'
 
 const CITY_IMAGES: Record<string, string> = {
@@ -135,6 +135,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   const { google: googleUrl } = buildSearchUrls(deal)
   const cabin = detectCabin(deal.curator_note)
   const oneWay = tripFromNote(deal.curator_note) === 'oneway'
+  const freshness = formatFreshness(deal.last_verified_at)
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -165,6 +166,13 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             <span className="inline-block mt-2 text-xs font-bold text-green-700 bg-green-50 border border-green-100 px-2.5 py-1 rounded-full">
               {oneWay ? '✈ One way fare · single journey' : '✈ Round trip fare · both ways included'}
             </span>
+
+            {/* Fare freshness — only shown when we actually have a verification timestamp. */}
+            {freshness && (
+              <p className={`mt-3 text-xs font-medium flex items-center gap-1.5 ${freshness.stale ? 'text-amber-600' : 'text-gray-500'}`}>
+                <span aria-hidden>🕐</span>{freshness.text}
+              </p>
+            )}
 
             <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-600">
               <div>

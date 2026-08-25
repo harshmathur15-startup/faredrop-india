@@ -1,15 +1,20 @@
 import { supabaseAdmin } from '@/lib/supabase'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/api-guard'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authErr = requireAdmin(req)
+  if (authErr) return authErr
+
   try {
-    // Get all explore cache data
+    // Get explore cache metadata (results included only to count entries).
     const { data: cache, count, error } = await supabaseAdmin
       .from('explore_cache')
-      .select('*', { count: 'exact' })
+      .select('cache_key, created_at, results', { count: 'exact' })
       .order('created_at', { ascending: false })
+      .limit(200)
 
     if (error) throw error
 

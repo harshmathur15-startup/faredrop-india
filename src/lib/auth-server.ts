@@ -42,6 +42,12 @@ export async function getRole(userId: string): Promise<UserRole> {
 }
 
 // Admin auth reuses the existing shared-secret header (same as /api/admin/*).
+// FAILS CLOSED: denies when ADMIN_SECRET is unset or the header is missing, so a
+// misconfigured deploy can never leave admin endpoints open. See src/lib/api-guard.ts.
 export function isAdminToken(req: NextRequest): boolean {
-  return req.headers.get('x-admin-token') === process.env.ADMIN_SECRET
+  const secret = process.env.ADMIN_SECRET
+  if (!secret) return false
+  const token = req.headers.get('x-admin-token')
+  if (!token) return false
+  return token === secret
 }

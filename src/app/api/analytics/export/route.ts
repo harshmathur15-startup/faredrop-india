@@ -1,9 +1,14 @@
 import { supabaseAdmin } from '@/lib/supabase'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/api-guard'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Full data export is admin-only — never publicly downloadable.
+  const authErr = requireAdmin(req)
+  if (authErr) return authErr
+
   try {
     // Fetch all deals
     const { data: deals, error: dealsError } = await supabaseAdmin

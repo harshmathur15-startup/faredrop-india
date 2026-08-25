@@ -186,19 +186,29 @@ async function savePriceHistory(origin: string, destIata: string, price: number,
   }
 }
 
-async function getStoredPrices(origin: string, destIata: string) {
+// Batched replacement for the old per-destination query: ONE indexed query for
+// all destinations at once, grouped in memory (newest 20 per dest). Uses the
+// (origin_iata, dest_iata, observed_at DESC) index; avoids N sequential scans.
+type StoredPrice = { dest_iata: string; observed_price_inr: number; airline: string | null; observed_at: string }
+async function getStoredPricesBatch(origin: string, destIatas: string[]) {
+  const map = new Map<string, StoredPrice[]>()
+  if (destIatas.length === 0) return map
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
     const { data } = await supabaseAdmin
       .from('price_history')
-      .select('observed_price_inr, airline, observed_at')
+      .select('dest_iata, observed_price_inr, airline, observed_at')
       .eq('origin_iata', origin)
-      .eq('dest_iata', destIata)
+      .in('dest_iata', destIatas)
       .gte('observed_at', thirtyDaysAgo)
       .order('observed_at', { ascending: false })
-      .limit(20)
-    return data ?? []
-  } catch { return [] }
+      .limit(2000)
+    for (const r of (data ?? []) as StoredPrice[]) {
+      const arr = map.get(r.dest_iata) ?? []
+      if (arr.length < 20) { arr.push(r); map.set(r.dest_iata, arr) }
+    }
+  } catch { /* fall through to live/baseline */ }
+  return map
 }
 
 function buildResult(
@@ -256,9 +266,12 @@ export async function POST(req: NextRequest) {
   const results = []
   let apiExhausted = false
 
+  // Single batched read of stored prices for ALL destinations (was N queries).
+  const storedMap = await getStoredPricesBatch(origin, destinations.map(d => d.iata))
+
   for (const dest of destinations) {
     // 1. Try price_history (pipeline scraped data) first — free, no API call
-    const stored = await getStoredPrices(origin, dest.iata)
+    const stored = storedMap.get(dest.iata) ?? []
     if (stored.length >= 3) {
       const avgPrice = Math.round(stored.reduce((s, r) => s + r.observed_price_inr, 0) / stored.length)
       const latest = stored[0]

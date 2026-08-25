@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-
-const ADMIN_TOKEN = process.env.ADMIN_SECRET ?? 'FareDrop@2024!'
+import { requireAdmin } from '@/lib/api-guard'
 
 export async function GET(req: NextRequest) {
-  const token = req.headers.get('x-admin-token')
-  if (token !== ADMIN_TOKEN) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const authErr = requireAdmin(req)
+  if (authErr) return authErr
 
   const { data, error } = await supabaseAdmin
     .from('deal_candidates')
@@ -19,8 +18,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const token = req.headers.get('x-admin-token')
-  if (token !== ADMIN_TOKEN) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const authErr = requireAdmin(req)
+  if (authErr) return authErr
 
   const { id, status } = await req.json()
   if (!id || !status) return NextResponse.json({ error: 'id and status required' }, { status: 400 })

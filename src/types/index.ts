@@ -19,6 +19,10 @@ export interface Deal {
   curator_note: string
   created_at: string
   is_premium: boolean
+  // Fare snapshot timestamps (Phase 2). Optional: older deals may lack them.
+  price_retrieved_at?: string | null
+  deal_calculated_at?: string | null
+  last_verified_at?: string | null
 }
 
 export interface Subscriber {

@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/check-alerts",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-fares",
+      "schedule": "0 3 * * *"
     }
   ]
 }
