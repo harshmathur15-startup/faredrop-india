@@ -28,6 +28,9 @@ export default function AccountPage() {
   const [city, setCity] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving'>('idle')
   const [msg, setMsg] = useState('')
+  const [sub, setSub] = useState<{ tier: string; status: string | null; expires: string | null } | null>(null)
+  const [cancelling, setCancelling] = useState(false)
+  const [subMsg, setSubMsg] = useState('')
 
   useEffect(() => {
     let mounted = true
@@ -46,6 +49,42 @@ export default function AccountPage() {
     })
     return () => { mounted = false }
   }, [router])
+
+  // Load subscription details (RLS lets users read their own preferences row).
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      const u = data.session?.user
+      if (!u) return
+      const { data: pref } = await supabase
+        .from('user_preferences')
+        .select('subscription_tier, subscription_status, subscription_expires_at')
+        .eq('user_id', u.id)
+        .maybeSingle()
+      if (pref) {
+        setSub({
+          tier: pref.subscription_tier ?? 'free',
+          status: pref.subscription_status,
+          expires: pref.subscription_expires_at,
+        })
+      }
+    })
+  }, [])
+
+  async function cancelSub() {
+    setSubMsg('')
+    if (!confirm("Cancel your subscription? You'll keep access until the current period ends.")) return
+    setCancelling(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/subscriptions/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+    })
+    const j = await res.json().catch(() => ({}))
+    setCancelling(false)
+    if (!res.ok) { setSubMsg(j.error || 'Could not cancel. Please try again.'); return }
+    setSub(s => (s ? { ...s, status: 'cancelled' } : s))
+    setSubMsg('Subscription cancelled — access continues until the period ends.')
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault(); setMsg('')
@@ -146,6 +185,29 @@ export default function AccountPage() {
                   {msg && <span className={`text-sm font-semibold ${msg.includes('✓') ? 'text-emerald-600' : 'text-red-500'}`}>{msg}</span>}
                 </div>
               </form>
+
+              {sub && sub.tier !== 'free' && (
+                <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Subscription</p>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-bold text-slate-900 capitalize">{sub.tier} plan</p>
+                      <p className="text-sm text-slate-500">
+                        {sub.expires
+                          ? `${sub.status === 'cancelled' ? 'Cancelled · access until' : 'Renews'} ${new Date(sub.expires).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                          : (sub.status ?? 'active')}
+                      </p>
+                    </div>
+                    {sub.status === 'active' && (
+                      <button onClick={cancelSub} disabled={cancelling}
+                        className="shrink-0 border border-red-200 text-red-600 hover:bg-red-50 font-semibold px-4 py-2 rounded-xl text-sm transition-colors disabled:opacity-60">
+                        {cancelling ? 'Cancelling…' : 'Cancel'}
+                      </button>
+                    )}
+                  </div>
+                  {subMsg && <p className="text-sm mt-3 text-slate-600">{subMsg}</p>}
+                </div>
+              )}
 
               <button onClick={logout}
                 className="mt-6 w-full border border-gray-200 hover:bg-gray-50 text-red-600 font-bold py-3 rounded-xl transition-colors">

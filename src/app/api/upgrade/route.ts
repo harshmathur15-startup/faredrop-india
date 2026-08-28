@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabase'
+import { razorpayConfigured } from '@/lib/razorpay'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,11 +35,20 @@ async function getUserId(req: NextRequest): Promise<string | null> {
   return session?.user.id ?? null
 }
 
-// TEMPORARY — payment gateway is not live yet.
-// This grants the chosen membership tier immediately with NO payment, so
-// clicking Silver/Gold unlocks the deals. Replace this with a real
-// checkout + webhook flow once the payment gateway goes live.
+// FALLBACK-ONLY no-payment unlock.
+// Grants the chosen tier immediately with NO payment. This is a free-premium
+// backdoor, so it is DISABLED whenever Razorpay is configured — it only stays
+// live as a fallback when the payment gateway isn't set up. The frontend calls
+// this only when /api/payments/create-order returns 503 (not configured).
 export async function POST(req: NextRequest) {
+  // Payments live → this endpoint is closed. Real unlocks go through checkout.
+  if (razorpayConfigured()) {
+    return NextResponse.json(
+      { error: 'Payments are live — use checkout.' },
+      { status: 403 },
+    )
+  }
+
   const userId = await getUserId(req)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

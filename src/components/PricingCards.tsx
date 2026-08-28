@@ -7,31 +7,114 @@ import { supabase } from '@/lib/supabase'
 
 const INR = (n: number) => `₹${n.toLocaleString('en-IN')}`
 
+// Minimal shape of the Razorpay checkout global (loaded via their script).
+interface RazorpayResponse {
+  razorpay_subscription_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}
+interface RazorpayInstance {
+  open: () => void
+  on: (event: string, handler: (resp: { error?: { description?: string } }) => void) => void
+}
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => RazorpayInstance
+  }
+}
+
+// Inject Razorpay checkout.js once; resolve when ready.
+function loadRazorpay(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') return resolve(false)
+    if (window.Razorpay) return resolve(true)
+    const s = document.createElement('script')
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    s.onload = () => resolve(true)
+    s.onerror = () => resolve(false)
+    document.body.appendChild(s)
+  })
+}
+
 export default function PricingCards() {
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState<'silver' | 'gold' | null>(null)
   const [err, setErr] = useState('')
   const router = useRouter()
 
-  // Payment gateway isn't live yet — clicking a paid plan grants the tier
-  // immediately (no payment) so the deals unlock. Not signed in → sign up first.
+  // Razorpay checkout: create an order server-side, open the checkout, then
+  // verify the signature to unlock the tier. Not signed in → sign up first.
   async function handleUpgrade(tier: 'silver' | 'gold') {
     setErr('')
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { router.push('/signup'); return }
     setLoading(tier)
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    }
     try {
-      const res = await fetch('/api/upgrade', {
+      const subRes = await fetch('/api/subscriptions/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ tier }),
+        headers: authHeaders,
+        body: JSON.stringify({ tier, annual }),
       })
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}))
-        throw new Error(j.error || 'Could not unlock. Please try again.')
+      // Payment gateway not configured → fall back to the no-payment unlock.
+      if (subRes.status === 503) {
+        const up = await fetch('/api/upgrade', {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({ tier }),
+        })
+        if (!up.ok) {
+          const j = await up.json().catch(() => ({}))
+          throw new Error(j.error || 'Could not unlock. Please try again.')
+        }
+        window.location.href = '/#deals'
+        return
       }
-      // Unlocked — hard-navigate so the tier is re-read fresh and deals appear.
-      window.location.href = '/#deals'
+      if (!subRes.ok) {
+        const j = await subRes.json().catch(() => ({}))
+        throw new Error(j.error || 'Could not start checkout. Please try again.')
+      }
+      const sub = await subRes.json()
+
+      const ok = await loadRazorpay()
+      if (!ok || !window.Razorpay) throw new Error('Could not load payment window. Check your connection.')
+
+      const rzp = new window.Razorpay({
+        key: sub.key_id,
+        subscription_id: sub.subscription_id,
+        name: 'Travelbaby',
+        description: `${tier === 'gold' ? 'Gold' : 'Silver'} — ${sub.cycle} subscription`,
+        prefill: { email: session.user.email ?? '' },
+        theme: { color: tier === 'gold' ? '#b45309' : '#334155' },
+        handler: async (resp: RazorpayResponse) => {
+          try {
+            const verifyRes = await fetch('/api/subscriptions/verify', {
+              method: 'POST',
+              headers: authHeaders,
+              body: JSON.stringify({ ...resp, tier }),
+            })
+            if (!verifyRes.ok) {
+              const j = await verifyRes.json().catch(() => ({}))
+              throw new Error(j.error || 'Payment verification failed.')
+            }
+            // Unlocked — hard-navigate so the tier is re-read fresh.
+            window.location.href = '/#deals'
+          } catch (e) {
+            setErr(e instanceof Error ? e.message : 'Verification failed')
+            setLoading(null)
+          }
+        },
+        modal: { ondismiss: () => setLoading(null) },
+      })
+      // Razorpay-reported failure (declined card, expired, etc.)
+      rzp.on('payment.failed', (resp) => {
+        setErr(resp?.error?.description || 'Payment failed. Please try again.')
+        setLoading(null)
+      })
+      rzp.open()
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Something went wrong')
       setLoading(null)
