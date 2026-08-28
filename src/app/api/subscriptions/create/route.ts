@@ -23,13 +23,25 @@ export async function POST(req: NextRequest) {
   const annual = Boolean(body.annual)
   const cycle = annual ? 'annual' : 'monthly'
 
+  // First-cycle intro offer (e.g. Silver monthly: ₹1 first month, then ₹199/mo).
+  // Created in the Razorpay Dashboard; its id is env-driven so test/live swap
+  // without a code change. Only applied to Silver monthly.
+  const introOffer =
+    body.tier === 'silver' && !annual
+      ? process.env.RAZORPAY_SILVER_MONTHLY_OFFER_ID
+      : undefined
+
   try {
-    const subscription = await getRazorpay().subscriptions.create({
+    type CreateParams = Parameters<ReturnType<typeof getRazorpay>['subscriptions']['create']>[0]
+    const params = {
       plan_id: planId(body.tier, annual),
       total_count: TOTAL_COUNT[cycle],
       customer_notify: 1, // Razorpay emails the invoice/receipt each cycle
       notes: { user_id: userId, tier: body.tier, cycle },
-    })
+    } as CreateParams & { offer_id?: string }
+    if (introOffer) params.offer_id = introOffer
+
+    const subscription = await getRazorpay().subscriptions.create(params)
 
     return NextResponse.json({
       subscription_id: subscription.id,
