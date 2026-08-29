@@ -7,6 +7,29 @@ export default function DataAnalyticsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [secret, setSecret] = useState('')
+  const [engagement, setEngagement] = useState<any>(null)
+  const [engagementErr, setEngagementErr] = useState<string | null>(null)
+  const [days, setDays] = useState(30)
+
+  // Engagement = the analytics_events reporting functions. Kept separate from
+  // the deals/freshness payload so a not-yet-applied migration never blocks the
+  // main dashboard — it just shows a hint.
+  const loadEngagement = async (lookback: number, token: string) => {
+    setEngagementErr(null)
+    try {
+      const res = await fetch(`/api/analytics/events?days=${lookback}`, { headers: { 'x-admin-token': token } })
+      const json = await res.json()
+      if (res.ok) setEngagement(json)
+      else setEngagementErr(json.error || 'Failed to load engagement analytics')
+    } catch (err) {
+      setEngagementErr(String(err))
+    }
+  }
+
+  const changeDays = (lookback: number) => {
+    setDays(lookback)
+    loadEngagement(lookback, secret)
+  }
 
   const loadData = async () => {
     setLoading(true)
@@ -16,6 +39,7 @@ export default function DataAnalyticsPage() {
       const json = await res.json()
       if (res.ok) {
         setData(json)
+        loadEngagement(days, secret)
       } else {
         setError(json.error || 'Failed to fetch data')
       }
@@ -72,6 +96,150 @@ export default function DataAnalyticsPage() {
         >
           📥 Download CSV
         </button>
+      </div>
+
+      {/* ── Engagement Analytics (impressions / clicks / dwell / checkout) ── */}
+      <div className="bg-white rounded-lg p-6 shadow mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <h2 className="text-xl font-black">📊 Engagement Analytics</h2>
+          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            {[7, 30, 90].map((d) => (
+              <button key={d} onClick={() => changeDays(d)}
+                className={`px-4 py-1.5 text-sm font-semibold transition-colors ${
+                  days === d ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}>
+                {d}d
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {engagementErr && (
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+            ⚠️ {engagementErr}
+            <span className="block text-amber-600 mt-1">
+              If this says a function/table is missing, apply the <code>analytics_events</code> migration to this database first.
+            </span>
+          </div>
+        )}
+
+        {engagement && !engagementErr && (
+          <>
+            {/* Checkout funnel — answers "reached payment but didn't pay" */}
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Checkout Funnel</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+              <div className="rounded-lg p-4 bg-blue-50 border border-blue-200">
+                <p className="text-blue-700 text-xs font-semibold">Reached Payment</p>
+                <p className="text-3xl font-black text-blue-700">{engagement.checkoutFunnel?.reached_payment ?? 0}</p>
+              </div>
+              <div className="rounded-lg p-4 bg-green-50 border border-green-200">
+                <p className="text-green-700 text-xs font-semibold">Paid</p>
+                <p className="text-3xl font-black text-green-700">{engagement.checkoutFunnel?.paid ?? 0}</p>
+              </div>
+              <div className="rounded-lg p-4 bg-red-50 border border-red-200">
+                <p className="text-red-700 text-xs font-semibold">Reached, Not Paid</p>
+                <p className="text-3xl font-black text-red-700">{engagement.checkoutFunnel?.reached_but_not_paid ?? 0}</p>
+              </div>
+              <div className="rounded-lg p-4 bg-gray-50 border border-gray-200">
+                <p className="text-gray-600 text-xs font-semibold">Abandoned / Failed</p>
+                <p className="text-3xl font-black text-gray-900">
+                  {(engagement.checkoutFunnel?.abandoned ?? 0)} / {(engagement.checkoutFunnel?.failed ?? 0)}
+                </p>
+              </div>
+              <div className="rounded-lg p-4 bg-emerald-50 border border-emerald-200">
+                <p className="text-emerald-700 text-xs font-semibold">Conversion</p>
+                <p className="text-3xl font-black text-emerald-700">{engagement.checkoutFunnel?.conversion_pct ?? 0}%</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Deal performance — impression share + CTR (ad/affiliate data) */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Deal Performance (impression share &amp; CTR)</h3>
+                <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-white">
+                      <tr className="border-b-2 border-gray-200">
+                        <th className="text-left p-2 font-bold">Route</th>
+                        <th className="text-right p-2 font-bold">Impr.</th>
+                        <th className="text-right p-2 font-bold">Clicks</th>
+                        <th className="text-right p-2 font-bold">CTR</th>
+                        <th className="text-right p-2 font-bold">Share</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {engagement.dealPerformance?.length ? engagement.dealPerformance.map((d: any) => (
+                        <tr key={d.deal_id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="p-2 font-semibold">{d.route ?? d.deal_id?.slice(0, 8)}</td>
+                          <td className="p-2 text-right">{d.impressions}</td>
+                          <td className="p-2 text-right">{d.clicks}</td>
+                          <td className="p-2 text-right text-blue-600 font-semibold">{d.ctr_pct ?? 0}%</td>
+                          <td className="p-2 text-right font-bold text-amber-600">{d.impression_share_pct ?? 0}%</td>
+                        </tr>
+                      )) : <tr><td colSpan={5} className="p-4 text-center text-gray-400">No deal impressions yet</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Page dwell — which page holds attention */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Time Spent per Page</h3>
+                <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-white">
+                      <tr className="border-b-2 border-gray-200">
+                        <th className="text-left p-2 font-bold">Page</th>
+                        <th className="text-right p-2 font-bold">Views</th>
+                        <th className="text-right p-2 font-bold">Avg (s)</th>
+                        <th className="text-right p-2 font-bold">Total (min)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {engagement.pageDwell?.length ? engagement.pageDwell.map((p: any) => (
+                        <tr key={p.page} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="p-2 font-mono text-xs">{p.page}</td>
+                          <td className="p-2 text-right">{p.views}</td>
+                          <td className="p-2 text-right">{p.avg_seconds}</td>
+                          <td className="p-2 text-right font-semibold">{p.total_minutes}</td>
+                        </tr>
+                      )) : <tr><td colSpan={4} className="p-4 text-center text-gray-400">No page views yet</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* First deal/carousel each user clicked */}
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mt-8 mb-3">First Deal Clicked (per user)</h3>
+            <div className="overflow-x-auto max-h-96 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="text-left p-2 font-bold">User</th>
+                    <th className="text-left p-2 font-bold">First Deal</th>
+                    <th className="text-left p-2 font-bold">Surface</th>
+                    <th className="text-right p-2 font-bold">Position</th>
+                    <th className="text-left p-2 font-bold">When</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {engagement.firstClicks?.length ? engagement.firstClicks.map((c: any, i: number) => (
+                    <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="p-2 font-mono text-xs">{c.actor}</td>
+                      <td className="p-2 font-semibold">{c.route ?? c.deal_id?.slice(0, 8)}</td>
+                      <td className="p-2">
+                        <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs font-semibold">{c.surface ?? '—'}</span>
+                      </td>
+                      <td className="p-2 text-right text-gray-500">{c.position ?? '—'}</td>
+                      <td className="p-2 text-gray-500 text-xs">{c.clicked_at ? new Date(c.clicked_at).toLocaleString() : '—'}</td>
+                    </tr>
+                  )) : <tr><td colSpan={5} className="p-4 text-center text-gray-400">No deal clicks yet</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Summary Stats */}
