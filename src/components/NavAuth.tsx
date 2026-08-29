@@ -3,11 +3,15 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { useUserTier } from '@/lib/useAuth'
 
 export default function NavAuth() {
   // undefined = still checking, null = logged out, string = display name
   const [name, setName] = useState<string | null | undefined>(undefined)
   const [open, setOpen] = useState(false)
+  const { tier } = useUserTier()
+  const isPaid = tier === 'silver' || tier === 'gold'
+  const planLabel = tier === 'gold' ? 'Gold' : tier === 'silver' ? 'Silver' : 'Free'
 
   useEffect(() => {
     type Session = { user?: { email?: string; user_metadata?: Record<string, unknown> } } | null
@@ -43,11 +47,25 @@ export default function NavAuth() {
           {first[0]?.toUpperCase()}
         </span>
         Hi, {first}
+        {isPaid && (
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide ${
+            tier === 'gold'
+              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+              : 'bg-slate-200 text-slate-700 border border-slate-300'
+          }`}>
+            {planLabel}
+          </span>
+        )}
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 mt-2 w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+            <div className="px-4 py-2 text-xs border-b border-slate-100">
+              <span className="text-slate-400">Plan: </span>
+              <span className={`font-bold ${tier === 'gold' ? 'text-amber-700' : tier === 'silver' ? 'text-slate-700' : 'text-slate-500'}`}>{planLabel}</span>
+              {!isPaid && <Link href="/pricing" onClick={() => setOpen(false)} className="ml-2 text-blue-600 hover:underline font-semibold">Upgrade</Link>}
+            </div>
             <Link href="/account" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">My profile</Link>
             <button onClick={logout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Log out</button>
           </div>
