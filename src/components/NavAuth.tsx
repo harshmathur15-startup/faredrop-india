@@ -36,7 +36,7 @@ export default function NavAuth() {
 
   if (name === undefined) return null // brief loading, render nothing
   if (!name) {
-    return <Link href="/signup" className="text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors">Login</Link>
+    return <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors">Login</Link>
   }
 
   const first = name.split(' ')[0]

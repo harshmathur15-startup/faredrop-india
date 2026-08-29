@@ -3,8 +3,12 @@ import { Deal } from '@/types'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { formatPrice, calcDiscount, formatDateRange, tripFromNote } from '@/lib/utils'
+import Link from 'next/link'
 import DealGate from '@/components/DealGate'
 import BackToDeals from '@/components/BackToDeals'
+import DealCta from '@/components/DealCta'
+import NavAuth from '@/components/NavAuth'
+import MobileMenu from '@/components/MobileMenu'
 
 const CITY_IMAGES: Record<string, string> = {
   BKK: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&h=600&fit=crop',
@@ -139,7 +143,20 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   return (
     <main className="min-h-screen bg-gray-50">
       <DealGate isPremium={deal.is_premium ?? true} />
-      <div className="max-w-2xl mx-auto px-4 py-10">
+
+      {/* Sticky header — turns deep-linked deal pages into browsable entry points */}
+      <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 px-5 py-3 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/travel-baby-logo.png" alt="Travelbaby" width={40} height={40} className="h-10 w-auto" />
+          <span className="font-display font-bold text-lg text-blue-900 tracking-tight">Travelbaby</span>
+        </Link>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:block"><NavAuth /></div>
+          <MobileMenu />
+        </div>
+      </nav>
+
+      <div className="max-w-2xl mx-auto px-4 py-10 pb-28 sm:pb-10">
         <BackToDeals />
 
         <div className="mt-6 bg-white rounded-2xl shadow-md overflow-hidden">
@@ -199,12 +216,13 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               </div>
             )}
 
-            {/* CTA — Google Flights only (protobuf deep link, cabin + dates pre-filled) */}
+            {/* CTA — booking link gated for guests / free users on premium deals */}
             <div className="mt-5 space-y-3">
-              <a href={googleUrl} target="_blank" rel="noopener noreferrer"
-                className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-colors text-lg">
-                🔍 Search on Google Flights{cabin ? ` (${cabin.label})` : ''} ({formatDateRange(deal.validity_start, deal.validity_end)}) →
-              </a>
+              <DealCta
+                googleUrl={googleUrl}
+                isPremium={deal.is_premium ?? true}
+                label={`🔍 Search on Google Flights${cabin ? ` (${cabin.label})` : ''} (${formatDateRange(deal.validity_start, deal.validity_end)}) →`}
+              />
             </div>
 
             <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 mt-3 text-center">
@@ -216,6 +234,11 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Sticky mobile booking bar — keeps the CTA reachable past the hero image */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-3">
+        <DealCta googleUrl={googleUrl} isPremium={deal.is_premium ?? true} label="🔍 Book on Google Flights →" />
       </div>
     </main>
   )
