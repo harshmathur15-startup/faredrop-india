@@ -114,7 +114,7 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
 
         {/* Validity */}
         <p className="text-xs text-gray-400 mt-2">
-          Book by: {formatDateRange(deal.validity_start, deal.validity_end)}
+          Travel dates: {formatDateRange(deal.validity_start, deal.validity_end)}
         </p>
 
         {/* Curator note */}
