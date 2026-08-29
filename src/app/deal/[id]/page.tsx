@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import { Deal } from '@/types'
 import Image from 'next/image'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatPrice, calcDiscount, formatDateRange, tripFromNote } from '@/lib/utils'
 import DealGate from '@/components/DealGate'
+import BackToDeals from '@/components/BackToDeals'
 
 const CITY_IMAGES: Record<string, string> = {
   BKK: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&h=600&fit=crop',
@@ -140,7 +140,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
     <main className="min-h-screen bg-gray-50">
       <DealGate isPremium={deal.is_premium ?? true} />
       <div className="max-w-2xl mx-auto px-4 py-10">
-        <Link href="/" className="text-blue-600 text-sm hover:underline">← Back to deals</Link>
+        <BackToDeals />
 
         <div className="mt-6 bg-white rounded-2xl shadow-md overflow-hidden">
           <div className="relative h-64 w-full">
