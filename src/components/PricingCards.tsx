@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { trackEvent } from '@/lib/track'
 
 const INR = (n: number) => `₹${n.toLocaleString('en-IN')}`
 
@@ -100,6 +101,7 @@ export default function PricingCards() {
               const j = await verifyRes.json().catch(() => ({}))
               throw new Error(j.error || 'Payment verification failed.')
             }
+            void trackEvent({ type: 'payment_success', tier, meta: { annual, cycle: sub.cycle } })
             // Unlocked — hard-navigate so the tier is re-read fresh.
             window.location.href = '/#deals'
           } catch (e) {
@@ -107,13 +109,17 @@ export default function PricingCards() {
             setLoading(null)
           }
         },
-        modal: { ondismiss: () => setLoading(null) },
+        // Closing the Razorpay window without paying = reached payment, didn't convert.
+        modal: { ondismiss: () => { void trackEvent({ type: 'checkout_abandoned', tier, meta: { annual, cycle: sub.cycle } }); setLoading(null) } },
       })
       // Razorpay-reported failure (declined card, expired, etc.)
       rzp.on('payment.failed', (resp) => {
+        void trackEvent({ type: 'checkout_failed', tier, meta: { annual, cycle: sub.cycle, error: resp?.error?.description } })
         setErr(resp?.error?.description || 'Payment failed. Please try again.')
         setLoading(null)
       })
+      // Payment window is about to open — the top of the "reached payment" funnel.
+      void trackEvent({ type: 'checkout_started', tier, meta: { annual, cycle: sub.cycle } })
       rzp.open()
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Something went wrong')

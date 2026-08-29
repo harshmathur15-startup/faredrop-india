@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import DealTracker from "@/components/DealTracker";
 import "./globals.css";
 
 // Body / UI font — Inter is the professional standard for product UIs
@@ -20,7 +21,7 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: "Travelbaby — Curated flight deals for Indian travellers",
-  description: "Get alerted when international flights from Delhi, Mumbai, Bangalore & more drop 40%+. Free curated flight deal alerts.",
+  description: "Get alerted when international flights from Delhi, Mumbai, Bangalore & more drop — up to 90% off. Free curated flight deal alerts.",
   openGraph: {
     title: "Travelbaby",
     description: "Curated flight deals for Indian outbound travellers.",
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <GoogleAnalytics />
+        <DealTracker />
       </body>
     </html>
   );
