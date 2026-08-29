@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Deal } from '@/types'
 import { calcDiscount } from '@/lib/utils'
@@ -31,6 +32,7 @@ function SectionHeader({ deals }: { deals: Deal[] }) {
 
 export default function DealsSection({ deals }: { deals: Deal[] }) {
   const { authed, tier } = useUserTier()
+  const [visibleFree, setVisibleFree] = useState(24) // paginate the free-deals grid for mobile perf
 
   // Loading
   if (authed === undefined || (authed && tier === undefined)) {
@@ -87,11 +89,21 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
     <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
       <SectionHeader deals={deals} />
 
-      {/* More free deals — beyond the featured hero row */}
+      {/* More free deals — beyond the featured hero row (paginated for mobile perf) */}
       {freeDeals.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {freeDeals.map(deal => <DealCard key={deal.id} deal={deal} />)}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {freeDeals.slice(0, visibleFree).map(deal => <DealCard key={deal.id} deal={deal} />)}
+          </div>
+          {visibleFree < freeDeals.length && (
+            <div className="mt-8 text-center">
+              <button onClick={() => setVisibleFree(v => v + 24)}
+                className="inline-block bg-white border border-gray-200 hover:bg-gray-50 text-slate-700 font-bold px-8 py-3 rounded-xl transition-colors shadow-sm">
+                Load more deals ({freeDeals.length - visibleFree} more)
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Premium deals — locked, grouped by cabin */}

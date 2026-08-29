@@ -36,7 +36,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
           Live curated deals · sign up to book
         </p>
       </div>
-      <div className="flex flex-wrap justify-center gap-3 mb-0 max-w-3xl mx-auto">
+      <div className="flex gap-3 mb-0 max-w-3xl mx-auto overflow-x-auto snap-x snap-mandatory pb-2 px-1 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0">
         {heroDeals.map(deal => {
           const meta = DEST_META[deal.dest_iata] ?? { flag: '✈️' }
           const note = (deal.curator_note ?? '').toLowerCase()
@@ -46,7 +46,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
           const tierColor = deal.discount >= 70 ? 'bg-violet-600' : deal.discount >= 50 ? 'bg-emerald-600' : 'bg-blue-600'
           return (
             <DealLink key={deal.id} dealId={deal.id}
-              className="group relative rounded-2xl p-4 text-left overflow-hidden bg-slate-50 border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 hover:-translate-y-1 transition-all duration-200 block flex-1 min-w-[155px] max-w-[190px]">
+              className="group relative rounded-2xl p-4 text-left overflow-hidden bg-slate-50 border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 hover:-translate-y-1 transition-all duration-200 block snap-start shrink-0 w-[160px] sm:flex-1 sm:w-auto sm:min-w-[155px] sm:max-w-[190px]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-2xl leading-none">{meta.flag}</span>
                 <span className={`${tierColor} text-white text-[11px] font-semibold px-2 py-0.5 rounded-full`}>{deal.discount}% off</span>

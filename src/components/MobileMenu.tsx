@@ -59,7 +59,7 @@ export default function MobileMenu() {
 
       {open && (
         <>
-          <div className="fixed inset-0 top-[60px] bg-black/20 z-40" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setOpen(false)} />
           <div className="absolute left-0 right-0 top-full bg-white border-b border-gray-200 shadow-lg z-50 px-5 py-3">
             <div className="flex flex-col">
               {name && (
