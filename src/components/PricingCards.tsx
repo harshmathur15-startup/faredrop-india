@@ -208,7 +208,8 @@ export default function PricingCards() {
                   <p className="text-4xl font-black text-white">{INR(1)}</p>
                   <p className="text-slate-400 text-sm line-through">{INR(199)}</p>
                 </div>
-                <p className="text-slate-300 text-sm">first month, then <span className="font-semibold text-white">{INR(199)}/mo</span></p>
+                <p className="text-slate-300 text-sm">first month on <span className="font-semibold text-white">UPI</span>, then {INR(199)}/mo</p>
+                <p className="text-slate-400 text-xs mt-1">{INR(199)}/mo if paying by card</p>
               </>
             )}
           </div>
