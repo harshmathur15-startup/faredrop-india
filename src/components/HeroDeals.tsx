@@ -37,7 +37,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
         </p>
       </div>
       <div className="flex flex-wrap justify-center gap-3 mb-0 max-w-3xl mx-auto">
-        {heroDeals.map(deal => {
+        {heroDeals.map((deal, i) => {
           const meta = DEST_META[deal.dest_iata] ?? { flag: '✈️' }
           const note = (deal.curator_note ?? '').toLowerCase()
           const isBusiness = note.includes('business')
@@ -45,7 +45,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
           const oneWay = tripFromNote(deal.curator_note) === 'oneway'
           const tierColor = deal.discount >= 70 ? 'bg-violet-600' : deal.discount >= 50 ? 'bg-emerald-600' : 'bg-blue-600'
           return (
-            <DealLink key={deal.id} dealId={deal.id}
+            <DealLink key={deal.id} dealId={deal.id} surface="hero" position={i}
               className="group relative rounded-2xl p-4 text-left overflow-hidden bg-slate-50 border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 hover:-translate-y-1 transition-all duration-200 block flex-1 min-w-[155px] max-w-[190px]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-2xl leading-none">{meta.flag}</span>

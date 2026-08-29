@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { Deal } from '@/types'
 import { formatPrice, calcDiscount, formatDateRange, cabinFromNote, tripFromNote } from '@/lib/utils'
 
-export default function DealCard({ deal, locked = false }: { deal: Deal; locked?: boolean }) {
+export default function DealCard({ deal, locked = false, surface = 'grid', position }: { deal: Deal; locked?: boolean; surface?: string; position?: number }) {
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
   const cabin = cabinFromNote(deal.curator_note)
   const oneWay = tripFromNote(deal.curator_note) === 'oneway'
@@ -12,7 +12,8 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
 
   if (locked) {
     return (
-      <Link href="/pricing" className="group block rounded-2xl overflow-hidden bg-white shadow hover:shadow-xl transition-all duration-200 hover:-translate-y-1 relative">
+      <Link href="/pricing" className="group block rounded-2xl overflow-hidden bg-white shadow hover:shadow-xl transition-all duration-200 hover:-translate-y-1 relative"
+        data-deal-id={deal.id} data-surface={surface} data-position={position} data-locked="true">
         {/* Paid-only badge */}
         <div className="absolute top-3 left-3 z-10 flex items-center gap-0.5 bg-black/60 backdrop-blur-sm text-white text-sm px-2 py-1 rounded-full shadow">
           🔒₹
@@ -70,7 +71,8 @@ export default function DealCard({ deal, locked = false }: { deal: Deal; locked?
   }
 
   return (
-    <Link href={`/deal/${deal.id}`} className="group block rounded-2xl overflow-hidden bg-white shadow hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
+    <Link href={`/deal/${deal.id}`} className="group block rounded-2xl overflow-hidden bg-white shadow hover:shadow-xl transition-all duration-200 hover:-translate-y-1"
+      data-deal-id={deal.id} data-surface={surface} data-position={position}>
       {/* Destination image */}
       <div className="relative h-44 w-full">
         <Image

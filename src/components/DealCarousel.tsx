@@ -67,7 +67,7 @@ function getCabinClass(note: string): 'business' | 'premium_economy' | null {
   return null
 }
 
-function DealCard({ deal }: { deal: Deal }) {
+function DealCard({ deal, position }: { deal: Deal; position?: number }) {
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
   const tierColor = discount >= 70 ? 'bg-violet-600' : discount >= 50 ? 'bg-emerald-600' : 'bg-blue-600'
   const cabin = getCabinClass(deal.curator_note)
@@ -76,6 +76,8 @@ function DealCard({ deal }: { deal: Deal }) {
   return (
     <DealLink
       dealId={deal.id}
+      surface="carousel"
+      position={position}
       className="group flex flex-col w-full bg-slate-50 rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 hover:-translate-y-1"
     >
       {/* Image */}
@@ -272,7 +274,7 @@ export default function DealCarousel({ deals }: { deals: Deal[] }) {
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-                      {sectionDeals.map(deal => <DealCard key={deal.id} deal={deal} />)}
+                      {sectionDeals.map((deal, i) => <DealCard key={deal.id} deal={deal} position={i} />)}
                     </div>
                   </div>
                 )
