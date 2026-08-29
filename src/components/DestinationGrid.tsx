@@ -170,11 +170,12 @@ export default function DestinationGrid({ deals }: { deals: Deal[] }) {
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                {mg.deals.map(deal => {
+                {mg.deals.map((deal, i) => {
                   const disc = calcDiscount(deal.normal_price, deal.deal_price)
                   const oneWay = tripFromNote(deal.curator_note) === 'oneway'
                   return (
                     <Link key={deal.id} href={`/deal/${deal.id}`}
+                      data-deal-id={deal.id} data-surface="grid" data-position={i}
                       className="group flex sm:flex-col bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 sm:hover:-translate-y-1 transition-all duration-300">
                       {/* Image: compact left on mobile, full image-forward on desktop */}
                       <div className="relative w-28 shrink-0 sm:w-full sm:aspect-[3/2] overflow-hidden">
@@ -222,11 +223,12 @@ export default function DestinationGrid({ deals }: { deals: Deal[] }) {
               </div>
             </div>
             <div className="overflow-y-auto p-4 space-y-2">
-              {openDest.deals.map(deal => {
+              {openDest.deals.map((deal, i) => {
                 const disc = calcDiscount(deal.normal_price, deal.deal_price)
                 const oneWay = tripFromNote(deal.curator_note) === 'oneway'
                 return (
                   <Link key={deal.id} href={`/deal/${deal.id}`}
+                    data-deal-id={deal.id} data-surface="spotlight" data-position={i}
                     className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/40 transition-colors">
                     <div className="min-w-0">
                       <p className="font-bold text-slate-900 text-sm flex items-center gap-2 flex-wrap">
