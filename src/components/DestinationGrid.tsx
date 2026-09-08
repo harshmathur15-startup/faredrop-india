@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Deal } from '@/types'
@@ -38,6 +38,31 @@ export default function DestinationGrid({ deals }: { deals: Deal[] }) {
   const [view, setView] = useState<'grid' | 'list'>('list')
   const [openDest, setOpenDest] = useState<DestGroup | null>(null)
 
+  // Persist filters across navigation so the browser Back button restores the
+  // exact filtered view (previously filters reset to defaults on returning from
+  // a deal page). Restore on mount from sessionStorage; save on every change.
+  const [hydrated, setHydrated] = useState(false)
+  const pendingOpenRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('tb_deal_filters') || '{}')
+      if (typeof saved.city === 'string') setCity(saved.city)
+      if (saved.trip === 'All' || saved.trip === 'oneway' || saved.trip === 'roundtrip') setTrip(saved.trip)
+      if (typeof saved.cabin === 'string') setCabin(saved.cabin)
+      if (saved.view === 'grid' || saved.view === 'list') setView(saved.view)
+      pendingOpenRef.current = typeof saved.openIata === 'string' ? saved.openIata : null
+    } catch { /* ignore corrupt/unavailable storage */ }
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return // don't overwrite saved state with defaults before restore
+    try {
+      sessionStorage.setItem('tb_deal_filters', JSON.stringify({ city, trip, cabin, view, openIata: openDest?.iata ?? null }))
+    } catch { /* ignore */ }
+  }, [hydrated, city, trip, cabin, view, openDest])
+
   const cityOptions = useMemo(
     () => ['All cities', ...Array.from(new Set(deals.map(d => d.origin_city))).sort()],
     [deals],
@@ -62,6 +87,14 @@ export default function DestinationGrid({ deals }: { deals: Deal[] }) {
       }
     }).sort((a, b) => a.from - b.from)
   }, [filtered])
+
+  // Re-open the destination panel the user had open before navigating away.
+  useEffect(() => {
+    if (!hydrated || !pendingOpenRef.current) return
+    const g = dests.find(d => d.iata === pendingOpenRef.current)
+    if (g) setOpenDest(g)
+    pendingOpenRef.current = null
+  }, [hydrated, dests])
 
   const monthGroups = useMemo(() => {
     const g: Record<string, Deal[]> = {}
