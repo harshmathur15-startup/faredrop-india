@@ -20,6 +20,7 @@ const DEST_META: Record<string, { flag: string }> = {
   GOI: { flag: '🇮🇳' }, GOX: { flag: '🇮🇳' }, IXL: { flag: '🇮🇳' },
   COK: { flag: '🇮🇳' }, UDR: { flag: '🇮🇳' }, DEL: { flag: '🇮🇳' },
   BOM: { flag: '🇮🇳' }, BLR: { flag: '🇮🇳' }, MAA: { flag: '🇮🇳' },
+  KTM: { flag: '🇳🇵' }, NYC: { flag: '🇺🇸' }, LON: { flag: '🇬🇧' }, PAR: { flag: '🇫🇷' },
 }
 
 export default function HeroDeals({ deals }: { deals: Deal[] }) {

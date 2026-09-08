@@ -14,6 +14,7 @@ const FLAG: Record<string, string> = {
   PVG: '🇨🇳', PEK: '🇨🇳', HAN: '🇻🇳', SGN: '🇻🇳', KUL: '🇲🇾', CMB: '🇱🇰',
   MLE: '🇲🇻', GAN: '🇲🇻', MEL: '🇦🇺', SYD: '🇦🇺', YYZ: '🇨🇦', JFK: '🇺🇸',
   GOI: '🇮🇳', GOX: '🇮🇳', IXL: '🇮🇳', COK: '🇮🇳', UDR: '🇮🇳', SXR: '🇮🇳',
+  KTM: '🇳🇵', NYC: '🇺🇸', LON: '🇬🇧', PAR: '🇫🇷',
 }
 const mon = (iso: string) => new Date(iso).toLocaleDateString('en-IN', { month: 'short' })
 const cabinKey = (note?: string | null) => cabinFromNote(note) ?? 'Economy'
