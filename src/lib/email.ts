@@ -216,6 +216,46 @@ export async function sendDealEmail({
   })
 }
 
+// ── Daily new-deals digest (sent by the discovery agent to confirmed subs) ───
+
+export async function sendDealDigestEmail({
+  to, deals,
+}: {
+  to: string
+  deals: Array<{
+    id: string; origin_city: string; dest_city: string
+    airline: string; deal_price: number; normal_price: number
+    validity_start: string | null; validity_end: string | null
+  }>
+}) {
+  const resend = getResend()
+  const rows = deals.map(d => {
+    const off = d.normal_price > 0 ? Math.round(((d.normal_price - d.deal_price) / d.normal_price) * 100) : 0
+    return `<tr><td style="padding:13px 0;border-bottom:1px solid #e2e8f0">
+      <a href="${BASE_URL}/deal/${d.id}" style="text-decoration:none;color:inherit;display:block">
+        <span style="font-weight:800;color:#1e293b;font-size:15px">${d.origin_city} → ${d.dest_city}</span>
+        <span style="color:#64748b;font-size:12px"> · ${d.airline}</span><br>
+        <span style="font-weight:900;color:#15803d;font-size:17px">₹${d.deal_price.toLocaleString('en-IN')}</span>
+        ${off > 0 ? `<span style="color:#166534;font-size:12px;font-weight:700"> · ${off}% off</span>` : ''}
+        ${d.validity_start ? `<span style="color:#94a3b8;font-size:12px"> · ${d.validity_start}${d.validity_end ? ` – ${d.validity_end}` : ''}</span>` : ''}
+      </a></td></tr>`
+  }).join('')
+  return resend.emails.send({
+    from: FROM,
+    to,
+    subject: `✈️ ${deals.length} new flight deal${deals.length !== 1 ? 's' : ''} on Travelbaby`,
+    html: shell(`
+      <div style="text-align:center;margin-bottom:20px">
+        <span style="font-size:44px">✈️</span>
+        <h2 style="margin:8px 0 4px;color:#1e293b;font-size:22px;font-weight:800">Fresh deals just landed</h2>
+        <p style="margin:0;color:#64748b;font-size:14px">${deals.length} new fare${deals.length !== 1 ? 's' : ''} added today</p>
+      </div>
+      <table width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+      ${btn(`${BASE_URL}/#deals`, 'Browse all deals →')}
+    `),
+  })
+}
+
 // ── OTP (fallback — Supabase handles OTP natively via Resend SMTP) ───────────
 
 export async function sendOtpEmail({ to, otp }: { to: string; otp: string }) {

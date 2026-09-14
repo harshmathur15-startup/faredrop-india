@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/refresh-deals",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/discover-deals",
+      "schedule": "30 2 * * *"
     }
   ]
 }
