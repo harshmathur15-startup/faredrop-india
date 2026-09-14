@@ -36,8 +36,14 @@ async function run(req: NextRequest) {
       .gte('published_at', since)
       .order('deal_price', { ascending: true })
 
-    let digest = { recipients: 0, sent: 0, failed: 0, deals: fresh?.length ?? 0 }
-    if (fresh && fresh.length) {
+    // Subscriber broadcast is OFF until DEAL_DIGEST_ENABLED='true' is set in the
+    // env — so no email reaches users until it's deliberately switched on (after
+    // a sample has been reviewed). Discovery + auto-publish are unaffected.
+    const digest = {
+      enabled: process.env.DEAL_DIGEST_ENABLED === 'true',
+      recipients: 0, sent: 0, failed: 0, deals: fresh?.length ?? 0,
+    }
+    if (digest.enabled && fresh && fresh.length) {
       const { data: subs } = await supabaseAdmin
         .from('subscribers').select('email').eq('confirmed', true)
       for (const s of subs ?? []) {
