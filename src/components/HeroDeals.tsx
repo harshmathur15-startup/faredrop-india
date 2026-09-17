@@ -20,7 +20,13 @@ const DEST_META: Record<string, { flag: string }> = {
   GOI: { flag: '🇮🇳' }, GOX: { flag: '🇮🇳' }, IXL: { flag: '🇮🇳' },
   COK: { flag: '🇮🇳' }, UDR: { flag: '🇮🇳' }, DEL: { flag: '🇮🇳' },
   BOM: { flag: '🇮🇳' }, BLR: { flag: '🇮🇳' }, MAA: { flag: '🇮🇳' },
-  KTM: { flag: '🇳🇵' }, NYC: { flag: '🇺🇸' }, LON: { flag: '🇬🇧' }, PAR: { flag: '🇫🇷' }, MAD: { flag: '🇪🇸' },
+  KTM: { flag: '🇳🇵' }, IXB: { flag: '🇮🇳' }, IXZ: { flag: '🇮🇳' },
+  DED: { flag: '🇮🇳' }, JAI: { flag: '🇮🇳' }, VNS: { flag: '🇮🇳' },
+  TAS: { flag: '🇺🇿' }, ALA: { flag: '🇰🇿' }, EVN: { flag: '🇦🇲' },
+  TPE: { flag: '🇹🇼' }, DAC: { flag: '🇧🇩' }, HKG: { flag: '🇭🇰' },
+  LON: { flag: '🇬🇧' }, PAR: { flag: '🇫🇷' }, NYC: { flag: '🇺🇸' },
+  AKL: { flag: '🇳🇿' }, MAD: { flag: '🇪🇸' }, SYD: { flag: '🇦🇺' },
+  KWI: { flag: '🇰🇼' }, RUH: { flag: '🇸🇦' }, BAH: { flag: '🇧🇭' }, MCT: { flag: '🇴🇲' },
 }
 
 export default function HeroDeals({ deals }: { deals: Deal[] }) {
