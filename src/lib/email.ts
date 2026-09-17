@@ -256,6 +256,54 @@ export async function sendDealDigestEmail({
   })
 }
 
+// ── Daily refresh summary (internal — sent to the operator, not subscribers) ─
+
+interface Movement { city: string; cabin: string; dates: string; old_price: number; new_price: number; pct: number }
+export async function sendRefreshSummaryEmail({
+  to, summary,
+}: {
+  to: string
+  summary: {
+    ran_at: string; published_after: number; refreshed: number; increased: number
+    decreased: number; expired: number; no_fare: number; credits_used: number
+    expired_deals: Movement[]; top_increases: Movement[]; top_decreases: Movement[]
+  }
+}) {
+  const resend = getResend()
+  const inr = (n: number) => `₹${Number(n).toLocaleString('en-IN')}`
+  const date = new Date(summary.ran_at).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' })
+  const line = (m: Movement, sign = true) =>
+    `<tr><td style="padding:6px 0;border-bottom:1px solid #eef2f7;font-size:13px;color:#334155">${m.city} <span style="color:#94a3b8">${m.cabin}</span> · ${inr(m.old_price)} → <b>${inr(m.new_price)}</b> <span style="color:${m.pct > 0 ? '#dc2626' : '#16a34a'};font-weight:700">(${sign && m.pct > 0 ? '+' : ''}${m.pct}%)</span></td></tr>`
+  const section = (title: string, arr: Movement[]) =>
+    arr.length ? `<p style="margin:18px 0 4px;font-weight:800;color:#1e293b;font-size:13px">${title}</p><table width="100%" cellpadding="0" cellspacing="0">${arr.slice(0, 5).map(m => line(m)).join('')}</table>` : ''
+
+  return resend.emails.send({
+    from: FROM,
+    to,
+    subject: `🔁 Deal refresh ${date}: ${summary.refreshed} refreshed · ${summary.expired} expired · ${summary.published_after} live`,
+    html: shell(`
+      <div style="text-align:center;margin-bottom:18px">
+        <h2 style="margin:0 0 4px;color:#1e293b;font-size:20px;font-weight:800">🔁 Daily deal refresh — ${date}</h2>
+        <p style="margin:0;color:#64748b;font-size:13px">${summary.published_after} live deals · ${summary.credits_used} credits</p>
+      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:6px">
+        <tr>
+          ${['refreshed', 'increased', 'decreased', 'expired'].map((k, i) => `
+          <td style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center;width:22%">
+            <p style="margin:0;font-size:20px;font-weight:900;color:#1e293b">${[summary.refreshed, summary.increased, summary.decreased, summary.expired][i]}</p>
+            <p style="margin:2px 0 0;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em">${['refreshed', 'rose', 'dropped', 'expired'][i]}</p>
+          </td>${i < 3 ? '<td style="width:2%"></td>' : ''}`).join('')}
+        </tr>
+      </table>
+      ${summary.expired_deals.length ? `<p style="margin:18px 0 4px;font-weight:800;color:#b91c1c;font-size:13px">❌ Expired (fare rose >30%)</p><table width="100%" cellpadding="0" cellspacing="0">${summary.expired_deals.slice(0, 8).map(m => line(m)).join('')}</table>` : ''}
+      ${section('🔻 Biggest drops', summary.top_decreases)}
+      ${section('🔺 Biggest rises', summary.top_increases)}
+      ${summary.no_fare ? `<p style="margin:16px 0 0;color:#94a3b8;font-size:12px">${summary.no_fare} deal(s) returned no fare this run.</p>` : ''}
+      ${btn(`${BASE_URL}/#deals`, 'View live deals →')}
+    `),
+  })
+}
+
 // ── OTP (fallback — Supabase handles OTP natively via Resend SMTP) ───────────
 
 export async function sendOtpEmail({ to, otp }: { to: string; otp: string }) {

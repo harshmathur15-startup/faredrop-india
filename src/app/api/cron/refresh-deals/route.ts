@@ -13,11 +13,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { requireCronSecret } from '@/lib/api-guard'
 import { refreshLiveDeals } from '@/lib/refreshDeals'
+import { sendRefreshSummaryEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // up to ~40 external FlightAPI calls per run
 
 const EXPIRE_PCT_THRESHOLD = 0.30 // expire deals whose fare rose > 30%
+// Operator gets the morning summary by email (Vercel egresses freely, so this
+// is reliable — unlike the sandboxed Claude routine). Override via env if needed.
+const SUMMARY_EMAIL = process.env.REFRESH_SUMMARY_EMAIL || 'harshmathur15@gmail.com'
 
 async function run(req: NextRequest) {
   const authErr = requireCronSecret(req)
@@ -37,7 +41,16 @@ async function run(req: NextRequest) {
       .insert({ ran_at: summary.ran_at, summary })
     if (insErr) console.error('deal_refresh_runs insert failed', insErr.message)
 
-    return NextResponse.json({ ok: true, ...summary })
+    // Email the operator the morning summary. Never let a mail failure fail the run.
+    let emailed = false
+    try {
+      await sendRefreshSummaryEmail({ to: SUMMARY_EMAIL, summary })
+      emailed = true
+    } catch (e) {
+      console.error('refresh summary email failed', String(e))
+    }
+
+    return NextResponse.json({ ok: true, emailed, ...summary })
   } catch (e) {
     return NextResponse.json({ ok: false, error: String(e) }, { status: 500 })
   }
