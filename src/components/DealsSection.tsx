@@ -1,12 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { Deal } from '@/types'
 import { calcDiscount } from '@/lib/utils'
-import { pickHeroDeals } from '@/lib/heroDeals'
 import { useUserTier } from '@/lib/useAuth'
-import DealCard from './DealCard'
 import DestinationGrid from './DestinationGrid'
 
 function SectionHeader({ deals }: { deals: Deal[] }) {
@@ -32,7 +29,6 @@ function SectionHeader({ deals }: { deals: Deal[] }) {
 
 export default function DealsSection({ deals }: { deals: Deal[] }) {
   const { authed, tier } = useUserTier()
-  const [visibleFree, setVisibleFree] = useState(24) // paginate the free-deals grid for mobile perf
 
   // Loading
   if (authed === undefined || (authed && tier === undefined)) {
@@ -69,91 +65,23 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
     calcDiscount(b.normal_price, b.deal_price) - calcDiscount(a.normal_price, a.deal_price)
   )
 
-  // Premium user — see everything, in the destination/month storefront
-  if (isPremiumUser) {
-    return (
-      <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
-        <SectionHeader deals={deals} />
-        <DestinationGrid deals={sortedDeals} />
-      </section>
-    )
-  }
-
-  // Free user — the hero shows the top 5 featured free deals; show the rest
-  // here as regular cards, then the locked members-only deals below.
-  const heroIds = new Set(pickHeroDeals(sortedDeals, 5).map(d => d.id))
-  const freeDeals = sortedDeals.filter(d => !d.is_premium && !heroIds.has(d.id))
-  const premiumDeals = sortedDeals.filter(d => d.is_premium)
+  // Both free & paid see the same filterable storefront (city / class / month).
+  // For free users, premium deals stay locked — shown as teasers but their exact
+  // dates & booking links are hidden and clicks route to /pricing.
+  const lockedIds = isPremiumUser ? undefined : new Set(sortedDeals.filter(d => d.is_premium).map(d => d.id))
+  const lockedCount = lockedIds?.size ?? 0
 
   return (
     <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
       <SectionHeader deals={deals} />
-
-      {/* More free deals — beyond the featured hero row (paginated for mobile perf) */}
-      {freeDeals.length > 0 && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {freeDeals.slice(0, visibleFree).map(deal => <DealCard key={deal.id} deal={deal} />)}
-          </div>
-          {visibleFree < freeDeals.length && (
-            <div className="mt-8 text-center">
-              <button onClick={() => setVisibleFree(v => v + 24)}
-                className="inline-block bg-white border border-gray-200 hover:bg-gray-50 text-slate-700 font-bold px-8 py-3 rounded-xl transition-colors shadow-sm">
-                Load more deals ({freeDeals.length - visibleFree} more)
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Premium deals — locked, grouped by cabin */}
-      {premiumDeals.length > 0 && (
-        <div className="mt-14">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="font-display text-xl font-bold text-slate-900">👑 Members-only deals</h3>
-              <p className="text-gray-500 text-sm mt-0.5">{premiumDeals.length} exclusive deals · dates &amp; booking links hidden</p>
-            </div>
-            <Link href="/pricing" className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shrink-0">
-              Unlock all →
-            </Link>
-          </div>
-
-          {/* Cabin sub-sections */}
-          <div className="space-y-10">
-            {([
-              { key: 'Economy',         label: 'Economy',         icon: '✈',  hdr: 'text-blue-700',   cnt: 'bg-blue-100 text-blue-700 border-blue-200' },
-              { key: 'Premium Economy', label: 'Premium Economy', icon: '⭐', hdr: 'text-violet-700', cnt: 'bg-violet-100 text-violet-700 border-violet-200' },
-              { key: 'Business',        label: 'Business Class',  icon: '👑', hdr: 'text-amber-700',  cnt: 'bg-amber-100 text-amber-800 border-amber-200' },
-            ] as const).map(sec => {
-              const sDeals = premiumDeals.filter(d => {
-                const n = (d.curator_note || '').toLowerCase()
-                if (sec.key === 'Business')        return n.startsWith('business') || n.includes('business ·')
-                if (sec.key === 'Premium Economy') return n.startsWith('premium economy') || n.includes('premium economy')
-                return !n.startsWith('business') && !n.includes('business ·') && !n.startsWith('premium economy') && !n.includes('premium economy')
-              })
-              if (sDeals.length === 0) return null
-              return (
-                <div key={sec.key}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <h4 className={`font-display text-lg font-bold ${sec.hdr}`}>{sec.icon} {sec.label}</h4>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${sec.cnt}`}>{sDeals.length} deal{sDeals.length !== 1 ? 's' : ''}</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {sDeals.map(deal => <DealCard key={deal.id} deal={deal} locked />)}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="mt-8 text-center py-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
-            <p className="text-lg font-bold text-gray-900 mb-1">Upgrade to unlock {premiumDeals.length} more deal{premiumDeals.length > 1 ? 's' : ''}</p>
-            <p className="text-gray-500 text-sm mb-5">Cancel anytime</p>
-            <Link href="/pricing" className="inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold px-7 py-3 rounded-xl transition-colors">
-              Try Silver for ₹1 →
-            </Link>
-          </div>
+      <DestinationGrid deals={sortedDeals} lockedIds={lockedIds} />
+      {lockedCount > 0 && (
+        <div className="mt-10 text-center py-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
+          <p className="text-lg font-bold text-gray-900 mb-1">🔒 {lockedCount} members-only deal{lockedCount > 1 ? 's' : ''} — dates &amp; booking links hidden</p>
+          <p className="text-gray-500 text-sm mb-5">Unlock every deal + real-time alerts. Cancel anytime.</p>
+          <Link href="/pricing" className="inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold px-7 py-3 rounded-xl transition-colors">
+            Try Silver for ₹1 →
+          </Link>
         </div>
       )}
     </section>

@@ -34,7 +34,8 @@ interface DestGroup {
   count: number; origins: number; deals: Deal[]; maxDisc: number
 }
 
-export default function DestinationGrid({ deals }: { deals: Deal[] }) {
+export default function DestinationGrid({ deals, lockedIds }: { deals: Deal[]; lockedIds?: Set<string> }) {
+  const isLocked = (d: Deal) => lockedIds?.has(d.id) ?? false
   const [city, setCity] = useState('All cities')
   const [trip, setTrip] = useState<'All' | 'oneway' | 'roundtrip'>('All')
   const [cabin, setCabin] = useState('All classes')
@@ -210,9 +211,10 @@ export default function DestinationGrid({ deals }: { deals: Deal[] }) {
                 {mg.deals.map((deal, i) => {
                   const disc = calcDiscount(deal.normal_price, deal.deal_price)
                   const oneWay = tripFromNote(deal.curator_note) === 'oneway'
+                  const locked = isLocked(deal)
                   return (
-                    <Link key={deal.id} href={`/deal/${deal.id}`}
-                      data-deal-id={deal.id} data-surface="grid" data-position={i}
+                    <Link key={deal.id} href={locked ? '/pricing' : `/deal/${deal.id}`}
+                      data-deal-id={deal.id} data-surface="grid" data-position={i} data-locked={locked ? 'true' : undefined}
                       className="group flex sm:flex-col bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 sm:hover:-translate-y-1 transition-all duration-300">
                       {/* Image: compact left on mobile, full image-forward on desktop */}
                       <div className="relative w-28 shrink-0 sm:w-full sm:aspect-[3/2] overflow-hidden">
@@ -224,12 +226,15 @@ export default function DestinationGrid({ deals }: { deals: Deal[] }) {
                           <p className="font-display text-white text-lg font-bold leading-tight">{deal.dest_city}</p>
                         </div>
                         {disc > 0 && <span className="hidden sm:block absolute top-2.5 left-2.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">{disc}% off</span>}
+                        {locked && <span className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full">🔒 Members</span>}
                       </div>
                       {/* Body */}
                       <div className="p-3 sm:p-4 flex-1 min-w-0">
                         <p className="font-bold text-slate-900 text-sm truncate sm:hidden">{FLAG[deal.dest_iata] ?? '✈️'} {deal.dest_city}</p>
                         <p className="text-xs text-slate-500 truncate">{deal.origin_city} {oneWay ? '→' : '⇄'} {deal.dest_city}</p>
-                        <p className="text-[11px] text-slate-400 truncate mt-0.5">{deal.airline} · {mon(deal.validity_start)} · {oneWay ? 'One way' : 'Round trip'}</p>
+                        <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                          {locked ? '🔒 Unlock exact dates & booking' : `${deal.airline} · ${mon(deal.validity_start)} · ${oneWay ? 'One way' : 'Round trip'}`}
+                        </p>
                         <div className="flex items-center gap-2 mt-1.5 sm:mt-2">
                           <span className="font-display font-bold text-slate-900 sm:text-xl">{formatPrice(deal.deal_price, deal.currency)}</span>
                           {disc > 0 && <span className="text-[11px] font-bold text-emerald-600 sm:hidden">{disc}% off</span>}
@@ -263,17 +268,21 @@ export default function DestinationGrid({ deals }: { deals: Deal[] }) {
               {openDest.deals.map((deal, i) => {
                 const disc = calcDiscount(deal.normal_price, deal.deal_price)
                 const oneWay = tripFromNote(deal.curator_note) === 'oneway'
+                const locked = isLocked(deal)
                 return (
-                  <Link key={deal.id} href={`/deal/${deal.id}`}
-                    data-deal-id={deal.id} data-surface="spotlight" data-position={i}
+                  <Link key={deal.id} href={locked ? '/pricing' : `/deal/${deal.id}`}
+                    data-deal-id={deal.id} data-surface="spotlight" data-position={i} data-locked={locked ? 'true' : undefined}
                     className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/40 transition-colors">
                     <div className="min-w-0">
                       <p className="font-bold text-slate-900 text-sm flex items-center gap-2 flex-wrap">
                         <span>{deal.origin_city} {oneWay ? '→' : '⇄'} {deal.dest_city}</span>
                         <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{oneWay ? 'One way' : 'Round trip'}</span>
                         <CabinBadge note={deal.curator_note} />
+                        {locked && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">🔒 Members</span>}
                       </p>
-                      <p className="text-xs text-slate-500 mt-0.5 truncate">{deal.airline} · {mon(deal.validity_start)}{deal.validity_start !== deal.validity_end ? `–${mon(deal.validity_end)}` : ''}</p>
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">
+                        {locked ? 'Unlock exact dates & booking →' : `${deal.airline} · ${mon(deal.validity_start)}${deal.validity_start !== deal.validity_end ? `–${mon(deal.validity_end)}` : ''}`}
+                      </p>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-display font-bold text-slate-900">{formatPrice(deal.deal_price, deal.currency)}</p>
