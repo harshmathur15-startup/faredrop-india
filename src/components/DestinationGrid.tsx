@@ -34,8 +34,15 @@ interface DestGroup {
   count: number; origins: number; deals: Deal[]; maxDisc: number
 }
 
-export default function DestinationGrid({ deals, lockedIds }: { deals: Deal[]; lockedIds?: Set<string> }) {
+export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing', onUnlock, credits }: {
+  deals: Deal[]
+  lockedIds?: Set<string>
+  lockHref?: string                     // where a locked card navigates when there's no unlock handler (anon → /signup)
+  onUnlock?: (dealId: string) => void   // if provided (free users), locked cards become "Unlock (1 credit)" actions
+  credits?: number                      // remaining unlock credits — shown as a chip + drives the locked-card label
+}) {
   const isLocked = (d: Deal) => lockedIds?.has(d.id) ?? false
+  const canUnlock = !!onUnlock && (credits ?? 0) > 0
   const [city, setCity] = useState('All cities')
   const [trip, setTrip] = useState<'All' | 'oneway' | 'roundtrip'>('All')
   const [cabin, setCabin] = useState('All classes')
@@ -156,6 +163,24 @@ export default function DestinationGrid({ deals, lockedIds }: { deals: Deal[]; l
         </div>
       </div>
 
+      {/* Unlock-credits banner — only for signed-in free users (onUnlock provided) */}
+      {onUnlock && credits !== undefined && (
+        <div className="mb-5 flex items-center justify-between gap-3 flex-wrap rounded-2xl px-4 py-3 border bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100">
+          {credits > 0 ? (
+            <p className="text-sm font-semibold text-slate-700">
+              🔓 You have <span className="text-blue-700 font-bold">{credits} free unlock{credits === 1 ? '' : 's'}</span> this month — tap a 🔒 deal to reveal its dates &amp; booking link.
+            </p>
+          ) : (
+            <p className="text-sm font-semibold text-slate-700">
+              You&apos;ve used all your free unlocks this month. Upgrade for unlimited access, or they refresh next month.
+            </p>
+          )}
+          <Link href="/pricing" className="shrink-0 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-full transition-colors">
+            {credits > 0 ? 'Unlock everything →' : 'Upgrade →'}
+          </Link>
+        </div>
+      )}
+
       <p className="text-slate-500 text-sm mb-5">
         {view === 'grid'
           ? `${dests.length} destination${dests.length !== 1 ? 's' : ''} · ${filtered.length} fares`
@@ -212,10 +237,15 @@ export default function DestinationGrid({ deals, lockedIds }: { deals: Deal[]; l
                   const disc = calcDiscount(deal.normal_price, deal.deal_price)
                   const oneWay = tripFromNote(deal.curator_note) === 'oneway'
                   const locked = isLocked(deal)
-                  return (
-                    <Link key={deal.id} href={locked ? '/pricing' : `/deal/${deal.id}`}
-                      data-deal-id={deal.id} data-surface="grid" data-position={i} data-locked={locked ? 'true' : undefined}
-                      className="group flex sm:flex-col bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 sm:hover:-translate-y-1 transition-all duration-300">
+                  const showUnlock = locked && !!onUnlock   // signed-in free user → unlock action
+                  const badgeText = showUnlock ? (canUnlock ? '🔓 Unlock' : '🔒 Upgrade') : '🔒 Members'
+                  const infoLine = locked
+                    ? (showUnlock ? (canUnlock ? '🔓 Tap to unlock · 1 credit' : '🔒 Out of credits — upgrade')
+                                  : '🔒 Unlock exact dates & booking')
+                    : `${deal.airline} · ${mon(deal.validity_start)} · ${oneWay ? 'One way' : 'Round trip'}`
+                  const cls = 'group flex sm:flex-col bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 sm:hover:-translate-y-1 transition-all duration-300'
+                  const inner = (
+                    <>
                       {/* Image: compact left on mobile, full image-forward on desktop */}
                       <div className="relative w-28 shrink-0 sm:w-full sm:aspect-[3/2] overflow-hidden">
                         <Image src={deal.image_url} alt={deal.dest_city} fill sizes="(max-width:640px) 112px, 300px"
@@ -226,21 +256,39 @@ export default function DestinationGrid({ deals, lockedIds }: { deals: Deal[]; l
                           <p className="font-display text-white text-lg font-bold leading-tight">{deal.dest_city}</p>
                         </div>
                         {disc > 0 && <span className="hidden sm:block absolute top-2.5 left-2.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">{disc}% off</span>}
-                        {locked && <span className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full">🔒 Members</span>}
+                        {locked && <span className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full">{badgeText}</span>}
                       </div>
                       {/* Body */}
                       <div className="p-3 sm:p-4 flex-1 min-w-0">
                         <p className="font-bold text-slate-900 text-sm truncate sm:hidden">{FLAG[deal.dest_iata] ?? '✈️'} {deal.dest_city}</p>
                         <p className="text-xs text-slate-500 truncate">{deal.origin_city} {oneWay ? '→' : '⇄'} {deal.dest_city}</p>
-                        <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                          {locked ? '🔒 Unlock exact dates & booking' : `${deal.airline} · ${mon(deal.validity_start)} · ${oneWay ? 'One way' : 'Round trip'}`}
-                        </p>
+                        <p className="text-[11px] text-slate-400 truncate mt-0.5">{infoLine}</p>
                         <div className="flex items-center gap-2 mt-1.5 sm:mt-2">
                           <span className="font-display font-bold text-slate-900 sm:text-xl">{formatPrice(deal.deal_price, deal.currency)}</span>
                           {disc > 0 && <span className="text-[11px] font-bold text-emerald-600 sm:hidden">{disc}% off</span>}
                           <CabinBadge note={deal.curator_note} />
                         </div>
                       </div>
+                    </>
+                  )
+                  // Free signed-in user on a locked deal → clickable unlock action (spends a credit / routes to upgrade).
+                  if (showUnlock) {
+                    return (
+                      <div key={deal.id} role="button" tabIndex={0}
+                        onClick={() => onUnlock!(deal.id)}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onUnlock!(deal.id) } }}
+                        data-deal-id={deal.id} data-surface="grid" data-position={i} data-locked="true"
+                        className={`${cls} cursor-pointer`}>
+                        {inner}
+                      </div>
+                    )
+                  }
+                  // Unlocked → deal page. Anonymous locked → lockHref (/signup).
+                  return (
+                    <Link key={deal.id} href={locked ? lockHref : `/deal/${deal.id}`}
+                      data-deal-id={deal.id} data-surface="grid" data-position={i} data-locked={locked ? 'true' : undefined}
+                      className={cls}>
+                      {inner}
                     </Link>
                   )
                 })}
@@ -269,25 +317,44 @@ export default function DestinationGrid({ deals, lockedIds }: { deals: Deal[]; l
                 const disc = calcDiscount(deal.normal_price, deal.deal_price)
                 const oneWay = tripFromNote(deal.curator_note) === 'oneway'
                 const locked = isLocked(deal)
-                return (
-                  <Link key={deal.id} href={locked ? '/pricing' : `/deal/${deal.id}`}
-                    data-deal-id={deal.id} data-surface="spotlight" data-position={i} data-locked={locked ? 'true' : undefined}
-                    className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/40 transition-colors">
+                const showUnlock = locked && !!onUnlock
+                const subLine = locked
+                  ? (showUnlock ? (canUnlock ? '🔓 Tap to unlock · 1 credit' : 'Out of credits — upgrade →') : 'Unlock exact dates & booking →')
+                  : `${deal.airline} · ${mon(deal.validity_start)}${deal.validity_start !== deal.validity_end ? `–${mon(deal.validity_end)}` : ''}`
+                const rowCls = 'flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/40 transition-colors'
+                const inner = (
+                  <>
                     <div className="min-w-0">
                       <p className="font-bold text-slate-900 text-sm flex items-center gap-2 flex-wrap">
                         <span>{deal.origin_city} {oneWay ? '→' : '⇄'} {deal.dest_city}</span>
                         <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{oneWay ? 'One way' : 'Round trip'}</span>
                         <CabinBadge note={deal.curator_note} />
-                        {locked && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">🔒 Members</span>}
+                        {locked && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">{showUnlock ? (canUnlock ? '🔓 Unlock' : '🔒 Upgrade') : '🔒 Members'}</span>}
                       </p>
-                      <p className="text-xs text-slate-500 mt-0.5 truncate">
-                        {locked ? 'Unlock exact dates & booking →' : `${deal.airline} · ${mon(deal.validity_start)}${deal.validity_start !== deal.validity_end ? `–${mon(deal.validity_end)}` : ''}`}
-                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">{subLine}</p>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-display font-bold text-slate-900">{formatPrice(deal.deal_price, deal.currency)}</p>
                       {disc > 0 && <p className="text-[11px] font-bold text-emerald-600">{disc}% off</p>}
                     </div>
+                  </>
+                )
+                if (showUnlock) {
+                  return (
+                    <div key={deal.id} role="button" tabIndex={0}
+                      onClick={() => onUnlock!(deal.id)}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onUnlock!(deal.id) } }}
+                      data-deal-id={deal.id} data-surface="spotlight" data-position={i} data-locked="true"
+                      className={`${rowCls} w-full text-left cursor-pointer`}>
+                      {inner}
+                    </div>
+                  )
+                }
+                return (
+                  <Link key={deal.id} href={locked ? lockHref : `/deal/${deal.id}`}
+                    data-deal-id={deal.id} data-surface="spotlight" data-position={i} data-locked={locked ? 'true' : undefined}
+                    className={rowCls}>
+                    {inner}
                   </Link>
                 )
               })}

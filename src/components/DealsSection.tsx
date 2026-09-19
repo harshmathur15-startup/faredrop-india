@@ -1,10 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Deal } from '@/types'
 import { calcDiscount } from '@/lib/utils'
-import { useUserTier } from '@/lib/useAuth'
+import { useUserTier, useUnlocks } from '@/lib/useAuth'
+import { pickStorefront } from '@/lib/storefront'
 import DestinationGrid from './DestinationGrid'
+
+const STOREFRONT_LIMIT = 50 // deals shown to anonymous + free (signed-up) users
 
 function SectionHeader({ deals }: { deals: Deal[] }) {
   const liveCount = deals.filter(d => calcDiscount(d.normal_price, d.deal_price) > 0).length
@@ -29,8 +33,10 @@ function SectionHeader({ deals }: { deals: Deal[] }) {
 
 export default function DealsSection({ deals }: { deals: Deal[] }) {
   const { authed, tier } = useUserTier()
+  const { state, unlock } = useUnlocks()
+  const router = useRouter()
 
-  // Loading
+  // Loading auth/tier
   if (authed === undefined || (authed && tier === undefined)) {
     return (
       <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
@@ -39,51 +45,57 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
     )
   }
 
-  // Signed out — full lock wall
-  if (!authed) {
+  const isPaid = authed === true && (tier === 'silver' || tier === 'gold')
+
+  // Paid — full catalogue, nothing locked.
+  if (isPaid) {
+    const sorted = [...deals].sort((a, b) =>
+      calcDiscount(b.normal_price, b.deal_price) - calcDiscount(a.normal_price, a.deal_price))
     return (
       <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
         <SectionHeader deals={deals} />
-        <div className="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-blue-100 shadow-sm">
-          <p className="text-5xl mb-4">🔒</p>
-          <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Members-only access</h3>
-          <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-            Sign up free to unlock curated flight deals — up to 90% off for Indian travellers
-          </p>
-          <Link href="/signup"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition-colors">
-            Sign up free →
-          </Link>
-          <p className="text-gray-400 text-xs mt-4">No credit card · Takes 30 seconds</p>
-        </div>
+        <DestinationGrid deals={sorted} />
       </section>
     )
   }
 
-  const isPremiumUser = tier === 'silver' || tier === 'gold'
-  const sortedDeals = [...deals].sort((a, b) =>
-    calcDiscount(b.normal_price, b.deal_price) - calcDiscount(a.normal_price, a.deal_price)
-  )
+  // Anonymous + free both see the same 50-deal storefront (spread across destinations).
+  const storefront = pickStorefront(deals, STOREFRONT_LIMIT)
 
-  // Both free & paid see the same filterable storefront (city / class / month).
-  // For free users, premium deals stay locked — shown as teasers but their exact
-  // dates & booking links are hidden and clicks route to /pricing.
-  const lockedIds = isPremiumUser ? undefined : new Set(sortedDeals.filter(d => d.is_premium).map(d => d.id))
-  const lockedCount = lockedIds?.size ?? 0
+  // Signed out — everything locked, taps route to sign-up.
+  if (!authed) {
+    const lockedIds = new Set(storefront.map(d => d.id))
+    return (
+      <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
+        <SectionHeader deals={deals} />
+        <div className="mb-6 text-center py-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+          <p className="text-lg font-bold text-slate-900 mb-1">🔒 {storefront.length} deals inside — sign up free to unlock</p>
+          <p className="text-gray-500 text-sm mb-4">Every member gets <strong>3 free unlocks a month</strong>. No credit card.</p>
+          <Link href="/signup" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition-colors">
+            Sign up free →
+          </Link>
+        </div>
+        <DestinationGrid deals={storefront} lockedIds={lockedIds} lockHref="/signup" />
+      </section>
+    )
+  }
+
+  // Signed-up free user — same 50, locked except deals they've unlocked. Unlock spends a credit.
+  const unlocked = state?.unlocked ?? new Set<string>()
+  const credits = state?.credits ?? 0
+  const lockedIds = new Set(storefront.filter(d => !unlocked.has(d.id)).map(d => d.id))
+
+  const handleUnlock = async (dealId: string) => {
+    if (credits <= 0) { router.push('/pricing'); return }
+    const res = await unlock(dealId)
+    if (!res.ok && res.reason === 'no_credits') router.push('/pricing')
+    // On success, useUnlocks updates state → this component re-renders and the deal unlocks.
+  }
 
   return (
     <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
       <SectionHeader deals={deals} />
-      <DestinationGrid deals={sortedDeals} lockedIds={lockedIds} />
-      {lockedCount > 0 && (
-        <div className="mt-10 text-center py-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
-          <p className="text-lg font-bold text-gray-900 mb-1">🔒 {lockedCount} members-only deal{lockedCount > 1 ? 's' : ''} — dates &amp; booking links hidden</p>
-          <p className="text-gray-500 text-sm mb-5">Unlock every deal + real-time alerts. Cancel anytime.</p>
-          <Link href="/pricing" className="inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold px-7 py-3 rounded-xl transition-colors">
-            Try Silver for ₹1 →
-          </Link>
-        </div>
-      )}
+      <DestinationGrid deals={storefront} lockedIds={lockedIds} onUnlock={handleUnlock} credits={credits} lockHref="/pricing" />
     </section>
   )
 }

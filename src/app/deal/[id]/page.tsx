@@ -142,7 +142,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <DealGate isPremium={deal.is_premium ?? true} />
+      <DealGate dealId={deal.id} />
 
       {/* Sticky header — turns deep-linked deal pages into browsable entry points */}
       <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 px-5 py-3 flex items-center justify-between sticky top-0 z-50 shadow-sm">
@@ -220,7 +220,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             <div className="mt-5 space-y-3">
               <DealCta
                 googleUrl={googleUrl}
-                isPremium={deal.is_premium ?? true}
+                dealId={deal.id}
                 label={`🔍 Search on Google Flights${cabin ? ` (${cabin.label})` : ''} (${formatDateRange(deal.validity_start, deal.validity_end)}) →`}
               />
             </div>
@@ -238,7 +238,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
       {/* Sticky mobile booking bar — keeps the CTA reachable past the hero image */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-3">
-        <DealCta googleUrl={googleUrl} isPremium={deal.is_premium ?? true} label="🔍 Book on Google Flights →" />
+        <DealCta googleUrl={googleUrl} dealId={deal.id} label="🔍 Book on Google Flights →" />
       </div>
     </main>
   )
