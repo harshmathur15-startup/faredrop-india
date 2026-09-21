@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { supabaseAdmin } from './supabase'
+import { supabaseAdmin } from './supabase-admin'
 import type { UserRole } from '@/types/marketplace'
 
 // Resolve the auth user id from a Bearer access token (sessions live in

@@ -10,7 +10,7 @@
  * Cost: ~2 FlightAPI credits per round-trip deal, ~1 per one-way (~70-80/day).
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireCronSecret } from '@/lib/api-guard'
 import { refreshLiveDeals } from '@/lib/refreshDeals'
 import { sendRefreshSummaryEmail } from '@/lib/email'

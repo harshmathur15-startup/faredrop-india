@@ -9,7 +9,7 @@
  * Protected by CRON_SECRET.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireCronSecret } from '@/lib/api-guard'
 import { discoverDeals } from '@/lib/discoverDeals'
 import { sendDealDigestEmail } from '@/lib/email'

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 const DESTINATIONS_BY_REGION: Record<string, { city: string; iata: string }[]> = {
   'Southeast Asia': [

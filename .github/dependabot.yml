@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Application dependencies (npm). Weekly PRs, minor/patch grouped to reduce noise.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+  # Keep GitHub Actions pinned versions current too.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
