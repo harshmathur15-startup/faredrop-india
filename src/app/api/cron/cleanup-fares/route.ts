@@ -10,7 +10,7 @@
  * Do NOT enable this AND the pg_cron schedule at the same time.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireCronSecret } from '@/lib/api-guard'
 
 export const dynamic = 'force-dynamic'

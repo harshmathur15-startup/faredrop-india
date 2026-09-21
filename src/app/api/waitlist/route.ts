@@ -1,7 +1,11 @@
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { NextRequest, NextResponse } from 'next/server'
+import { clientKey, rateLimit, tooManyRequests } from '@/lib/api-guard'
 
 export async function POST(req: NextRequest) {
+  // Unauthenticated write endpoint — throttle per IP to stop table spam.
+  if (!rateLimit(clientKey(req, 'waitlist'), 10, 300_000)) return tooManyRequests()
+
   try {
     const body = await req.json()
     const { type, ...fields } = body

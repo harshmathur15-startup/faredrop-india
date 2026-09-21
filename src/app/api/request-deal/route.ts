@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendDealRequestEmail, DealRequest } from '@/lib/email'
+import { clientKey, rateLimit, tooManyRequests } from '@/lib/api-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +21,9 @@ async function getUserId(): Promise<string | null> {
 }
 
 export async function POST(req: NextRequest) {
+  // Sends a team notification email — throttle per IP to stop email/DB spam.
+  if (!rateLimit(clientKey(req, 'request-deal'), 5, 600_000)) return tooManyRequests()
+
   let body: Record<string, unknown>
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
 

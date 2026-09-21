@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth-server'
 import { getRazorpay, razorpayConfigured, amountPaise, isTier } from '@/lib/razorpay'
+import { rateLimit, tooManyRequests } from '@/lib/api-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +12,9 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: NextRequest) {
   const userId = await getUserId(req)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Per-user throttle so a compromised/looping client can't spam order creation.
+  if (!rateLimit(`create-order:${userId}`, 10, 60_000)) return tooManyRequests()
 
   if (!razorpayConfigured()) {
     return NextResponse.json({ error: 'Payments not configured' }, { status: 503 })

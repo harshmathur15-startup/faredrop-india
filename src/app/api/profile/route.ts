@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { getUserId } from '@/lib/auth-server'
 import type { UserRole } from '@/types/marketplace'
 

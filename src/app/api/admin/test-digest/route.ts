@@ -7,7 +7,7 @@
  *   header: x-admin-token: <ADMIN_SECRET>
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireAdmin } from '@/lib/api-guard'
 import { sendDealDigestEmail } from '@/lib/email'
 

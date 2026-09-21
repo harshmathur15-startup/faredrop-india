@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './supabase'
+import { supabaseAdmin } from './supabase-admin'
 import { sendWelcomeEmail, sendPriceAlertEmail, sendDealEmail } from './email'
 import { sendPriceAlertWhatsApp, sendWelcomeWhatsApp, sendDealAlertWhatsApp } from './whatsapp'
 import type { Deal } from '@/types'

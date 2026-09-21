@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 function isAuthorized(req: NextRequest): boolean {
   return req.headers.get('x-admin-token') === process.env.ADMIN_SECRET

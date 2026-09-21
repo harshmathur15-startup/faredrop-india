@@ -5,7 +5,7 @@
  * Protected by CRON_SECRET (same pattern as check-alerts).
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export const dynamic = 'force-dynamic'
 

@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { clientKey, rateLimit, tooManyRequests } from '@/lib/api-guard'
 
 function getResend() {
   return new (require('resend').Resend)(process.env.RESEND_API_KEY)
 }
 
 export async function POST(req: NextRequest) {
+  // Sends a confirmation email + writes a subscriber row — throttle per IP to
+  // stop email-bombing / DB spam. (In-memory per instance; see api-guard.ts.)
+  if (!rateLimit(clientKey(req, 'signup'), 5, 300_000)) return tooManyRequests()
+
   const { email, source } = await req.json()
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

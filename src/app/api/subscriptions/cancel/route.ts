@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth-server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { getRazorpay, razorpayConfigured } from '@/lib/razorpay'
 
 export const dynamic = 'force-dynamic'

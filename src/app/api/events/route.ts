@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth-server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { clientKey, rateLimit } from '@/lib/api-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +46,13 @@ function clean(e: RawEvent, userId: string | null) {
 }
 
 export async function POST(req: NextRequest) {
+  // High-volume analytics sink: generous ceiling that still caps floods (each
+  // request may carry up to MAX_EVENTS). Silently drop over-limit to match the
+  // fire-and-forget contract — never surface an error to the client.
+  if (!rateLimit(clientKey(req, 'events'), 120, 60_000)) {
+    return NextResponse.json({ ok: false }, { status: 429 })
+  }
+
   let body: RawEvent
   try { body = await req.json() } catch { return NextResponse.json({ ok: false }, { status: 400 }) }
 
