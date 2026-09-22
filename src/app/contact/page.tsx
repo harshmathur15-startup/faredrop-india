@@ -4,8 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-// TODO: replace with your real support inbox once set up (e.g. hello@travelbaby.in)
-const CONTACT_EMAIL = 'hello@travelbaby.in'
+// Support / contact inbox — kept consistent with the Terms & Conditions page.
+const CONTACT_EMAIL = 'travelbabyin@gmail.com'
 
 export default function ContactPage() {
   const [name, setName] = useState('')
