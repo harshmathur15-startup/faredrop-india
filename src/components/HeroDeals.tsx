@@ -2,7 +2,7 @@
 
 import { Deal } from '@/types'
 import DealLink from './DealLink'
-import { calcDiscount, formatPrice, tripFromNote } from '@/lib/utils'
+import { calcDiscount, formatPrice, tripFromNote, isIndianAirport } from '@/lib/utils'
 import { pickHeroDeals } from '@/lib/heroDeals'
 
 const DEST_META: Record<string, { flag: string }> = {
@@ -45,7 +45,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
       </div>
       <div className="flex gap-3 mb-0 max-w-3xl mx-auto overflow-x-auto snap-x snap-mandatory pb-2 px-1 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0">
         {heroDeals.map((deal, i) => {
-          const meta = DEST_META[deal.dest_iata] ?? { flag: '✈️' }
+          const meta = DEST_META[deal.dest_iata] ?? { flag: isIndianAirport(deal.dest_iata) ? '🇮🇳' : '✈️' }
           const note = (deal.curator_note ?? '').toLowerCase()
           const isBusiness = note.includes('business')
           const isPEDeal = note.includes('premium economy') || note.includes('premium_economy')

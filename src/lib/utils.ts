@@ -30,6 +30,25 @@ export function tripFromNote(note?: string | null): 'oneway' | 'roundtrip' {
   return 'roundtrip'
 }
 
+// Indian airport IATA codes. A route counts as "domestic" only when BOTH ends
+// are in India — powers the storefront Domestic/International filter.
+const INDIA_IATA = new Set([
+  'DEL', 'BOM', 'BLR', 'MAA', 'HYD', 'CCU', 'COK', 'GOI', 'GOX', 'UDR', 'SXR', 'IXL', 'AMD', 'PNQ',
+  'JAI', 'LKO', 'PAT', 'GAU', 'BBI', 'IXC', 'NAG', 'IXB', 'IXR', 'IXM', 'IXE', 'IXA', 'IXJ', 'IXZ',
+  'IXU', 'IXW', 'TRV', 'CJB', 'VTZ', 'VNS', 'ATQ', 'BDQ', 'STV', 'RAJ', 'IDR', 'BHO', 'RPR', 'JLR',
+  'HBX', 'TIR', 'TRZ', 'MDU', 'IXG', 'JDH', 'BKB', 'KUU', 'DED', 'GWL', 'KNU', 'BHU', 'IXY', 'PBD',
+  'JGA', 'HSS', 'DHM', 'SLV', 'SHL', 'DMU', 'IMF', 'AJL', 'DIB', 'JRH', 'TEZ', 'IXS', 'IXH', 'RRK',
+  'IXI', 'MZU', 'RUP', 'TCR', 'CDP', 'RJA', 'WGC', 'CCJ', 'CNN',
+])
+
+export function isIndianAirport(iata?: string | null): boolean {
+  return !!iata && INDIA_IATA.has(iata)
+}
+
+export function isDomestic(originIata?: string | null, destIata?: string | null): boolean {
+  return isIndianAirport(originIata) && isIndianAirport(destIata)
+}
+
 // Human "price checked N ago" label from a last_verified_at timestamp.
 // Returns null when there is NO timestamp — never claim a fare is live/verified
 // without evidence. `stale` flags fares that should be re-verified before booking.

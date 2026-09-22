@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Deal } from '@/types'
-import { formatPrice, calcDiscount, tripFromNote, cabinFromNote } from '@/lib/utils'
+import { formatPrice, calcDiscount, tripFromNote, cabinFromNote, isDomestic, isIndianAirport } from '@/lib/utils'
 
 const FLAG: Record<string, string> = {
   BKK: '🇹🇭', DMK: '🇹🇭', HKT: '🇹🇭', DPS: '🇮🇩', CGK: '🇮🇩', SIN: '🇸🇬',
@@ -19,6 +19,8 @@ const FLAG: Record<string, string> = {
   LON: '🇬🇧', LGW: '🇬🇧', PAR: '🇫🇷', NYC: '🇺🇸', AKL: '🇳🇿', MAD: '🇪🇸',
   KWI: '🇰🇼', RUH: '🇸🇦', BAH: '🇧🇭', MCT: '🇴🇲',
 }
+// Any Indian airport falls back to the India flag; everything else to a plane.
+const flagFor = (iata: string) => FLAG[iata] ?? (isIndianAirport(iata) ? '🇮🇳' : '✈️')
 const mon = (iso: string) => new Date(iso).toLocaleDateString('en-IN', { month: 'short' })
 const cabinKey = (note?: string | null) => cabinFromNote(note) ?? 'Economy'
 
@@ -46,6 +48,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
   const [city, setCity] = useState('All cities')
   const [trip, setTrip] = useState<'All' | 'oneway' | 'roundtrip'>('All')
   const [cabin, setCabin] = useState('All classes')
+  const [scope, setScope] = useState<'All' | 'domestic' | 'international'>('All')
   const [view, setView] = useState<'grid' | 'list'>('list')
   const [openDest, setOpenDest] = useState<DestGroup | null>(null)
 
@@ -61,6 +64,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
       if (typeof saved.city === 'string') setCity(saved.city)
       if (saved.trip === 'All' || saved.trip === 'oneway' || saved.trip === 'roundtrip') setTrip(saved.trip)
       if (typeof saved.cabin === 'string') setCabin(saved.cabin)
+      if (saved.scope === 'All' || saved.scope === 'domestic' || saved.scope === 'international') setScope(saved.scope)
       if (saved.view === 'grid' || saved.view === 'list') setView(saved.view)
       pendingOpenRef.current = typeof saved.openIata === 'string' ? saved.openIata : null
     } catch { /* ignore corrupt/unavailable storage */ }
@@ -70,9 +74,9 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
   useEffect(() => {
     if (!hydrated) return // don't overwrite saved state with defaults before restore
     try {
-      sessionStorage.setItem('tb_deal_filters', JSON.stringify({ city, trip, cabin, view, openIata: openDest?.iata ?? null }))
+      sessionStorage.setItem('tb_deal_filters', JSON.stringify({ city, trip, cabin, scope, view, openIata: openDest?.iata ?? null }))
     } catch { /* ignore */ }
-  }, [hydrated, city, trip, cabin, view, openDest])
+  }, [hydrated, city, trip, cabin, scope, view, openDest])
 
   const cityOptions = useMemo(
     () => ['All cities', ...Array.from(new Set(deals.map(d => d.origin_city))).sort()],
@@ -82,7 +86,8 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
   const filtered = deals.filter(d =>
     (city === 'All cities' || d.origin_city === city) &&
     (trip === 'All' || tripFromNote(d.curator_note) === trip) &&
-    (cabin === 'All classes' || cabinKey(d.curator_note) === cabin),
+    (cabin === 'All classes' || cabinKey(d.curator_note) === cabin) &&
+    (scope === 'All' || (isDomestic(d.origin_iata, d.dest_iata) ? scope === 'domestic' : scope === 'international')),
   )
 
   const dests: DestGroup[] = useMemo(() => {
@@ -136,6 +141,15 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
             {cityOptions.map(o => <option key={o} value={o}>{o === 'All cities' ? '🏠 All home cities' : o}</option>)}
           </select>
         </label>
+
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Region</span>
+          <div className="inline-flex p-1 bg-slate-100 rounded-full">
+            {([['All', 'All'], ['domestic', '🇮🇳 Domestic'], ['international', '🌍 International']] as const).map(([k, label]) => (
+              <button key={k} onClick={() => setScope(k)} className={pill(scope === k)}>{label}</button>
+            ))}
+          </div>
+        </div>
 
         <div className="flex flex-col gap-1">
           <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Trip type</span>
@@ -206,7 +220,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
                   <span className="absolute top-2.5 left-2.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">up to {dst.maxDisc}% off</span>
                 )}
                 <div className="absolute bottom-2.5 left-3 right-3">
-                  <p className="text-lg leading-none mb-1">{FLAG[dst.iata] ?? '✈️'}</p>
+                  <p className="text-lg leading-none mb-1">{flagFor(dst.iata)}</p>
                   <p className="font-display text-white text-xl font-bold leading-tight">{dst.city}</p>
                 </div>
               </div>
@@ -252,7 +266,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
                           className="object-cover sm:group-hover:scale-105 transition-transform duration-500" />
                         <div className="hidden sm:block absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
                         <div className="hidden sm:block absolute bottom-2.5 left-3 right-3">
-                          <p className="text-white/85 text-base leading-none mb-0.5">{FLAG[deal.dest_iata] ?? '✈️'}</p>
+                          <p className="text-white/85 text-base leading-none mb-0.5">{flagFor(deal.dest_iata)}</p>
                           <p className="font-display text-white text-lg font-bold leading-tight">{deal.dest_city}</p>
                         </div>
                         {disc > 0 && <span className="hidden sm:block absolute top-2.5 left-2.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">{disc}% off</span>}
@@ -260,7 +274,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
                       </div>
                       {/* Body */}
                       <div className="p-3 sm:p-4 flex-1 min-w-0">
-                        <p className="font-bold text-slate-900 text-sm truncate sm:hidden">{FLAG[deal.dest_iata] ?? '✈️'} {deal.dest_city}</p>
+                        <p className="font-bold text-slate-900 text-sm truncate sm:hidden">{flagFor(deal.dest_iata)} {deal.dest_city}</p>
                         <p className="text-xs text-slate-500 truncate">{deal.origin_city} {oneWay ? '→' : '⇄'} {deal.dest_city}</p>
                         <p className="text-[11px] text-slate-400 truncate mt-0.5">{infoLine}</p>
                         <div className="flex items-center gap-2 mt-1.5 sm:mt-2">
@@ -307,7 +321,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20" />
               <button onClick={() => setOpenDest(null)} className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full font-bold text-slate-700 hover:bg-white">✕</button>
               <div className="absolute bottom-3 left-4">
-                <p>{FLAG[openDest.iata] ?? '✈️'}</p>
+                <p>{flagFor(openDest.iata)}</p>
                 <h3 className="font-display text-2xl font-bold text-white">{openDest.city}</h3>
                 <p className="text-white/80 text-sm">{openDest.count} fares · from {formatPrice(openDest.from, openDest.currency)}</p>
               </div>
