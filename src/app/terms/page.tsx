@@ -9,6 +9,8 @@ export const metadata = {
 
 const LAST_UPDATED = '22 September 2026'
 const CONTACT_EMAIL = 'travelbabyin@gmail.com'
+const LEGAL_NAME = 'Poonam Mathur'
+const GSTIN = '07AAIPM7726P1ZZ'
 
 // Shared typography
 const H2 = 'text-xl font-black text-slate-900 mt-10 mb-3 scroll-mt-24'
@@ -412,7 +414,7 @@ export default function TermsPage() {
           <p className={P}>
             In accordance with the Information Technology Act, 2000 and the rules made thereunder, and the Consumer Protection
             (E-Commerce) Rules, 2020, any grievance regarding the Platform, your personal data, a booking, or these Terms may be
-            raised with our Grievance Officer by email at{' '}
+            raised with our Grievance Officer (the Proprietor) by email at{' '}
             <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-700 font-semibold hover:underline">{CONTACT_EMAIL}</a>. We aim to
             acknowledge grievances within 48 hours and to resolve them within a reasonable time, and in any event within the
             timelines prescribed under applicable law.
@@ -424,6 +426,8 @@ export default function TermsPage() {
           </p>
           <div className="text-slate-700 leading-relaxed mb-4">
             <p className="font-semibold text-slate-900">Travelbaby</p>
+            <p>A sole proprietorship of {LEGAL_NAME}, trading as “Travelbaby”.</p>
+            <p>GSTIN: {GSTIN}</p>
             <p>Email: <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-700 font-semibold hover:underline">{CONTACT_EMAIL}</a></p>
             <p>Website: <a href="https://www.travelbaby.in" className="text-blue-700 font-semibold hover:underline">www.travelbaby.in</a></p>
           </div>
