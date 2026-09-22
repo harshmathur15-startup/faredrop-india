@@ -11,7 +11,7 @@ export const metadata = {
 const LAST_UPDATED = '22 September 2026'
 
 // Shared typography
-const H2 = 'text-xl font-black text-slate-900 mt-10 mb-3 scroll-mt-24'
+const H2 = 'text-sm font-black text-slate-900 mt-8 mb-2 scroll-mt-24'
 const P = 'text-slate-700 leading-relaxed mb-4'
 const UL = 'list-disc pl-5 space-y-1.5 text-slate-700 leading-relaxed mb-4'
 
@@ -395,10 +395,10 @@ export default function TermsPage() {
       </nav>
 
       <div className="flex-1 px-5 py-12">
-        <article className="max-w-3xl mx-auto bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-10">
-          <p className="text-blue-600 font-bold text-sm uppercase tracking-widest mb-2">Legal</p>
-          <h1 className="text-4xl font-black text-slate-900 mb-2">Terms &amp; Conditions</h1>
-          <p className="text-sm text-slate-500 mb-8">Last updated: {LAST_UPDATED}</p>
+        <article className="max-w-3xl mx-auto bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-10" style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '10px' }}>
+          <p className="text-blue-600 font-bold text-[10px] uppercase tracking-widest mb-2">Legal</p>
+          <h1 className="text-2xl font-black text-slate-900 mb-2">Terms &amp; Conditions</h1>
+          <p className="text-[10px] text-slate-500 mb-8">Last updated: {LAST_UPDATED}</p>
 
           <p className={P}>{INTRO}</p>
 
