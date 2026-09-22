@@ -329,6 +329,7 @@ export default async function Home() {
                 <p className="font-bold text-white text-xs uppercase tracking-wider mb-3">Company</p>
                 <Link href="/about" className="block hover:text-white transition-colors">About</Link>
                 <Link href="/contact" className="block hover:text-white transition-colors">Contact us</Link>
+                <Link href="/terms" className="block hover:text-white transition-colors">Terms &amp; Conditions</Link>
                 <FooterAuthLink />
               </div>
             </div>
