@@ -31,6 +31,15 @@ if (!apiKey) {
   process.exit(1)
 }
 
+// supabase-js initialises a realtime client in its constructor, which looks for
+// a global WebSocket. Node < 22 (GitHub Actions default) has none, and we never
+// use realtime here (table operations only) — so install a harmless stub to
+// avoid "Node.js detected but native WebSocket not found".
+const g = globalThis as { WebSocket?: unknown }
+if (typeof g.WebSocket === 'undefined') {
+  g.WebSocket = class {}
+}
+
 const supabaseAdmin = createClient(url, key)
 const SUMMARY_EMAIL = process.env.REFRESH_SUMMARY_EMAIL || 'harshmathur15@gmail.com'
 const EXPIRE_PCT_THRESHOLD = 0.30
