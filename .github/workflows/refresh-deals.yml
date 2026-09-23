@@ -1,0 +1,39 @@
+name: Refresh deal prices
+
+# Daily live-deal price refresh. Moved OFF Vercel's Hobby cron (60s function
+# ceiling was killing the ~100-280s FlightAPI fetch phase mid-run). GitHub
+# Actions has no such timeout and a reliable schedule. If a run fails, GitHub
+# emails the repo owner automatically.
+
+on:
+  schedule:
+    # 01:05 UTC = 06:35 IST daily (matches the old Vercel schedule).
+    - cron: '5 1 * * *'
+  workflow_dispatch: {}
+
+# Never let two refreshes overlap.
+concurrency:
+  group: refresh-deals
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run deal refresh
+        run: npx --yes tsx scripts/refreshDealsCli.ts
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FLIGHTAPI_KEY: ${{ secrets.FLIGHTAPI_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          REFRESH_SUMMARY_EMAIL: ${{ secrets.REFRESH_SUMMARY_EMAIL }}
