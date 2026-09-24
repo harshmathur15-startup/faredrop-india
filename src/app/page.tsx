@@ -335,7 +335,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="border-t border-blue-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-blue-500">© {new Date().getFullYear()} Travelbaby</p>
+            <p className="text-xs text-blue-500">© {new Date().getFullYear()} Travelbaby · All rights reserved</p>
             <p className="text-xs text-blue-600">Prices shown are indicative. Always verify before booking.</p>
           </div>
         </div>
