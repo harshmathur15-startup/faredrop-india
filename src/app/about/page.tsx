@@ -195,7 +195,7 @@ export default function AboutPage() {
           <Link href="/for-creators" className="hover:text-slate-600 transition-colors">For Creators</Link>
           <Link href="/for-agents" className="hover:text-slate-600 transition-colors">For Agents</Link>
         </div>
-        <p>© {new Date().getFullYear()} Travelbaby</p>
+        <p>© {new Date().getFullYear()} Travelbaby · All rights reserved</p>
       </footer>
 
     </main>
