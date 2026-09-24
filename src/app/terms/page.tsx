@@ -428,7 +428,7 @@ export default function TermsPage() {
           <Link href="/about" className="hover:text-slate-600">About</Link>
           <Link href="/contact" className="hover:text-slate-600">Contact</Link>
         </div>
-        <p>© {new Date().getFullYear()} Travelbaby. Built with ❤️ for Indian travellers.</p>
+        <p>© {new Date().getFullYear()} Travelbaby</p>
       </footer>
     </main>
   )

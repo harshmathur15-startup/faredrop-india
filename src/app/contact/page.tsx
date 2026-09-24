@@ -86,7 +86,7 @@ export default function ContactPage() {
           <Link href="/" className="hover:text-slate-600 transition-colors">Home</Link>
           <Link href="/about" className="hover:text-slate-600 transition-colors">About</Link>
         </div>
-        <p>© {new Date().getFullYear()} Travelbaby. Built with ❤️ for Indian travellers.</p>
+        <p>© {new Date().getFullYear()} Travelbaby</p>
       </footer>
     </main>
   )
