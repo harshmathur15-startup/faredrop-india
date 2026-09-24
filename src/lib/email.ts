@@ -341,7 +341,7 @@ export interface DealRequest {
 
 export async function sendDealRequestEmail(req: DealRequest) {
   const resend = getResend()
-  const to = process.env.DEAL_REQUESTS_EMAIL || 'harshmathur15@gmail.com'
+  const to = process.env.DEAL_REQUESTS_EMAIL || 'travelbabyin@gmail.com'
   const row = (label: string, value: string) =>
     `<tr><td style="padding:8px 0;color:#94a3b8;font-size:13px;width:170px;vertical-align:top">${label}</td><td style="padding:8px 0;color:#1e293b;font-size:14px;font-weight:600">${value || '—'}</td></tr>`
   return resend.emails.send({

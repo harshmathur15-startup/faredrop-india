@@ -21,7 +21,7 @@ export const maxDuration = 300 // up to ~40 external FlightAPI calls per run
 const EXPIRE_PCT_THRESHOLD = 0.30 // expire deals whose fare rose > 30%
 // Operator gets the morning summary by email (Vercel egresses freely, so this
 // is reliable — unlike the sandboxed Claude routine). Override via env if needed.
-const SUMMARY_EMAIL = process.env.REFRESH_SUMMARY_EMAIL || 'harshmathur15@gmail.com'
+const SUMMARY_EMAIL = process.env.REFRESH_SUMMARY_EMAIL || 'travelbabyin@gmail.com'
 
 async function run(req: NextRequest) {
   const authErr = requireCronSecret(req)
