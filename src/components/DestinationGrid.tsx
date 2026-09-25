@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Deal } from '@/types'
-import { formatPrice, calcDiscount, tripFromNote, cabinFromNote, isDomestic, isIndianAirport } from '@/lib/utils'
+import { formatPrice, calcDiscount, tripFromNote, cabinFromNote, stopsFromNote, isDomestic, isIndianAirport } from '@/lib/utils'
 
 const FLAG: Record<string, string> = {
   BKK: '🇹🇭', DMK: '🇹🇭', HKT: '🇹🇭', DPS: '🇮🇩', CGK: '🇮🇩', SIN: '🇸🇬',
@@ -34,6 +34,7 @@ function CabinBadge({ note }: { note?: string | null }) {
 interface DestGroup {
   iata: string; city: string; image: string; from: number; currency: string
   count: number; origins: number; deals: Deal[]; maxDisc: number
+  monthLabel?: string; groupKey?: string   // set when the group is scoped to a month
 }
 
 export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing', onUnlock, credits }: {
@@ -49,7 +50,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
   const [trip, setTrip] = useState<'All' | 'oneway' | 'roundtrip'>('All')
   const [cabin, setCabin] = useState('All classes')
   const [scope, setScope] = useState<'All' | 'domestic' | 'international'>('All')
-  const [view, setView] = useState<'grid' | 'list'>('list')
+  const [stops, setStops] = useState<'All' | '0' | '1' | '2'>('All')
   const [openDest, setOpenDest] = useState<DestGroup | null>(null)
 
   // Persist filters across navigation so the browser Back button restores the
@@ -65,8 +66,8 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
       if (saved.trip === 'All' || saved.trip === 'oneway' || saved.trip === 'roundtrip') setTrip(saved.trip)
       if (typeof saved.cabin === 'string') setCabin(saved.cabin)
       if (saved.scope === 'All' || saved.scope === 'domestic' || saved.scope === 'international') setScope(saved.scope)
-      if (saved.view === 'grid' || saved.view === 'list') setView(saved.view)
-      pendingOpenRef.current = typeof saved.openIata === 'string' ? saved.openIata : null
+      if (saved.stops === 'All' || saved.stops === '0' || saved.stops === '1' || saved.stops === '2') setStops(saved.stops)
+      pendingOpenRef.current = typeof saved.openKey === 'string' ? saved.openKey : null
     } catch { /* ignore corrupt/unavailable storage */ }
     setHydrated(true)
   }, [])
@@ -74,107 +75,107 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
   useEffect(() => {
     if (!hydrated) return // don't overwrite saved state with defaults before restore
     try {
-      sessionStorage.setItem('tb_deal_filters', JSON.stringify({ city, trip, cabin, scope, view, openIata: openDest?.iata ?? null }))
+      sessionStorage.setItem('tb_deal_filters', JSON.stringify({ city, trip, cabin, scope, stops, openKey: openDest?.groupKey ?? null }))
     } catch { /* ignore */ }
-  }, [hydrated, city, trip, cabin, scope, view, openDest])
+  }, [hydrated, city, trip, cabin, scope, stops, openDest])
 
   const cityOptions = useMemo(
     () => ['All cities', ...Array.from(new Set(deals.map(d => d.origin_city))).sort()],
     [deals],
   )
 
+  const stopsBucket = (n: number | null): '0' | '1' | '2' | null =>
+    n === null ? null : n <= 0 ? '0' : n === 1 ? '1' : '2'
+
   const filtered = deals.filter(d =>
     (city === 'All cities' || d.origin_city === city) &&
     (trip === 'All' || tripFromNote(d.curator_note) === trip) &&
     (cabin === 'All classes' || cabinKey(d.curator_note) === cabin) &&
-    (scope === 'All' || (isDomestic(d.origin_iata, d.dest_iata) ? scope === 'domestic' : scope === 'international')),
+    (scope === 'All' || (isDomestic(d.origin_iata, d.dest_iata) ? scope === 'domestic' : scope === 'international')) &&
+    (stops === 'All' || stopsBucket(stopsFromNote(d.curator_note)) === stops),
   )
 
-  const dests: DestGroup[] = useMemo(() => {
-    const groups: Record<string, Deal[]> = {}
-    for (const d of filtered) (groups[d.dest_iata] = groups[d.dest_iata] || []).push(d)
-    return Object.entries(groups).map(([iata, ds]) => {
-      const sorted = [...ds].sort((a, b) => a.deal_price - b.deal_price)
-      const c = sorted[0]
-      return {
-        iata, city: c.dest_city, image: c.image_url, from: c.deal_price, currency: c.currency,
-        count: sorted.length, origins: new Set(ds.map(d => d.origin_iata)).size, deals: sorted,
-        maxDisc: Math.max(...ds.map(d => calcDiscount(d.normal_price, d.deal_price))),
-      }
-    }).sort((a, b) => a.from - b.from)
+  // One card per destination *per month*: group by month, then by destination.
+  // Tapping a destination tile opens that month's 2-3 deals in the modal.
+  const monthDestGroups = useMemo(() => {
+    const byMonth: Record<string, Deal[]> = {}
+    for (const d of filtered) {
+      const key = (d.validity_start || '').slice(0, 7) // YYYY-MM
+      if (key) (byMonth[key] = byMonth[key] || []).push(d)
+    }
+    return Object.entries(byMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, ds]) => {
+        const label = new Date(key + '-01T00:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+        const byDest: Record<string, Deal[]> = {}
+        for (const d of ds) (byDest[d.dest_iata] = byDest[d.dest_iata] || []).push(d)
+        const dests: DestGroup[] = Object.entries(byDest).map(([iata, dl]) => {
+          const sorted = [...dl].sort((a, b) => a.deal_price - b.deal_price)
+          const c = sorted[0]
+          return {
+            iata, city: c.dest_city, image: c.image_url, from: c.deal_price, currency: c.currency,
+            count: sorted.length, origins: new Set(dl.map(d => d.origin_iata)).size, deals: sorted,
+            maxDisc: Math.max(...dl.map(d => calcDiscount(d.normal_price, d.deal_price))),
+            monthLabel: label, groupKey: `${key}::${iata}`,
+          }
+        }).sort((a, b) => a.from - b.from)
+        return { key, label, dests }
+      })
   }, [filtered])
+
+  const totalDests = monthDestGroups.reduce((n, mg) => n + mg.dests.length, 0)
 
   // Re-open the destination panel the user had open before navigating away.
   useEffect(() => {
     if (!hydrated || !pendingOpenRef.current) return
-    const g = dests.find(d => d.iata === pendingOpenRef.current)
-    if (g) setOpenDest(g)
-    pendingOpenRef.current = null
-  }, [hydrated, dests])
-
-  const monthGroups = useMemo(() => {
-    const g: Record<string, Deal[]> = {}
-    for (const d of filtered) {
-      const key = (d.validity_start || '').slice(0, 7) // YYYY-MM
-      if (key) (g[key] = g[key] || []).push(d)
+    for (const mg of monthDestGroups) {
+      const g = mg.dests.find(d => d.groupKey === pendingOpenRef.current)
+      if (g) { setOpenDest(g); break }
     }
-    return Object.entries(g)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, ds]) => ({
-        key,
-        label: new Date(key + '-01T00:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }),
-        deals: [...ds].sort((a, b) => a.deal_price - b.deal_price),
-      }))
-  }, [filtered])
+    pendingOpenRef.current = null
+  }, [hydrated, monthDestGroups])
 
   const pill = (active: boolean) =>
-    `px-4 py-2 rounded-full text-sm font-bold transition-colors ${active ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`
+    `px-3 py-1 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors ${active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`
+
+  // Shared chip styling so dropdowns and segmented toggles line up on one compact row.
+  const selectChip = 'shrink-0 h-9 rounded-full border border-slate-200 bg-white pl-3.5 pr-8 text-[13px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer'
+  const segGroup = 'shrink-0 inline-flex h-9 items-center p-0.5 bg-slate-100 rounded-full'
 
   return (
     <>
-      {/* Filter bar */}
-      <div className="flex flex-wrap items-end gap-4 mb-7 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Flying from</span>
-          <select value={city} onChange={e => setCity(e.target.value)}
-            className="text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer min-w-[150px]">
-            {cityOptions.map(o => <option key={o} value={o}>{o === 'All cities' ? '🏠 All home cities' : o}</option>)}
-          </select>
-        </label>
+      {/* Filter bar — single line; swipes horizontally on mobile */}
+      <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 mb-7 p-2 sm:p-2.5 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <select aria-label="Flying from" value={city} onChange={e => setCity(e.target.value)}
+          className={`${selectChip} min-w-[140px]`}>
+          {cityOptions.map(o => <option key={o} value={o}>{o === 'All cities' ? '🏠 Home cities' : o}</option>)}
+        </select>
 
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Region</span>
-          <div className="inline-flex p-1 bg-slate-100 rounded-full">
-            {([['All', 'All'], ['domestic', '🇮🇳 Domestic'], ['international', '🌍 International']] as const).map(([k, label]) => (
-              <button key={k} onClick={() => setScope(k)} className={pill(scope === k)}>{label}</button>
-            ))}
-          </div>
+        <div role="group" aria-label="Region" className={segGroup}>
+          {([['All', 'All'], ['domestic', '🇮🇳 Domestic'], ['international', '🌍 International']] as const).map(([k, label]) => (
+            <button key={k} onClick={() => setScope(k)} className={pill(scope === k)}>{label}</button>
+          ))}
         </div>
 
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Trip type</span>
-          <div className="inline-flex p-1 bg-slate-100 rounded-full">
-            {([['All', 'All'], ['oneway', 'One way'], ['roundtrip', 'Round trip']] as const).map(([k, label]) => (
-              <button key={k} onClick={() => setTrip(k)} className={pill(trip === k)}>{label}</button>
-            ))}
-          </div>
+        <div role="group" aria-label="Trip type" className={segGroup}>
+          {([['All', 'All'], ['oneway', 'One way'], ['roundtrip', 'Round trip']] as const).map(([k, label]) => (
+            <button key={k} onClick={() => setTrip(k)} className={pill(trip === k)}>{label}</button>
+          ))}
         </div>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Class</span>
-          <select value={cabin} onChange={e => setCabin(e.target.value)}
-            className="text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-            {['All classes', 'Economy', 'Premium Economy', 'Business'].map(o => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </label>
+        <select aria-label="Class" value={cabin} onChange={e => setCabin(e.target.value)}
+          className={selectChip}>
+          {['All classes', 'Economy', 'Premium Economy', 'Business'].map(o => (
+            <option key={o} value={o}>{o === 'All classes' ? 'Classes' : o}</option>
+          ))}
+        </select>
 
-        <div className="ml-auto flex flex-col gap-1">
-          <span className="text-xs font-bold uppercase tracking-wide text-slate-400 text-right">View</span>
-          <div className="inline-flex p-1 bg-slate-100 rounded-full">
-            <button onClick={() => setView('grid')} className={pill(view === 'grid')}>🗂 Destinations</button>
-            <button onClick={() => setView('list')} className={pill(view === 'list')}>📅 By month</button>
-          </div>
-        </div>
+        <select aria-label="Stops" value={stops} onChange={e => setStops(e.target.value as typeof stops)}
+          className={selectChip}>
+          {([['All', 'Stops'], ['0', 'Non-stop'], ['1', '1 stop'], ['2', '2+ stops']] as const).map(([v, label]) => (
+            <option key={v} value={v}>{label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Unlock-credits banner — only for signed-in free users (onUnlock provided) */}
@@ -196,9 +197,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
       )}
 
       <p className="text-slate-500 text-sm mb-5">
-        {view === 'grid'
-          ? `${dests.length} destination${dests.length !== 1 ? 's' : ''} · ${filtered.length} fares`
-          : `${filtered.length} fare${filtered.length !== 1 ? 's' : ''}`}
+        {`${filtered.length} fare${filtered.length !== 1 ? 's' : ''} · ${totalDests} destination${totalDests !== 1 ? 's' : ''} across ${monthDestGroups.length} month${monthDestGroups.length !== 1 ? 's' : ''}`}
         {city !== 'All cities' ? ` from ${city}` : ''}
       </p>
 
@@ -206,106 +205,43 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
         <div className="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-gray-200">
           <p className="text-slate-600 font-semibold">No fares match these filters.</p>
         </div>
-      ) : view === 'grid' ? (
-        /* ── Destination tiles ── */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {dests.map(dst => (
-            <button key={dst.iata} onClick={() => setOpenDest(dst)}
-              className="group text-left bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 hover:-translate-y-1">
-              <div className="relative aspect-[3/2] w-full overflow-hidden">
-                <Image src={dst.image} alt={dst.city} fill sizes="(max-width:640px) 100vw, 300px"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                {dst.maxDisc > 0 && (
-                  <span className="absolute top-2.5 left-2.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">up to {dst.maxDisc}% off</span>
-                )}
-                <div className="absolute bottom-2.5 left-3 right-3">
-                  <p className="text-lg leading-none mb-1">{flagFor(dst.iata)}</p>
-                  <p className="font-display text-white text-xl font-bold leading-tight">{dst.city}</p>
-                </div>
-              </div>
-              <div className="p-4">
-                <p className="text-xs text-slate-400 font-medium">from</p>
-                <p className="font-display text-2xl font-bold text-slate-900 leading-tight">{formatPrice(dst.from, dst.currency)}</p>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500">{dst.origins} {dst.origins === 1 ? 'city' : 'cities'} · {dst.count} fare{dst.count !== 1 ? 's' : ''}</span>
-                  <span className="text-blue-600 text-sm font-bold group-hover:translate-x-0.5 transition-transform">View fares →</span>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
       ) : (
-        /* ── Month sections (all fares under each month) ── */
+        /* ── Months → one tile per destination; tap a tile to see that month's deals ── */
         <div className="space-y-12">
-          {monthGroups.map(mg => (
+          {monthDestGroups.map(mg => (
             <div key={mg.key}>
               <div className="flex items-center gap-3 mb-5">
                 <h3 className="font-display text-xl font-bold text-slate-800">📅 {mg.label}</h3>
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full border bg-blue-100 text-blue-700 border-blue-200">
-                  {mg.deals.length} deal{mg.deals.length !== 1 ? 's' : ''}
+                  {mg.dests.length} destination{mg.dests.length !== 1 ? 's' : ''}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                {mg.deals.map((deal, i) => {
-                  const disc = calcDiscount(deal.normal_price, deal.deal_price)
-                  const oneWay = tripFromNote(deal.curator_note) === 'oneway'
-                  const locked = isLocked(deal)
-                  const showUnlock = locked && !!onUnlock   // signed-in free user → unlock action
-                  const badgeText = showUnlock ? (canUnlock ? '🔓 Unlock' : '🔒 Upgrade') : '🔒 Members'
-                  const infoLine = locked
-                    ? (showUnlock ? (canUnlock ? '🔓 Tap to unlock · 1 credit' : '🔒 Out of credits — upgrade')
-                                  : '🔒 Unlock exact dates & booking')
-                    : `${deal.airline} · ${mon(deal.validity_start)} · ${oneWay ? 'One way' : 'Round trip'}`
-                  const cls = 'group flex sm:flex-col bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 sm:hover:-translate-y-1 transition-all duration-300'
-                  const inner = (
-                    <>
-                      {/* Image: compact left on mobile, full image-forward on desktop */}
-                      <div className="relative w-28 shrink-0 sm:w-full sm:aspect-[3/2] overflow-hidden">
-                        <Image src={deal.image_url} alt={deal.dest_city} fill sizes="(max-width:640px) 112px, 300px"
-                          className="object-cover sm:group-hover:scale-105 transition-transform duration-500" />
-                        <div className="hidden sm:block absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                        <div className="hidden sm:block absolute bottom-2.5 left-3 right-3">
-                          <p className="text-white/85 text-base leading-none mb-0.5">{flagFor(deal.dest_iata)}</p>
-                          <p className="font-display text-white text-lg font-bold leading-tight">{deal.dest_city}</p>
-                        </div>
-                        {disc > 0 && <span className="hidden sm:block absolute top-2.5 left-2.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">{disc}% off</span>}
-                        {locked && <span className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full">{badgeText}</span>}
+                {mg.dests.map(dst => (
+                  <button key={dst.groupKey} onClick={() => setOpenDest(dst)}
+                    className="group text-left bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 hover:-translate-y-1">
+                    <div className="relative aspect-[3/2] w-full overflow-hidden">
+                      <Image src={dst.image} alt={dst.city} fill sizes="(max-width:640px) 100vw, 300px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                      {dst.maxDisc > 0 && (
+                        <span className="absolute top-2.5 left-2.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">up to {dst.maxDisc}% off</span>
+                      )}
+                      <div className="absolute bottom-2.5 left-3 right-3">
+                        <p className="text-lg leading-none mb-1">{flagFor(dst.iata)}</p>
+                        <p className="font-display text-white text-xl font-bold leading-tight">{dst.city}</p>
                       </div>
-                      {/* Body */}
-                      <div className="p-3 sm:p-4 flex-1 min-w-0">
-                        <p className="font-bold text-slate-900 text-sm truncate sm:hidden">{flagFor(deal.dest_iata)} {deal.dest_city}</p>
-                        <p className="text-xs text-slate-500 truncate">{deal.origin_city} {oneWay ? '→' : '⇄'} {deal.dest_city}</p>
-                        <p className="text-[11px] text-slate-400 truncate mt-0.5">{infoLine}</p>
-                        <div className="flex items-center gap-2 mt-1.5 sm:mt-2">
-                          <span className="font-display font-bold text-slate-900 sm:text-xl">{formatPrice(deal.deal_price, deal.currency)}</span>
-                          {disc > 0 && <span className="text-[11px] font-bold text-emerald-600 sm:hidden">{disc}% off</span>}
-                          <CabinBadge note={deal.curator_note} />
-                        </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-xs text-slate-400 font-medium">from</p>
+                      <p className="font-display text-2xl font-bold text-slate-900 leading-tight">{formatPrice(dst.from, dst.currency)}</p>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-500">{dst.count} deal{dst.count !== 1 ? 's' : ''}</span>
+                        <span className="text-blue-600 text-sm font-bold group-hover:translate-x-0.5 transition-transform">View deals →</span>
                       </div>
-                    </>
-                  )
-                  // Free signed-in user on a locked deal → clickable unlock action (spends a credit / routes to upgrade).
-                  if (showUnlock) {
-                    return (
-                      <div key={deal.id} role="button" tabIndex={0}
-                        onClick={() => onUnlock!(deal.id)}
-                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onUnlock!(deal.id) } }}
-                        data-deal-id={deal.id} data-surface="grid" data-position={i} data-locked="true"
-                        className={`${cls} cursor-pointer`}>
-                        {inner}
-                      </div>
-                    )
-                  }
-                  // Unlocked → deal page. Anonymous locked → lockHref (/signup).
-                  return (
-                    <Link key={deal.id} href={locked ? lockHref : `/deal/${deal.id}`}
-                      data-deal-id={deal.id} data-surface="grid" data-position={i} data-locked={locked ? 'true' : undefined}
-                      className={cls}>
-                      {inner}
-                    </Link>
-                  )
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           ))}
@@ -323,7 +259,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
               <div className="absolute bottom-3 left-4">
                 <p>{flagFor(openDest.iata)}</p>
                 <h3 className="font-display text-2xl font-bold text-white">{openDest.city}</h3>
-                <p className="text-white/80 text-sm">{openDest.count} fares · from {formatPrice(openDest.from, openDest.currency)}</p>
+                <p className="text-white/80 text-sm">{openDest.monthLabel ? `${openDest.monthLabel} · ` : ''}{openDest.count} deal{openDest.count !== 1 ? 's' : ''} · from {formatPrice(openDest.from, openDest.currency)}</p>
               </div>
             </div>
             <div className="overflow-y-auto p-4 space-y-2">

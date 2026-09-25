@@ -30,6 +30,17 @@ export function tripFromNote(note?: string | null): 'oneway' | 'roundtrip' {
   return 'roundtrip'
 }
 
+// Stops are described in the curator note ("Nonstop" or "N stop via …"), no
+// dedicated column. Returns the worst leg's stop count (so 0 = nonstop both
+// ways), or null when the note doesn't say.
+export function stopsFromNote(note?: string | null): number | null {
+  if (!note) return null
+  const nums = [...note.matchAll(/(\d+)\s*stop/gi)].map(m => Number(m[1]))
+  if (nums.length) return Math.max(...nums)
+  if (/nonstop/i.test(note)) return 0
+  return null
+}
+
 // Indian airport IATA codes. A route counts as "domestic" only when BOTH ends
 // are in India — powers the storefront Domestic/International filter.
 const INDIA_IATA = new Set([
