@@ -7,8 +7,11 @@ name: Refresh deal prices
 
 on:
   schedule:
-    # 01:05 UTC = 06:35 IST daily (matches the old Vercel schedule).
-    - cron: '5 1 * * *'
+    # Three daily refreshes. Times in UTC; IST = UTC + 5:30. Offset a few minutes
+    # off :00/:30 because GitHub delays runs scheduled on the busiest cron slots.
+    - cron: '3 2 * * *'    # 02:03 UTC = 07:33 IST  (~7:30 AM)
+    - cron: '33 8 * * *'   # 08:33 UTC = 14:03 IST  (~2:00 PM)
+    - cron: '3 14 * * *'   # 14:03 UTC = 19:33 IST  (~7:30 PM)
   workflow_dispatch: {}
 
 # Never let two refreshes overlap.
