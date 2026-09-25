@@ -41,14 +41,33 @@ if (typeof g.WebSocket === 'undefined') {
 }
 
 const supabaseAdmin = createClient(url, key)
-const SUMMARY_EMAIL = process.env.REFRESH_SUMMARY_EMAIL || 'harshmathur15@gmail.com'
+const SUMMARY_EMAIL = process.env.REFRESH_SUMMARY_EMAIL || 'travelbabyin@gmail.com'
 const EXPIRE_PCT_THRESHOLD = 0.30
 // We have ~20 concurrent FlightAPI capacity; 20 keeps a full run well under a
 // couple of minutes (no timeout pressure on GitHub Actions).
 const CONCURRENCY = 20
 
+// Minimum gap between real refreshes. The 3 scheduled runs are >4h apart, so
+// this never blocks them — it only skips a run that GitHub delayed into another
+// run's slot, which would otherwise waste FlightAPI credits on a double refresh.
+const MIN_GAP_MINUTES = 90
+
 async function main() {
   const startedAt = Date.now()
+
+  // Guard against back-to-back double refreshes (see MIN_GAP_MINUTES).
+  const { data: lastRun } = await supabaseAdmin
+    .from('deal_refresh_runs')
+    .select('ran_at')
+    .order('ran_at', { ascending: false })
+    .limit(1)
+  const lastRanAt = lastRun?.[0]?.ran_at ? new Date(lastRun[0].ran_at).getTime() : 0
+  const minsSince = (Date.now() - lastRanAt) / 60000
+  if (minsSince < MIN_GAP_MINUTES) {
+    console.log(`Skipping: last refresh was ${minsSince.toFixed(0)} min ago (< ${MIN_GAP_MINUTES}-min guard).`)
+    return
+  }
+
   const summary = await refreshLiveDeals(supabaseAdmin, apiKey!, {
     expirePctThreshold: EXPIRE_PCT_THRESHOLD,
     concurrency: CONCURRENCY,
