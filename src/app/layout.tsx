@@ -19,14 +19,43 @@ const sora = Sora({
   weight: ["600", "700", "800"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://travelbaby.in";
+
 export const metadata: Metadata = {
-  title: "Travelbaby — Curated flight deals for Indian travellers",
-  description: "Get alerted when international flights from Delhi, Mumbai, Bangalore & more drop — up to 90% off. Free curated flight deal alerts.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Travelbaby — Curated flight deals for Indian travellers",
+    template: "%s | Travelbaby",
+  },
+  description:
+    "Get alerted when international flights from Delhi, Mumbai, Bengaluru & more drop — up to 90% off. Free curated flight deal alerts for Indian travellers.",
+  applicationName: "Travelbaby",
+  keywords: [
+    "flight deals",
+    "cheap flights from India",
+    "international flight deals India",
+    "Delhi flight deals",
+    "Mumbai flight deals",
+    "error fares India",
+    "flight deal alerts",
+  ],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Travelbaby",
-    description: "Curated flight deals for Indian outbound travellers.",
+    title: "Travelbaby — Curated flight deals for Indian travellers",
+    description:
+      "Handpicked international flight deals from Indian metros — up to 90% off. Free alerts, no booking markups.",
+    url: "/",
+    siteName: "Travelbaby",
+    locale: "en_IN",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Travelbaby — Curated flight deals for Indian travellers",
+    description:
+      "Handpicked international flight deals from Indian metros — up to 90% off.",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

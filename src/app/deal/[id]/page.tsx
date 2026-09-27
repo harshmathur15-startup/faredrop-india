@@ -45,10 +45,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return {}
   const { data: deal } = await supabase.from('deals').select('*').eq('id', id).single()
   if (!deal) return {}
+  const price = formatPrice(deal.deal_price, deal.currency)
+  const title = `${deal.origin_city} → ${deal.dest_city} for ${price}`
+  const image = getDealImage(deal as Deal)
   return {
-    title: `${deal.origin_city} → ${deal.dest_city} for ${formatPrice(deal.deal_price, deal.currency)} | Travelbaby`,
+    title,
     description: deal.curator_note,
-    openGraph: { images: [deal.image_url] },
+    alternates: { canonical: `/deal/${id}` },
+    openGraph: { title, description: deal.curator_note, images: [image], type: 'website' },
+    twitter: { card: 'summary_large_image', title, description: deal.curator_note, images: [image] },
   }
 }
 
@@ -140,8 +145,28 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   const cabin = detectCabin(deal.curator_note)
   const oneWay = tripFromNote(deal.curator_note) === 'oneway'
 
+  // Structured data (schema.org Offer) so this deal is eligible for rich results.
+  const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://travelbaby.in'
+  const productLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: `${deal.origin_city} → ${deal.dest_city} flight deal`,
+    image: getDealImage(deal),
+    description: deal.curator_note || `Flight deal from ${deal.origin_city} to ${deal.dest_city}`,
+    brand: { '@type': 'Brand', name: deal.airline },
+    offers: {
+      '@type': 'Offer',
+      price: deal.deal_price,
+      priceCurrency: deal.currency || 'INR',
+      availability: 'https://schema.org/InStock',
+      url: `${SITE_URL}/deal/${deal.id}`,
+      priceValidUntil: deal.validity_start,
+    },
+  }
+
   return (
     <main className="min-h-screen bg-gray-50">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd) }} />
       <DealGate dealId={deal.id} />
 
       {/* Sticky header — turns deep-linked deal pages into browsable entry points */}
