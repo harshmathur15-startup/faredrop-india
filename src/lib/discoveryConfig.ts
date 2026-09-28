@@ -21,7 +21,7 @@ export const DEST_IMAGE: Record<string, string> = {
   HAN: 'https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?w=800&h=600&fit=crop',
   CMB: 'https://images.unsplash.com/photo-1742277295420-650b9134086a?w=800&q=85&fit=crop&auto=format',
   MLE: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800&h=600&fit=crop',
-  KTM: 'https://images.unsplash.com/photo-1526772662000-3f88f10405ff?w=800&h=600&fit=crop',
+  KTM: 'https://images.pexels.com/photos/11505263/pexels-photo-11505263.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
   DXB: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop',
   AUH: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800&h=600&fit=crop',
   LON: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&h=600&fit=crop',

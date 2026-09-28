@@ -30,6 +30,7 @@ const CITY_IMAGES: Record<string, string> = {
   DOH: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&h=600&fit=crop',
   PVG: 'https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?w=800&h=600&fit=crop',
   SHA: 'https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?w=800&h=600&fit=crop',
+  KTM: 'https://images.pexels.com/photos/11505263/pexels-photo-11505263.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
 }
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=600&fit=crop'
 function getDealImage(deal: Deal) {
