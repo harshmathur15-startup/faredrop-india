@@ -56,6 +56,7 @@ export const metadata: Metadata = {
       "Handpicked international flight deals from Indian metros — up to 90% off.",
   },
   robots: { index: true, follow: true },
+  verification: { google: "rYAyZG01m5l0K9IuqwY4nuWI1hIBTTEvCRjGfEWhSoI" },
 };
 
 export default function RootLayout({
