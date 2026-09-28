@@ -54,8 +54,9 @@ const securityHeaders = [
   // A plain 'same-origin' value here breaks Google sign-in.
   { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
-  // Report-only CSP — see the note above before promoting to enforcing.
-  { key: 'Content-Security-Policy-Report-Only', value: csp },
+  // CSP now enforced (was Report-Only during rollout). If a legit resource is
+  // ever blocked, add its origin to the relevant `csp` directive above.
+  { key: 'Content-Security-Policy', value: csp },
 ]
 
 const nextConfig: NextConfig = {
