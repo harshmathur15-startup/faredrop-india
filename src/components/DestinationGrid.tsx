@@ -107,16 +107,19 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, ds]) => {
         const label = new Date(key + '-01T00:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
-        const byDest: Record<string, Deal[]> = {}
-        for (const d of ds) (byDest[d.dest_iata] = byDest[d.dest_iata] || []).push(d)
-        const dests: DestGroup[] = Object.entries(byDest).map(([iata, dl]) => {
+        // Group by CITY (not airport) so a multi-airport city like Tokyo
+        // (Narita + Haneda), London or New York shows as ONE carousel, not one
+        // per airport. Representative iata = cheapest deal's, for flag/image.
+        const byCity: Record<string, Deal[]> = {}
+        for (const d of ds) { const ck = d.dest_city || d.dest_iata; (byCity[ck] = byCity[ck] || []).push(d) }
+        const dests: DestGroup[] = Object.entries(byCity).map(([city, dl]) => {
           const sorted = [...dl].sort((a, b) => a.deal_price - b.deal_price)
           const c = sorted[0]
           return {
-            iata, city: c.dest_city, image: c.image_url, from: c.deal_price, currency: c.currency,
+            iata: c.dest_iata, city: c.dest_city, image: c.image_url, from: c.deal_price, currency: c.currency,
             count: sorted.length, origins: new Set(dl.map(d => d.origin_iata)).size, deals: sorted,
             maxDisc: Math.max(...dl.map(d => calcDiscount(d.normal_price, d.deal_price))),
-            monthLabel: label, groupKey: `${key}::${iata}`,
+            monthLabel: label, groupKey: `${key}::${city}`,
           }
         }).sort((a, b) => a.from - b.from)
         return { key, label, dests }
