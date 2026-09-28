@@ -9,6 +9,11 @@ updates:
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
+    # Skip routine major-version bumps (breaking risk, not security). Security
+    # updates still bypass this ignore rule, so critical majors are still raised.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   # Keep GitHub Actions pinned versions current too.
   - package-ecosystem: "github-actions"
     directory: "/"
