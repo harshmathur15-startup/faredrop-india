@@ -22,6 +22,10 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  if (process.env.NOTIFICATIONS_ENABLED !== 'true') {
+    return NextResponse.json({ ok: true, skipped: 'notifications not enabled — set NOTIFICATIONS_ENABLED=true in Vercel to activate' })
+  }
+
   // Fetch published deals not yet notified, published within the last 7 days
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const { data: deals, error } = await supabaseAdmin

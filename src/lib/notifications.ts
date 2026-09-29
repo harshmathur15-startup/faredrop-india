@@ -132,14 +132,17 @@ export interface DealBroadcastSummary {
 }
 
 export async function notifyDealPublished(deal: Deal): Promise<DealBroadcastSummary> {
+  const summary: DealBroadcastSummary = {
+    whatsapp_sent: 0, whatsapp_failed: 0, email_sent: 0, email_failed: 0, recipients: 0,
+  }
+
+  // Hard gate — no notifications fire until NOTIFICATIONS_ENABLED=true is set in Vercel.
+  if (process.env.NOTIFICATIONS_ENABLED !== 'true') return summary
+
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.startsWith('http')
     ? process.env.NEXT_PUBLIC_BASE_URL
     : 'https://travelbaby.in'
   const dealUrl = `${baseUrl}/deal/${deal.id}`
-
-  const summary: DealBroadcastSummary = {
-    whatsapp_sent: 0, whatsapp_failed: 0, email_sent: 0, email_failed: 0, recipients: 0,
-  }
 
   // WhatsApp → opted-in registered travellers.
   const { data: prefs } = await supabaseAdmin
