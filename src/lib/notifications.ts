@@ -165,13 +165,24 @@ export async function notifyDealPublished(deal: Deal): Promise<DealBroadcastSumm
     }
   }
 
-  // Email → confirmed subscribers (the deal-drop list).
+  // Email → confirmed subscribers who have email opted in.
+  // user_preferences.email_opted_in is the source of truth; fall back to
+  // subscribers without a prefs row (early signups) who are confirmed.
   const { data: subs } = await supabaseAdmin
     .from('subscribers')
     .select('id, email')
     .eq('confirmed', true)
 
+  // Fetch opted-out user IDs so we can exclude them.
+  const { data: optedOut } = await supabaseAdmin
+    .from('user_preferences')
+    .select('user_id')
+    .eq('email_opted_in', false)
+
+  const optedOutEmails = new Set((optedOut ?? []).map((p: { user_id: string }) => p.user_id))
+
   for (const s of subs ?? []) {
+    if (optedOutEmails.has(s.id)) continue
     summary.recipients++
     try {
       await sendDealEmail({ to: s.email, deal, dealUrl })
@@ -181,6 +192,12 @@ export async function notifyDealPublished(deal: Deal): Promise<DealBroadcastSumm
       summary.email_failed++
     }
   }
+
+  // Stamp the deal so it isn't re-notified by the cron.
+  await supabaseAdmin
+    .from('deals')
+    .update({ notified_at: new Date().toISOString() })
+    .eq('id', deal.id)
 
   return summary
 }
