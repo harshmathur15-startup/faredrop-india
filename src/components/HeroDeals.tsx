@@ -1,8 +1,8 @@
 'use client'
 
-import { Deal } from '@/types'
+import type { PublicDeal } from '@/lib/deal-access'
 import DealLink from './DealLink'
-import { calcDiscount, formatPrice, tripFromNote, isIndianAirport } from '@/lib/utils'
+import { calcDiscount, formatPrice, isIndianAirport } from '@/lib/utils'
 import { pickHeroDeals } from '@/lib/heroDeals'
 
 const DEST_META: Record<string, { flag: string }> = {
@@ -29,7 +29,7 @@ const DEST_META: Record<string, { flag: string }> = {
   KWI: { flag: '🇰🇼' }, RUH: { flag: '🇸🇦' }, BAH: { flag: '🇧🇭' }, MCT: { flag: '🇴🇲' },
 }
 
-export default function HeroDeals({ deals }: { deals: Deal[] }) {
+export default function HeroDeals({ deals }: { deals: PublicDeal[] }) {
   // Featured strip = top 5 free deals (one row); the rest show in the deals grid.
   const heroDeals = pickHeroDeals(deals, 5).map(d => ({ ...d, discount: calcDiscount(d.normal_price, d.deal_price) }))
 
@@ -46,10 +46,9 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
       <div className="flex gap-3 mb-0 max-w-5xl mx-auto overflow-x-auto snap-x snap-mandatory pb-2 px-1 sm:flex-nowrap sm:justify-center sm:overflow-visible sm:pb-0">
         {heroDeals.map((deal, i) => {
           const meta = DEST_META[deal.dest_iata] ?? { flag: isIndianAirport(deal.dest_iata) ? '🇮🇳' : '✈️' }
-          const note = (deal.curator_note ?? '').toLowerCase()
-          const isBusiness = note.includes('business')
-          const isPEDeal = note.includes('premium economy') || note.includes('premium_economy')
-          const oneWay = tripFromNote(deal.curator_note) === 'oneway'
+          const isBusiness = deal.cabin === 'Business'
+          const isPEDeal = deal.cabin === 'Premium Economy'
+          const oneWay = deal.trip === 'oneway'
           const tierColor = deal.discount >= 70 ? 'bg-violet-600' : deal.discount >= 50 ? 'bg-emerald-600' : 'bg-blue-600'
           return (
             <DealLink key={deal.id} dealId={deal.id} surface="hero" position={i}

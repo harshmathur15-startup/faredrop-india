@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
-import { Deal } from '@/types'
+import type { Deal } from '@/types'
+import { toPublicDeal, type PublicDeal } from '@/lib/deal-access'
 import Link from 'next/link'
 import Image from 'next/image'
 import MobileMenu from '@/components/MobileMenu'
@@ -12,7 +13,10 @@ import { HomeCTAButtons, FooterAuthLink } from '@/components/HomeCTAAuth'
 
 export const dynamic = 'force-dynamic'
 
-async function getDeals(): Promise<Deal[]> {
+// Fetches the full rows server-side (curator_note + validity_start are needed to
+// DERIVE the coarse public fields), then returns ONLY the public projection, so
+// airline / exact dates / flight legs / booking link never reach the client.
+async function getDeals(): Promise<PublicDeal[]> {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return []
     const { data } = await supabase
@@ -21,7 +25,7 @@ async function getDeals(): Promise<Deal[]> {
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(400)
-    return data ?? []
+    return (data ?? []).map(d => toPublicDeal(d as Deal))
   } catch {
     return []
   }

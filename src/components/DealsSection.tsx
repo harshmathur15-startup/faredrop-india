@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Deal } from '@/types'
+import type { PublicDeal } from '@/lib/deal-access'
 import { calcDiscount } from '@/lib/utils'
 import { useUserTier, useUnlocks } from '@/lib/useAuth'
 import { pickStorefront } from '@/lib/storefront'
@@ -10,7 +10,7 @@ import DestinationGrid from './DestinationGrid'
 
 const STOREFRONT_LIMIT = 50 // deals shown to anonymous + free (signed-up) users
 
-function SectionHeader({ deals }: { deals: Deal[] }) {
+function SectionHeader({ deals }: { deals: PublicDeal[] }) {
   const liveCount = deals.filter(d => calcDiscount(d.normal_price, d.deal_price) > 0).length
   return (
     <div className="flex items-end justify-between mb-8">
@@ -31,7 +31,7 @@ function SectionHeader({ deals }: { deals: Deal[] }) {
   )
 }
 
-export default function DealsSection({ deals }: { deals: Deal[] }) {
+export default function DealsSection({ deals }: { deals: PublicDeal[] }) {
   const { authed, tier } = useUserTier()
   const { state, unlock } = useUnlocks()
   const router = useRouter()
