@@ -3,8 +3,8 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Deal } from '@/types'
-import { formatPrice, calcDiscount, tripFromNote, cabinFromNote, stopsFromNote, isDomestic, isIndianAirport } from '@/lib/utils'
+import type { PublicDeal } from '@/lib/deal-access'
+import { formatPrice, calcDiscount, isDomestic, isIndianAirport } from '@/lib/utils'
 
 const FLAG: Record<string, string> = {
   BKK: '🇹🇭', DMK: '🇹🇭', HKT: '🇹🇭', DPS: '🇮🇩', CGK: '🇮🇩', SIN: '🇸🇬',
@@ -21,30 +21,30 @@ const FLAG: Record<string, string> = {
 }
 // Any Indian airport falls back to the India flag; everything else to a plane.
 const flagFor = (iata: string) => FLAG[iata] ?? (isIndianAirport(iata) ? '🇮🇳' : '✈️')
-const mon = (iso: string) => new Date(iso).toLocaleDateString('en-IN', { month: 'short' })
-const cabinKey = (note?: string | null) => cabinFromNote(note) ?? 'Economy'
+// Month label from a "YYYY-MM" value — the only date info the public payload carries.
+const monthShort = (ym: string | null) =>
+  ym ? new Date(ym + '-01T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : ''
 
-function CabinBadge({ note }: { note?: string | null }) {
-  const c = cabinFromNote(note)
-  if (!c) return null // Economy — no badge (it's the default)
-  const cls = c === 'Business' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-700'
-  return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${cls}`}>{c === 'Business' ? '✦ Business' : '⬆ Prem. Eco'}</span>
+function CabinBadge({ cabin }: { cabin: string }) {
+  if (cabin === 'Economy') return null // default — no badge
+  const cls = cabin === 'Business' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-700'
+  return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${cls}`}>{cabin === 'Business' ? '✦ Business' : '⬆ Prem. Eco'}</span>
 }
 
 interface DestGroup {
   iata: string; city: string; image: string; from: number; currency: string
-  count: number; origins: number; deals: Deal[]; maxDisc: number
+  count: number; origins: number; deals: PublicDeal[]; maxDisc: number
   monthLabel?: string; groupKey?: string   // set when the group is scoped to a month
 }
 
 export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing', onUnlock, credits }: {
-  deals: Deal[]
+  deals: PublicDeal[]
   lockedIds?: Set<string>
   lockHref?: string                     // where a locked card navigates when there's no unlock handler (anon → /signup)
   onUnlock?: (dealId: string) => void   // if provided (free users), locked cards become "Unlock (1 credit)" actions
   credits?: number                      // remaining unlock credits — shown as a chip + drives the locked-card label
 }) {
-  const isLocked = (d: Deal) => lockedIds?.has(d.id) ?? false
+  const isLocked = (d: PublicDeal) => lockedIds?.has(d.id) ?? false
   const canUnlock = !!onUnlock && (credits ?? 0) > 0
   const [city, setCity] = useState('All cities')
   const [trip, setTrip] = useState<'All' | 'oneway' | 'roundtrip'>('All')
@@ -89,18 +89,18 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
 
   const filtered = deals.filter(d =>
     (city === 'All cities' || d.origin_city === city) &&
-    (trip === 'All' || tripFromNote(d.curator_note) === trip) &&
-    (cabin === 'All classes' || cabinKey(d.curator_note) === cabin) &&
+    (trip === 'All' || d.trip === trip) &&
+    (cabin === 'All classes' || d.cabin === cabin) &&
     (scope === 'All' || (isDomestic(d.origin_iata, d.dest_iata) ? scope === 'domestic' : scope === 'international')) &&
-    (stops === 'All' || stopsBucket(stopsFromNote(d.curator_note)) === stops),
+    (stops === 'All' || stopsBucket(d.stops) === stops),
   )
 
   // One card per destination *per month*: group by month, then by destination.
   // Tapping a destination tile opens that month's 2-3 deals in the modal.
   const monthDestGroups = useMemo(() => {
-    const byMonth: Record<string, Deal[]> = {}
+    const byMonth: Record<string, PublicDeal[]> = {}
     for (const d of filtered) {
-      const key = (d.validity_start || '').slice(0, 7) // YYYY-MM
+      const key = d.travel_month || '' // "YYYY-MM"
       if (key) (byMonth[key] = byMonth[key] || []).push(d)
     }
     return Object.entries(byMonth)
@@ -110,7 +110,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
         // Group by CITY (not airport) so a multi-airport city like Tokyo
         // (Narita + Haneda), London or New York shows as ONE carousel, not one
         // per airport. Representative iata = cheapest deal's, for flag/image.
-        const byCity: Record<string, Deal[]> = {}
+        const byCity: Record<string, PublicDeal[]> = {}
         for (const d of ds) { const ck = d.dest_city || d.dest_iata; (byCity[ck] = byCity[ck] || []).push(d) }
         const dests: DestGroup[] = Object.entries(byCity).map(([city, dl]) => {
           const sorted = [...dl].sort((a, b) => a.deal_price - b.deal_price)
@@ -268,12 +268,13 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
             <div className="overflow-y-auto p-4 space-y-2">
               {openDest.deals.map((deal, i) => {
                 const disc = calcDiscount(deal.normal_price, deal.deal_price)
-                const oneWay = tripFromNote(deal.curator_note) === 'oneway'
+                const oneWay = deal.trip === 'oneway'
                 const locked = isLocked(deal)
                 const showUnlock = locked && !!onUnlock
+                const monthTxt = monthShort(deal.travel_month)
                 const subLine = locked
                   ? (showUnlock ? (canUnlock ? '🔓 Tap to unlock · 1 credit' : 'Out of credits — upgrade →') : 'Unlock exact dates & booking →')
-                  : `${deal.airline} · ${mon(deal.validity_start)}${deal.validity_start !== deal.validity_end ? `–${mon(deal.validity_end)}` : ''}`
+                  : (monthTxt ? `✈ Travel in ${monthTxt} · view dates & booking →` : '✈ View dates & booking →')
                 const rowCls = 'flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/40 transition-colors'
                 const inner = (
                   <>
@@ -281,7 +282,7 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
                       <p className="font-bold text-slate-900 text-sm flex items-center gap-2 flex-wrap">
                         <span>{deal.origin_city} {oneWay ? '→' : '⇄'} {deal.dest_city}</span>
                         <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{oneWay ? 'One way' : 'Round trip'}</span>
-                        <CabinBadge note={deal.curator_note} />
+                        <CabinBadge cabin={deal.cabin} />
                         {locked && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">{showUnlock ? (canUnlock ? '🔓 Unlock' : '🔒 Upgrade') : '🔒 Members'}</span>}
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5 truncate">{subLine}</p>
