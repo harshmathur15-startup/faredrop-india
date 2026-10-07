@@ -2,8 +2,9 @@
  * Daily live-deal price refresh (Vercel cron — scheduled in vercel.json).
  *
  * Re-prices every published deal in its own cabin against today's cheapest
- * FlightAPI fare, bumps fare timestamps, and EXPIRES any deal whose new cheapest
- * is more than 30% above its stored deal_price. Persists a run summary to
+ * FlightAPI fare, bumps fare timestamps, and EXPIRES any deal that no longer
+ * clears the minimum-discount floor vs its curated normal_price (domestic 10%,
+ * international 15%) or whose travel date has passed. Persists a run summary to
  * deal_refresh_runs so /api/deal-refresh/latest (and the Claude routine) can
  * report what changed. Protected by CRON_SECRET — NOT publicly executable.
  *
@@ -18,7 +19,9 @@ import { sendRefreshSummaryEmail } from '@/lib/email'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // up to ~40 external FlightAPI calls per run
 
-const EXPIRE_PCT_THRESHOLD = 0.30 // expire deals whose fare rose > 30%
+// Minimum discount (vs curated normal_price) a deal must keep to stay live.
+const DOMESTIC_FLOOR_PCT = 10 // India ↔ India routes
+const INTL_FLOOR_PCT = 15     // international routes
 // Operator gets the morning summary by email (Vercel egresses freely, so this
 // is reliable — unlike the sandboxed Claude routine). Override via env if needed.
 const SUMMARY_EMAIL = process.env.REFRESH_SUMMARY_EMAIL || 'travelbabyin@gmail.com'
@@ -32,7 +35,8 @@ async function run(req: NextRequest) {
 
   try {
     const summary = await refreshLiveDeals(supabaseAdmin, apiKey, {
-      expirePctThreshold: EXPIRE_PCT_THRESHOLD,
+      domesticFloorPct: DOMESTIC_FLOOR_PCT,
+      intlFloorPct: INTL_FLOOR_PCT,
     })
 
     // Persist the run so the public summary endpoint + Claude routine can read it.

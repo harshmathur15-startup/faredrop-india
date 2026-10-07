@@ -28,6 +28,18 @@ function detectNonstop(note = ''): boolean {
   return n.includes('nonstop') && !n.includes(' stop')
 }
 
+// Domestic routes (both endpoints in India) carry a lower minimum-discount
+// floor than international ones, because Indian trunk fares are already low and
+// swing less. Expand the set as new domestic airports get deals.
+const INDIAN_IATA = new Set([
+  'DEL','BOM','BLR','MAA','CCU','HYD','GOI','GOX','PNQ','AMD','COK','TRV','CCJ',
+  'IXC','JAI','LKO','PAT','GAU','NAG','IXB','IXR','IXZ','IXM','IXE','VNS','BBI',
+  'RPR','VTZ','IDR','BHO','STV','HBX','IXA','DIB','IMF','AGR','ATQ','SXR','IXJ',
+  'UDR','JDH','BDQ','CJB','TRZ','PNY',
+])
+const isDomestic = (orig: string, dest: string): boolean =>
+  INDIAN_IATA.has(orig) && INDIAN_IATA.has(dest)
+
 interface ParsedRow {
   price_inr: number
   out_airline: string | null
@@ -102,9 +114,13 @@ export interface RefreshSummary {
   decreased: number
   unchanged: number
   expired: number
+  expired_past: number
+  expired_below_floor: number
   no_fare: number
   skipped_past: number
   credits_used: number
+  floor_domestic_pct: number
+  floor_intl_pct: number
   expire_threshold_pct: number
   expired_deals: DealMovement[]
   top_increases: DealMovement[]
@@ -115,9 +131,13 @@ export interface RefreshSummary {
 export async function refreshLiveDeals(
   supabaseAdmin: SupabaseClient,
   apiKey: string,
-  opts?: { expirePctThreshold?: number; concurrency?: number },
+  opts?: { domesticFloorPct?: number; intlFloorPct?: number; concurrency?: number },
 ): Promise<RefreshSummary> {
-  const expirePct = opts?.expirePctThreshold ?? 0.30
+  // Minimum discount (vs the curated normal_price) a deal must keep to stay
+  // live. Below this it is expired — this is what keeps weak/above-normal deals
+  // off the storefront.
+  const domFloor = opts?.domesticFloorPct ?? 10
+  const intlFloor = opts?.intlFloorPct ?? 15
   const concurrency = opts?.concurrency ?? 8
   const today = new Date().toISOString().slice(0, 10)
   const now = new Date().toISOString()
@@ -159,38 +179,61 @@ export async function refreshLiveDeals(
   const summary: RefreshSummary = {
     ran_at: now, today,
     published_before: publishedBefore, published_after: publishedBefore,
-    refreshed: 0, increased: 0, decreased: 0, unchanged: 0, expired: 0, no_fare: 0,
-    skipped_past: specs.filter(s => s.past).length,
-    credits_used: creditsUsed, expire_threshold_pct: expirePct * 100,
+    refreshed: 0, increased: 0, decreased: 0, unchanged: 0,
+    expired: 0, expired_past: 0, expired_below_floor: 0, no_fare: 0,
+    skipped_past: 0,
+    credits_used: creditsUsed,
+    floor_domestic_pct: domFloor, floor_intl_pct: intlFloor,
+    expire_threshold_pct: intlFloor, // back-compat: reflects the intl floor
     expired_deals: [], top_increases: [], top_decreases: [], errors: [],
   }
 
   for (const { deal, cabin, ret, depart, key, past, nonstop } of specs) {
-    if (past) continue
+    const route = `${deal.origin_iata}-${deal.dest_iata}`
+    const floorPct = isDomestic(deal.origin_iata, deal.dest_iata) ? domFloor : intlFloor
+
+    // Past-dated: the travel date has already gone — expire regardless of price.
+    if (past) {
+      const { error: upErr } = await supabaseAdmin.from('deals')
+        .update({ status: 'expired', last_verified_at: now }).eq('id', deal.id)
+      if (upErr) summary.errors.push({ route, error: `expire-past: ${upErr.message}` })
+      else { summary.expired++; summary.expired_past++ }
+      continue
+    }
+
     const r = resultByKey.get(key)
     const rows = r?.rows ?? []
     if (rows.length === 0) {
       summary.no_fare++
-      if (r?.error) summary.errors.push({ route: `${deal.origin_iata}-${deal.dest_iata}`, error: r.error })
+      if (r?.error) summary.errors.push({ route, error: r.error })
       continue
     }
     const nsRows = rows.filter(x => x.out_stops === 0 && (ret ? x.ret_stops === 0 : true))
     const base = (nonstop && nsRows.length) ? cheapestOf(nsRows)! : cheapestOf(rows)!
     const newPrice = base.price_inr
     const oldPrice = deal.deal_price as number
+    const normal = deal.normal_price as number
     const pct = oldPrice ? ((newPrice - oldPrice) / oldPrice) * 100 : 0
+    // Discount vs the curated normal baseline — the number the customer sees.
+    const discountPct = normal > 0 ? ((normal - newPrice) / normal) * 100 : -Infinity
     const move: DealMovement = {
-      id: deal.id, route: `${deal.origin_iata}-${deal.dest_iata}`,
+      id: deal.id, route,
       city: `${deal.origin_city} → ${deal.dest_city}`, cabin,
       dates: ret ? `${depart}→${ret}` : depart,
       old_price: oldPrice, new_price: newPrice, pct: Math.round(pct * 10) / 10,
     }
 
-    if (pct > expirePct * 100) {
+    // Expire when the live fare no longer clears the minimum-discount floor vs
+    // the normal baseline (domestic 10%, international 15%). Measuring against
+    // normal_price — not the rolling deal_price — is the fix: it catches fares
+    // that crept up over many days and blew past normal, which a
+    // rise-vs-last-price guard never trips.
+    if (discountPct < floorPct) {
       const { error: upErr } = await supabaseAdmin.from('deals')
         .update({ status: 'expired', last_verified_at: now }).eq('id', deal.id)
-      if (upErr) { summary.errors.push({ route: move.route, error: `expire: ${upErr.message}` }); continue }
+      if (upErr) { summary.errors.push({ route, error: `expire: ${upErr.message}` }); continue }
       summary.expired++
+      summary.expired_below_floor++
       summary.expired_deals.push(move)
       continue
     }

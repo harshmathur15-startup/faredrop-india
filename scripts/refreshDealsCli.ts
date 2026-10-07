@@ -42,7 +42,9 @@ if (typeof g.WebSocket === 'undefined') {
 
 const supabaseAdmin = createClient(url, key)
 const SUMMARY_EMAIL = process.env.REFRESH_SUMMARY_EMAIL || 'travelbabyin@gmail.com'
-const EXPIRE_PCT_THRESHOLD = 0.30
+// Minimum discount (vs curated normal_price) a deal must keep to stay live.
+const DOMESTIC_FLOOR_PCT = 10 // India ↔ India routes
+const INTL_FLOOR_PCT = 15     // international routes
 // We have ~20 concurrent FlightAPI capacity; 20 keeps a full run well under a
 // couple of minutes (no timeout pressure on GitHub Actions).
 const CONCURRENCY = 20
@@ -69,7 +71,8 @@ async function main() {
   }
 
   const summary = await refreshLiveDeals(supabaseAdmin, apiKey!, {
-    expirePctThreshold: EXPIRE_PCT_THRESHOLD,
+    domesticFloorPct: DOMESTIC_FLOOR_PCT,
+    intlFloorPct: INTL_FLOOR_PCT,
     concurrency: CONCURRENCY,
   })
 

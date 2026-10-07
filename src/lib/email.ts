@@ -295,7 +295,7 @@ export async function sendRefreshSummaryEmail({
           </td>${i < 3 ? '<td style="width:2%"></td>' : ''}`).join('')}
         </tr>
       </table>
-      ${summary.expired_deals.length ? `<p style="margin:18px 0 4px;font-weight:800;color:#b91c1c;font-size:13px">❌ Expired (fare rose >30%)</p><table width="100%" cellpadding="0" cellspacing="0">${summary.expired_deals.slice(0, 8).map(m => line(m)).join('')}</table>` : ''}
+      ${summary.expired_deals.length ? `<p style="margin:18px 0 4px;font-weight:800;color:#b91c1c;font-size:13px">❌ Expired (below min discount vs normal)</p><table width="100%" cellpadding="0" cellspacing="0">${summary.expired_deals.slice(0, 8).map(m => line(m)).join('')}</table>` : ''}
       ${section('🔻 Biggest drops', summary.top_decreases)}
       ${section('🔺 Biggest rises', summary.top_increases)}
       ${summary.no_fare ? `<p style="margin:16px 0 0;color:#94a3b8;font-size:12px">${summary.no_fare} deal(s) returned no fare this run.</p>` : ''}
