@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useUserTier, useUnlocks } from '@/lib/useAuth'
@@ -17,11 +17,10 @@ export default function DealGate({ dealId }: { dealId: string }) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    if (authed === false) router.replace('/signup')
-  }, [authed, router])
-
-  // Still resolving, or a guest being redirected → render nothing.
+  // Guests are no longer redirected to /signup. They see the deal as a teaser
+  // (price, route, routing) with dates/booking gated via GatedDates + DealCta —
+  // consistent with the homepage storefront. Free users still get the credit
+  // unlock overlay below; paid users see everything.
   if (authed === undefined || authed === false || tier === undefined || tier === null) return null
 
   const isPaid = tier === 'silver' || tier === 'gold'
