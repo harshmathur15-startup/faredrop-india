@@ -9,6 +9,8 @@ import HeroDeals from '@/components/HeroDeals'
 import DealsSection from '@/components/DealsSection'
 import RequestDealCta from '@/components/RequestDealCta'
 import { HomeCTAButtons, FooterAuthLink } from '@/components/HomeCTAAuth'
+import { getAllRoutes, flagFor } from '@/lib/routes'
+import { formatPrice } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +47,7 @@ const METROS = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Hyderabad']
 
 export default async function Home() {
   const deals = await getDeals()
+  const popularRoutes = (await getAllRoutes()).slice(0, 12)
   return (
     <main className="min-h-screen bg-slate-50">
 
@@ -303,6 +306,27 @@ export default async function Home() {
           <p className="text-blue-400 text-xs mt-4">Join 200+ travellers already saving big</p>
         </div>
       </section>
+
+      {/* ── Popular routes — public SEO internal links (visible to everyone) ── */}
+      {popularRoutes.length > 0 && (
+        <section className="bg-white border-t border-gray-100 px-5 py-12">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="font-display text-2xl font-bold text-slate-900 mb-1">Popular flight routes</h2>
+            <p className="text-gray-500 text-sm mb-6">Browse curated deals by route — fares, airlines &amp; price history, free to view.</p>
+            <div className="flex flex-wrap gap-2.5">
+              {popularRoutes.map((r) => (
+                <Link
+                  key={r.slug}
+                  href={`/flights/${r.slug}`}
+                  className="bg-slate-50 border border-gray-200 hover:border-blue-300 hover:text-blue-700 text-slate-700 text-sm font-medium px-4 py-2 rounded-full transition-colors"
+                >
+                  {flagFor(r.destIata)} {r.originCity} → {r.destCity} · from {formatPrice(r.cheapest, r.currency)}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Footer ── */}
       <footer className="bg-blue-950 text-blue-300 px-5 py-10">
