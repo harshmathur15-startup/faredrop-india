@@ -6,6 +6,7 @@ import { formatPrice, calcDiscount, formatDateRange, tripFromNote } from '@/lib/
 import { routeToSlug } from '@/lib/routes'
 import Link from 'next/link'
 import DealGate from '@/components/DealGate'
+import GatedDates from '@/components/GatedDates'
 import BackToDeals from '@/components/BackToDeals'
 import DealCta from '@/components/DealCta'
 import NavAuth from '@/components/NavAuth'
@@ -62,12 +63,6 @@ const cityName = (s: string) => {
 }
 const prettyDur = (d: string) => (d ? d.replace(/(\d+)h\s?(\d+)m?/, '$1h $2m').replace(/(\d+)h(?!\s?\d)/, '$1h') : '')
 const stripInternal = (n: string) => n.replace(/\s*\[auto-discovered\]\s*/gi, ' ').trim()
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const friendlyDates = (s: string) =>
-  s.replace(/\((\d{4})-(\d{2})-(\d{2})\s*→\s*(\d{4})-(\d{2})-(\d{2})\)/g, (_m, _y1, m1, d1, _y2, m2, d2) => {
-    const a = +d1, b = +d2
-    return m1 === m2 ? `(${a}–${b} ${MONTHS[+m1 - 1]})` : `(${a} ${MONTHS[+m1 - 1]}–${b} ${MONTHS[+m2 - 1]})`
-  })
 const pctUnder = (n: string) => {
   const m = n.match(/~?\s*(\d+)\s*%\s*under\s*(?:typical|normal)/i)
   return m ? +m[1] : null
@@ -95,7 +90,13 @@ function parseFlightNote(note: string) {
     out = parseLeg(core.slice(oi + 4, ri > -1 ? ri : undefined))
     if (ri > -1) ret = parseLeg(core.slice(ri + 4))
   }
-  const clean = friendlyDates(stripInternal(note)).replace(/^(Economy|Premium Economy|Business|First Class)\s*·\s*/i, '')
+  // Strip the raw ISO date range so the prose fallback never reveals travel dates
+  // (dates are gated separately via <GatedDates>).
+  const clean = stripInternal(note)
+    .replace(/\(\d{4}-\d{2}-\d{2}\s*→\s*\d{4}-\d{2}-\d{2}\)/g, '')
+    .replace(/^(Economy|Premium Economy|Business|First Class)\s*·\s*/i, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
   return { pct: pctUnder(s), out, ret, hasLegs, clean }
 }
 function FlightLeg({ dir, leg }: { dir: string; leg: Leg | null }) {
@@ -311,7 +312,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-600">
               <div>
                 <p className="font-semibold text-gray-900">Travel dates</p>
-                <p>{formatDateRange(deal.validity_start, deal.validity_end)}</p>
+                <p><GatedDates dealId={deal.id} dates={formatDateRange(deal.validity_start, deal.validity_end)} /></p>
               </div>
               <div>
                 <p className="font-semibold text-gray-900">Airline</p>
@@ -353,7 +354,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             </p>
 
             <p className="text-xs text-gray-400 text-center mt-3">
-              Prices may change. Always verify before booking. Deal valid {formatDateRange(deal.validity_start, deal.validity_end)}.
+              Prices may change. Always verify before booking.
             </p>
           </div>
         </div>
