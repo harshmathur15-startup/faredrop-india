@@ -3,6 +3,7 @@ import { Deal } from '@/types'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { formatPrice, calcDiscount, formatDateRange, tripFromNote } from '@/lib/utils'
+import { routeToSlug } from '@/lib/routes'
 import Link from 'next/link'
 import DealGate from '@/components/DealGate'
 import BackToDeals from '@/components/BackToDeals'
@@ -319,6 +320,14 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             </div>
 
             <FlightDetails note={deal.curator_note} />
+
+            {/* Route hub link — internal SEO linking + lets users browse the route */}
+            <Link
+              href={`/flights/${routeToSlug(deal.origin_city, deal.dest_city)}`}
+              className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
+            >
+              See all {deal.origin_city} → {deal.dest_city} deals <span aria-hidden="true">→</span>
+            </Link>
 
             {/* Cabin class reminder for PE / Business */}
             {cabin && (

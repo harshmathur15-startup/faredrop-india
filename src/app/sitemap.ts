@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
+import { getAllRoutes } from '@/lib/routes'
 
 const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://travelbaby.in'
 
@@ -38,5 +39,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // If the DB is unreachable at build time, still emit the static routes.
   }
 
-  return [...staticRoutes, ...dealRoutes]
+  // Programmatic route landing pages (/flights/[route]) — the SEO entry points.
+  let flightRoutes: MetadataRoute.Sitemap = []
+  try {
+    const routes = await getAllRoutes()
+    flightRoutes = routes.map(
+      (r): MetadataRoute.Sitemap[number] => ({
+        url: `${SITE_URL}/flights/${r.slug}`,
+        lastModified: now,
+        changeFrequency: 'daily',
+        priority: 0.9,
+      }),
+    )
+  } catch {
+    // Still emit everything else if the route query fails.
+  }
+
+  return [...staticRoutes, ...flightRoutes, ...dealRoutes]
 }
