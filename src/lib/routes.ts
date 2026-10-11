@@ -113,8 +113,14 @@ export type RouteSummary = {
   destIata: string // representative, for flag/image
   liveCount: number
   cheapest: number
+  cheapestTrip: 'oneway' | 'roundtrip' // trip type of the "from" (cheapest) fare
   currency: string
 }
+
+// Canonical one-way vs round-trip signal: a one-way deal stores the same date in
+// validity_start and validity_end; a round trip stores depart→return (different).
+const tripOf = (d: Deal): 'oneway' | 'roundtrip' =>
+  d.validity_start === d.validity_end ? 'oneway' : 'roundtrip'
 
 export type RouteData = RouteSummary & {
   deals: Deal[]
@@ -162,6 +168,7 @@ export const getAllRoutes = cache(async (): Promise<RouteSummary[]> => {
           destIata: d.dest_iata,
           liveCount: 1,
           cheapest: d.deal_price,
+          cheapestTrip: tripOf(d),
           currency: d.currency,
         })
       } else {
@@ -169,6 +176,7 @@ export const getAllRoutes = cache(async (): Promise<RouteSummary[]> => {
         if (d.deal_price < existing.cheapest) {
           existing.cheapest = d.deal_price
           existing.destIata = d.dest_iata
+          existing.cheapestTrip = tripOf(d)
         }
       }
     }
@@ -240,6 +248,7 @@ export const getRouteData = cache(async (slug: string): Promise<RouteData | null
       destIata: rep.dest_iata,
       liveCount: published.length,
       cheapest,
+      cheapestTrip: tripOf(rep),
       currency: rep.currency,
       deals,
       typicalFare,
