@@ -320,7 +320,8 @@ export default async function Home() {
                   href={`/flights/${r.slug}`}
                   className="bg-slate-50 border border-gray-200 hover:border-blue-300 hover:text-blue-700 text-slate-700 text-sm font-medium px-4 py-2 rounded-full transition-colors"
                 >
-                  {flagFor(r.destIata)} {r.originCity} → {r.destCity} · from {formatPrice(r.cheapest, r.currency)}
+                  {flagFor(r.destIata)} {r.originCity} {r.cheapestTrip === 'oneway' ? '→' : '⇄'} {r.destCity} · from {formatPrice(r.cheapest, r.currency)}
+                  <span className="ml-1 font-semibold text-slate-500">· {r.cheapestTrip === 'oneway' ? 'one way' : 'round trip'}</span>
                 </Link>
               ))}
             </div>
