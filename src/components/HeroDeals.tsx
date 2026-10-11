@@ -59,18 +59,21 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
                 <span className={`${tierColor} text-white text-[11px] font-semibold px-2 py-0.5 rounded-full`}>{deal.discount}% off</span>
               </div>
               <p className="font-display font-bold text-lg leading-tight text-slate-900">{deal.dest_city}</p>
-              {(isBusiness || isPEDeal) && (
-                <span className="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                  style={isBusiness ? { backgroundColor: '#fef3c7', color: '#92400e' } : { backgroundColor: '#ede9fe', color: '#6d28d9' }}>
-                  {isBusiness ? '✦ Business' : '⬆ Prem. Eco'}
+              {/* Trip type — explicit so round-trip vs one-way is unmistakable */}
+              <div className="mt-1 flex flex-wrap items-center gap-1">
+                <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${oneWay ? 'bg-slate-100 text-slate-600' : 'bg-blue-100 text-blue-700'}`}>
+                  {oneWay ? '→ One way' : '⇄ Round trip'}
                 </span>
-              )}
-              <p className="text-slate-500 text-[11px] mb-2 truncate">{oneWay ? `${deal.origin_iata}–${deal.dest_iata}` : `${deal.origin_iata}–${deal.dest_iata}–${deal.origin_iata}`}</p>
+                {(isBusiness || isPEDeal) && (
+                  <span className="inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={isBusiness ? { backgroundColor: '#fef3c7', color: '#92400e' } : { backgroundColor: '#ede9fe', color: '#6d28d9' }}>
+                    {isBusiness ? '✦ Business' : '⬆ Prem. Eco'}
+                  </span>
+                )}
+              </div>
+              <p className="text-slate-500 text-[11px] mt-1 mb-2 truncate">{oneWay ? `${deal.origin_iata}–${deal.dest_iata}` : `${deal.origin_iata}–${deal.dest_iata}–${deal.origin_iata}`}</p>
               <p className="text-slate-400 text-xs line-through leading-none">{formatPrice(deal.normal_price, deal.currency)}</p>
-              <p className="font-display font-bold text-xl text-slate-900 leading-tight">
-                {formatPrice(deal.deal_price, deal.currency)}{' '}
-                <span className="text-slate-400 text-[11px] font-medium">{oneWay ? 'one way' : 'round trip'}</span>
-              </p>
+              <p className="font-display font-bold text-xl text-slate-900 leading-tight">{formatPrice(deal.deal_price, deal.currency)}</p>
               <p className="text-blue-600 text-xs mt-2 font-semibold group-hover:translate-x-0.5 transition-transform">View deal →</p>
             </DealLink>
           )
