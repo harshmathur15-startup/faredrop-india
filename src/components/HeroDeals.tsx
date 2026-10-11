@@ -2,32 +2,9 @@
 
 import { Deal } from '@/types'
 import DealLink from './DealLink'
-import { calcDiscount, formatPrice, tripFromNote, isIndianAirport } from '@/lib/utils'
+import { calcDiscount, formatPrice, tripFromNote } from '@/lib/utils'
+import { flagFor } from '@/lib/flags'
 import { pickHeroDeals } from '@/lib/heroDeals'
-
-const DEST_META: Record<string, { flag: string }> = {
-  BKK: { flag: '🇹🇭' }, DMK: { flag: '🇹🇭' }, DPS: { flag: '🇮🇩' },
-  SIN: { flag: '🇸🇬' }, DXB: { flag: '🇦🇪' }, AUH: { flag: '🇦🇪' },
-  LHR: { flag: '🇬🇧' }, NRT: { flag: '🇯🇵' }, HND: { flag: '🇯🇵' },
-  CDG: { flag: '🇫🇷' }, MLE: { flag: '🇲🇻' }, KUL: { flag: '🇲🇾' },
-  HKT: { flag: '🇹🇭' }, HAN: { flag: '🇻🇳' }, SGN: { flag: '🇻🇳' },
-  ICN: { flag: '🇰🇷' }, DOH: { flag: '🇶🇦' }, CMB: { flag: '🇱🇰' },
-  SXR: { flag: '🇮🇳' }, PVG: { flag: '🇨🇳' }, SHA: { flag: '🇨🇳' },
-  MUC: { flag: '🇩🇪' }, TBS: { flag: '🇬🇪' }, IST: { flag: '🇹🇷' },
-  CGK: { flag: '🇮🇩' }, CAI: { flag: '🇪🇬' }, GAN: { flag: '🇲🇻' },
-  AMS: { flag: '🇳🇱' }, YYZ: { flag: '🇨🇦' }, MEL: { flag: '🇦🇺' },
-  ATL: { flag: '🇺🇸' }, JFK: { flag: '🇺🇸' }, IAD: { flag: '🇺🇸' },
-  GOI: { flag: '🇮🇳' }, GOX: { flag: '🇮🇳' }, IXL: { flag: '🇮🇳' },
-  COK: { flag: '🇮🇳' }, UDR: { flag: '🇮🇳' }, DEL: { flag: '🇮🇳' },
-  BOM: { flag: '🇮🇳' }, BLR: { flag: '🇮🇳' }, MAA: { flag: '🇮🇳' },
-  KTM: { flag: '🇳🇵' }, IXB: { flag: '🇮🇳' }, IXZ: { flag: '🇮🇳' },
-  DED: { flag: '🇮🇳' }, JAI: { flag: '🇮🇳' }, VNS: { flag: '🇮🇳' },
-  TAS: { flag: '🇺🇿' }, ALA: { flag: '🇰🇿' }, EVN: { flag: '🇦🇲' },
-  TPE: { flag: '🇹🇼' }, DAC: { flag: '🇧🇩' }, HKG: { flag: '🇭🇰' },
-  LON: { flag: '🇬🇧' }, PAR: { flag: '🇫🇷' }, NYC: { flag: '🇺🇸' },
-  AKL: { flag: '🇳🇿' }, MAD: { flag: '🇪🇸' }, SYD: { flag: '🇦🇺' },
-  KWI: { flag: '🇰🇼' }, RUH: { flag: '🇸🇦' }, BAH: { flag: '🇧🇭' }, MCT: { flag: '🇴🇲' },
-}
 
 export default function HeroDeals({ deals }: { deals: Deal[] }) {
   // Featured strip = top 5 free deals (one row); the rest show in the deals grid.
@@ -45,7 +22,6 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
       </div>
       <div className="flex gap-3 mb-0 max-w-5xl mx-auto overflow-x-auto snap-x snap-mandatory pb-2 px-1 sm:flex-nowrap sm:justify-center sm:overflow-visible sm:pb-0">
         {heroDeals.map((deal, i) => {
-          const meta = DEST_META[deal.dest_iata] ?? { flag: isIndianAirport(deal.dest_iata) ? '🇮🇳' : '✈️' }
           const note = (deal.curator_note ?? '').toLowerCase()
           const isBusiness = note.includes('business')
           const isPEDeal = note.includes('premium economy') || note.includes('premium_economy')
@@ -55,7 +31,7 @@ export default function HeroDeals({ deals }: { deals: Deal[] }) {
             <DealLink key={deal.id} dealId={deal.id} surface="hero" position={i}
               className="group relative rounded-2xl p-4 text-left overflow-hidden bg-slate-50 border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 hover:-translate-y-1 transition-all duration-200 block snap-start shrink-0 w-[160px] sm:flex-1 sm:w-auto sm:min-w-0 sm:max-w-[190px]">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl leading-none">{meta.flag}</span>
+                <span className="text-2xl leading-none">{flagFor(deal.dest_iata)}</span>
                 <span className={`${tierColor} text-white text-[11px] font-semibold px-2 py-0.5 rounded-full`}>{deal.discount}% off</span>
               </div>
               <p className="font-display font-bold text-lg leading-tight text-slate-900">{deal.dest_city}</p>

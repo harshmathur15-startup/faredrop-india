@@ -79,21 +79,9 @@ export function dealImage(deal: Pick<Deal, 'image_url' | 'dest_iata'>): string {
   return CITY_IMAGES[deal.dest_iata] ?? FALLBACK_IMAGE
 }
 
-const FLAG: Record<string, string> = {
-  BKK: '🇹🇭', DMK: '🇹🇭', HKT: '🇹🇭', DPS: '🇮🇩', CGK: '🇮🇩', SIN: '🇸🇬',
-  DXB: '🇦🇪', AUH: '🇦🇪', DOH: '🇶🇦', LHR: '🇬🇧', LON: '🇬🇧', CDG: '🇫🇷', PAR: '🇫🇷',
-  AMS: '🇳🇱', IST: '🇹🇷', NRT: '🇯🇵', HND: '🇯🇵', ICN: '🇰🇷', HKG: '🇭🇰',
-  PVG: '🇨🇳', SHA: '🇨🇳', HAN: '🇻🇳', SGN: '🇻🇳', KUL: '🇲🇾', CMB: '🇱🇰',
-  MLE: '🇲🇻', GAN: '🇲🇻', MEL: '🇦🇺', SYD: '🇦🇺', YYZ: '🇨🇦', JFK: '🇺🇸', NYC: '🇺🇸',
-  GOI: '🇮🇳', GOX: '🇮🇳', IXL: '🇮🇳', COK: '🇮🇳', UDR: '🇮🇳', SXR: '🇮🇳', CCU: '🇮🇳',
-  KTM: '🇳🇵', IXB: '🇮🇳', IXZ: '🇮🇳', DED: '🇮🇳', JAI: '🇮🇳', VNS: '🇮🇳', BLR: '🇮🇳',
-  MAA: '🇮🇳', HYD: '🇮🇳', PNQ: '🇮🇳', BOM: '🇮🇳', DEL: '🇮🇳',
-  TAS: '🇺🇿', ALA: '🇰🇿', EVN: '🇦🇲', TPE: '🇹🇼', DAC: '🇧🇩', AKL: '🇳🇿', MAD: '🇪🇸',
-  KWI: '🇰🇼', RUH: '🇸🇦', BAH: '🇧🇭', MCT: '🇴🇲',
-}
-export function flagFor(iata: string): string {
-  return FLAG[iata] ?? '✈️'
-}
+// Flags live in one shared module now (src/lib/flags.ts) to stop the three
+// copies drifting. Re-exported so existing `@/lib/routes` imports keep working.
+export { flagFor } from '@/lib/flags'
 
 // Columns needed to render teaser cards (same shape the homepage fetches).
 const DEAL_COLS =
