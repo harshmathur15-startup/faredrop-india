@@ -37,10 +37,9 @@ interface DestGroup {
   monthLabel?: string; groupKey?: string   // set when the group is scoped to a month
 }
 
-export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing', onUnlock, credits }: {
+export default function DestinationGrid({ deals, lockedIds, onUnlock, credits }: {
   deals: Deal[]
   lockedIds?: Set<string>
-  lockHref?: string                     // where a locked card navigates when there's no unlock handler (anon → /signup)
   onUnlock?: (dealId: string) => void   // if provided (free users), locked cards become "Unlock (1 credit)" actions
   credits?: number                      // remaining unlock credits — shown as a chip + drives the locked-card label
 }) {
@@ -303,8 +302,12 @@ export default function DestinationGrid({ deals, lockedIds, lockHref = '/pricing
                     </div>
                   )
                 }
+                // Guests (no onUnlock handler) now go to the deal page itself,
+                // which is a value-first teaser (price/route/airline visible; exact
+                // dates + booking gated with an inline "sign up free" prompt) — no
+                // longer a hard bounce to /signup before they've seen the deal.
                 return (
-                  <Link key={deal.id} href={locked ? lockHref : `/deal/${deal.id}`}
+                  <Link key={deal.id} href={`/deal/${deal.id}`}
                     data-deal-id={deal.id} data-surface="spotlight" data-position={i} data-locked={locked ? 'true' : undefined}
                     className={rowCls}>
                     {inner}

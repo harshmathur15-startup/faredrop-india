@@ -75,7 +75,7 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
             Sign up free →
           </Link>
         </div>
-        <DestinationGrid deals={storefront} lockedIds={lockedIds} lockHref="/signup" />
+        <DestinationGrid deals={storefront} lockedIds={lockedIds} />
       </section>
     )
   }
@@ -95,7 +95,7 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
   return (
     <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
       <SectionHeader deals={deals} />
-      <DestinationGrid deals={storefront} lockedIds={lockedIds} onUnlock={handleUnlock} credits={credits} lockHref="/pricing" />
+      <DestinationGrid deals={storefront} lockedIds={lockedIds} onUnlock={handleUnlock} credits={credits} />
     </section>
   )
 }
