@@ -4,23 +4,9 @@ import { useMemo, useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Deal } from '@/types'
-import { formatPrice, calcDiscount, tripFromNote, cabinFromNote, stopsFromNote, isDomestic, isIndianAirport } from '@/lib/utils'
+import { formatPrice, calcDiscount, tripFromNote, cabinFromNote, stopsFromNote, isDomestic } from '@/lib/utils'
+import { flagFor } from '@/lib/flags'
 
-const FLAG: Record<string, string> = {
-  BKK: '🇹🇭', DMK: '🇹🇭', HKT: '🇹🇭', DPS: '🇮🇩', CGK: '🇮🇩', SIN: '🇸🇬',
-  DXB: '🇦🇪', AUH: '🇦🇪', DOH: '🇶🇦', LHR: '🇬🇧', CDG: '🇫🇷', AMS: '🇳🇱',
-  FCO: '🇮🇹', VIE: '🇦🇹', GVA: '🇨🇭', ZRH: '🇨🇭', MUC: '🇩🇪', TBS: '🇬🇪',
-  IST: '🇹🇷', CAI: '🇪🇬', NRT: '🇯🇵', HND: '🇯🇵', ICN: '🇰🇷', HKG: '🇭🇰',
-  PVG: '🇨🇳', PEK: '🇨🇳', HAN: '🇻🇳', SGN: '🇻🇳', KUL: '🇲🇾', CMB: '🇱🇰',
-  MLE: '🇲🇻', GAN: '🇲🇻', MEL: '🇦🇺', SYD: '🇦🇺', YYZ: '🇨🇦', JFK: '🇺🇸',
-  GOI: '🇮🇳', GOX: '🇮🇳', IXL: '🇮🇳', COK: '🇮🇳', UDR: '🇮🇳', SXR: '🇮🇳',
-  KTM: '🇳🇵', IXB: '🇮🇳', IXZ: '🇮🇳', DED: '🇮🇳', JAI: '🇮🇳', VNS: '🇮🇳',
-  TAS: '🇺🇿', ALA: '🇰🇿', EVN: '🇦🇲', TPE: '🇹🇼', DAC: '🇧🇩',
-  LON: '🇬🇧', LGW: '🇬🇧', PAR: '🇫🇷', NYC: '🇺🇸', AKL: '🇳🇿', MAD: '🇪🇸',
-  KWI: '🇰🇼', RUH: '🇸🇦', BAH: '🇧🇭', MCT: '🇴🇲',
-}
-// Any Indian airport falls back to the India flag; everything else to a plane.
-const flagFor = (iata: string) => FLAG[iata] ?? (isIndianAirport(iata) ? '🇮🇳' : '✈️')
 const mon = (iso: string) => new Date(iso).toLocaleDateString('en-IN', { month: 'short' })
 const cabinKey = (note?: string | null) => cabinFromNote(note) ?? 'Economy'
 
