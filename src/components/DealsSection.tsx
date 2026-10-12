@@ -59,17 +59,18 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
     )
   }
 
-  // Anonymous + free both see the same 50-deal storefront (spread across destinations).
+  // Guests see a curated 50-deal teaser (an incentive to sign up); signed-up free
+  // users get the FULL catalogue below.
   const storefront = pickStorefront(deals, STOREFRONT_LIMIT)
 
-  // Signed out — everything locked, taps route to sign-up.
+  // Signed out — teaser storefront, everything locked, taps route to sign-up.
   if (!authed) {
     const lockedIds = new Set(storefront.map(d => d.id))
     return (
       <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
         <SectionHeader deals={deals} />
         <div className="mb-6 text-center py-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
-          <p className="text-lg font-bold text-slate-900 mb-1">🔒 {storefront.length} deals inside — sign up free to unlock</p>
+          <p className="text-lg font-bold text-slate-900 mb-1">🔒 {deals.length} deals inside — sign up free to unlock</p>
           <p className="text-gray-500 text-sm mb-4">Every member gets <strong>3 free unlocks a month</strong>. No credit card.</p>
           <Link href="/signup" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition-colors">
             Sign up free →
@@ -80,10 +81,13 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
     )
   }
 
-  // Signed-up free user — same 50, locked except deals they've unlocked. Unlock spends a credit.
+  // Signed-up free user — the FULL catalogue (all deals), locked except the ones
+  // they've unlocked. Unlocking spends one of their 3 monthly credits.
+  const allDeals = [...deals].sort((a, b) =>
+    calcDiscount(b.normal_price, b.deal_price) - calcDiscount(a.normal_price, a.deal_price))
   const unlocked = state?.unlocked ?? new Set<string>()
   const credits = state?.credits ?? 0
-  const lockedIds = new Set(storefront.filter(d => !unlocked.has(d.id)).map(d => d.id))
+  const lockedIds = new Set(allDeals.filter(d => !unlocked.has(d.id)).map(d => d.id))
 
   const handleUnlock = async (dealId: string) => {
     if (credits <= 0) { router.push('/pricing'); return }
@@ -95,7 +99,7 @@ export default function DealsSection({ deals }: { deals: Deal[] }) {
   return (
     <section id="deals" className="max-w-6xl mx-auto px-5 py-16">
       <SectionHeader deals={deals} />
-      <DestinationGrid deals={storefront} lockedIds={lockedIds} onUnlock={handleUnlock} credits={credits} />
+      <DestinationGrid deals={allDeals} lockedIds={lockedIds} onUnlock={handleUnlock} credits={credits} />
     </section>
   )
 }
