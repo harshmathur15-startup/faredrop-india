@@ -3,20 +3,23 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import ComingSoonBadge from './ComingSoonBadge'
 
-const AUTHED_LINKS = [
+type NavLink = { href: string; label: string; color: string; soon?: boolean }
+
+const AUTHED_LINKS: NavLink[] = [
   { href: '/#deals',       label: 'Deals',        color: 'text-gray-700' },
   { href: '/about',        label: 'About',        color: 'text-gray-700' },
   { href: '/pricing',      label: 'Pricing',      color: 'text-gray-700' },
-  { href: '/for-creators', label: 'For Creators', color: 'text-purple-600' },
-  { href: '/for-agents',   label: 'For Agents',   color: 'text-indigo-600' },
+  { href: '/for-creators', label: 'For Creators', color: 'text-purple-600', soon: true },
+  { href: '/for-agents',   label: 'For Agents',   color: 'text-indigo-600', soon: true },
 ]
 
-const GUEST_LINKS = [
+const GUEST_LINKS: NavLink[] = [
   { href: '/about', label: 'About', color: 'text-gray-700' },
   { href: '/pricing', label: 'Pricing', color: 'text-gray-700' },
-  { href: '/for-creators', label: 'For Creators', color: 'text-purple-600' },
-  { href: '/for-agents', label: 'For Agents', color: 'text-indigo-600' },
+  { href: '/for-creators', label: 'For Creators', color: 'text-purple-600', soon: true },
+  { href: '/for-agents', label: 'For Agents', color: 'text-indigo-600', soon: true },
 ]
 
 export default function MobileMenu() {
@@ -73,8 +76,9 @@ export default function MobileMenu() {
 
               {links.map(l => (
                 <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
-                  className={`py-3 text-base font-semibold border-b border-gray-100 ${l.color}`}>
-                  {l.label}
+                  className={`py-3 border-b border-gray-100 flex flex-col items-start gap-1.5 ${l.color}`}>
+                  {l.soon && <ComingSoonBadge />}
+                  <span className="text-base font-semibold">{l.label}</span>
                 </Link>
               ))}
 
