@@ -4,6 +4,7 @@ import Image from 'next/image'
 export const metadata = {
   title: 'About Travelbaby — The story behind India\'s flight deal marketplace',
   description: 'Learn how Travelbaby connects Indian travellers with curated flight deals, travel creators, and boutique agents.',
+  alternates: { canonical: '/about' },
 }
 
 const PILLARS = [
