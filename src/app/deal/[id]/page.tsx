@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { Deal } from '@/types'
 import Image from 'next/image'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { formatPrice, calcDiscount, formatDateRange, tripFromNote } from '@/lib/utils'
-import { routeToSlug } from '@/lib/routes'
+import { routeToSlug, getAllRoutes } from '@/lib/routes'
 import Link from 'next/link'
 import DealGate from '@/components/DealGate'
 import GatedDates from '@/components/GatedDates'
@@ -239,7 +240,37 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) notFound()
   const { data: deal } = await supabase.from('deals').select('*').eq('id', id).single<Deal>()
 
-  if (!deal || deal.status !== 'published') notFound()
+  if (!deal || deal.status !== 'published') {
+    // Deals expire within weeks (~86% of deals >20 days old are already
+    // gone), so this branch fires constantly. Rather than let the URL 404 —
+    // which trains Google to distrust the whole /deal/ folder — send the
+    // visitor (and crawl equity) to the durable route page for the same
+    // city-pair, if one is live. A permanent (308) redirect, not a 307, so
+    // crawlers consolidate signal there instead of re-checking a dead URL.
+    //
+    // Anon RLS only exposes `published` rows (confirmed: an expired deal's id
+    // returns zero rows via the anon client, not a non-"published" status —
+    // same reason routes.ts needs its own service-role lookup for price
+    // history). So `deal` is already null for an expired deal, and we need a
+    // service-role, server-only lookup just to learn its route. We never
+    // render any admin-fetched deal content — only origin/dest city.
+    const originDest = deal
+      ? { origin_city: deal.origin_city, dest_city: deal.dest_city }
+      : (
+          await supabaseAdmin
+            .from('deals')
+            .select('origin_city, dest_city')
+            .eq('id', id)
+            .maybeSingle()
+        ).data
+
+    if (!originDest) notFound()
+
+    const slug = routeToSlug(originDest.origin_city, originDest.dest_city)
+    const routes = await getAllRoutes()
+    const hasLiveRoute = routes.some((r) => r.slug === slug)
+    permanentRedirect(hasLiveRoute ? `/flights/${slug}` : '/')
+  }
 
   const discount = calcDiscount(deal.normal_price, deal.deal_price)
   const { google: googleUrl } = buildSearchUrls(deal)

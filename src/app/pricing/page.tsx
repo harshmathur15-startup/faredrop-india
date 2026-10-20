@@ -4,6 +4,7 @@ import PricingCards from '@/components/PricingCards'
 
 export const metadata = {
   title: 'Pricing — Travelbaby',
+  description: 'Compare Travelbaby membership plans. Start free with limited deal access, or upgrade for full access to every curated flight deal and alert.',
   alternates: { canonical: '/pricing' },
 }
 

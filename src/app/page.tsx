@@ -370,6 +370,34 @@ export default async function Home() {
         </div>
       </footer>
 
+      {/* Organization + WebSite structured data — the homepage had none, despite
+          being the single most important page for brand/entity recognition. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Travelbaby',
+            url: 'https://travelbaby.in',
+            logo: 'https://travelbaby.in/travel-baby-logo.png',
+            description:
+              'Travelbaby curates international flight deals for Indian travellers — up to 90% off, with free alerts and no booking markups.',
+            sameAs: [],
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'Travelbaby',
+            url: 'https://travelbaby.in',
+          }),
+        }}
+      />
     </main>
   )
 }
