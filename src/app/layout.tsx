@@ -39,7 +39,10 @@ export const metadata: Metadata = {
     "error fares India",
     "flight deal alerts",
   ],
-  alternates: { canonical: "/" },
+  // NOTE: no site-wide `alternates.canonical` here on purpose. A default
+  // canonical in the root layout is inherited by every page that doesn't set
+  // its own, which makes them all canonicalise to "/" and stops Google
+  // indexing them as distinct pages. Each route sets its own canonical.
   openGraph: {
     title: "Travelbaby — Curated flight deals for Indian travellers",
     description:

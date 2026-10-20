@@ -12,6 +12,10 @@ import { HomeCTAButtons, FooterAuthLink } from '@/components/HomeCTAAuth'
 import { getAllRoutes, flagFor } from '@/lib/routes'
 import { formatPrice } from '@/lib/utils'
 
+export const metadata = {
+  alternates: { canonical: '/' },
+}
+
 export const dynamic = 'force-dynamic'
 
 async function getDeals(): Promise<Deal[]> {

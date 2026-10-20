@@ -2,7 +2,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import PricingCards from '@/components/PricingCards'
 
-export const metadata = { title: 'Pricing — Travelbaby' }
+export const metadata = {
+  title: 'Pricing — Travelbaby',
+  alternates: { canonical: '/pricing' },
+}
 
 export default function PricingPage() {
   return (
